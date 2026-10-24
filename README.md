@@ -46,7 +46,7 @@ After that it runs full screen and plays offline, even in airplane mode. Your ru
 | Zoom | Pinch (side panels slide aside past 5× zoom) |
 | Look around | Drag |
 | Tilt the view | Slide two fingers up or down |
-| Leaderboard and Towers built | Leaderboard button |
+| Book of Records and Towers built | Book button |
 | Menu, volume, new game | ☰ button |
 
 Your run saves automatically between waves.
@@ -54,7 +54,7 @@ Your run saves automatically between waves.
 ## Updating the game (for the maintainer)
 
 1. Upload the new `index.html` (replacing the old one).
-2. Open `sw.js` and bump the version, for example `castle-maze-v5` → `castle-maze-v6`.
+2. Open `sw.js` and bump the version, for example `castle-maze-v6` → `castle-maze-v7`.
 3. Add the changes to `CHANGELOG.md`.
 
 Installed copies pick up the update the next time they're opened online. If an old version still shows, close the app and open it again.

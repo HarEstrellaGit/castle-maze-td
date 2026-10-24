@@ -2,6 +2,21 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.5 — October 24, 2026
+
+### Added
+- **Sign the Book of Records.** When a run ends, won or lost, you sign it with a five-letter name, arcade style: tap ▲ ▼ on each letter, or type it. The game remembers your last name for next time.
+- **Dark Matter** replaces Obsidian Keep as the secret Obsidian tower. It's a floating black planet with a violet glow and a ring of dust that hurls huge dark-matter orbs. Its stats are unchanged.
+
+### Changed
+- **The Leaderboard is now the Book of Records**, with a new book icon on its button. Every finished run is recorded, longest runs first, then highest damage.
+- **Tower range is a circle again**, still measured from the edge of the tower's square (the range plus half a square from its center). Range outlines are circles to match.
+- **Towers built** now also counts towers recorded in finished runs and towers standing on the board right now.
+- Locked towers in the Towers built view now grey out reliably on iPhone.
+
+### Fixed
+- On phones, the end-of-run panel no longer overlaps the title.
+
 ## 1.4 — October 24, 2026
 
 ### Added

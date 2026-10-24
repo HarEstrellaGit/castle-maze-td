@@ -180,6 +180,7 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 #hudTop.won #phaseMsg{white-space:normal;max-width:min(86vw,560px);font-size:calc(var(--u)*1.9)}
 #hudTop.won{white-space:normal}
 .lbh,.lbr{display:grid;grid-template-columns:1.6em 1fr auto auto;gap:6px;align-items:center;padding:3px 4px;font-size:calc(var(--u)*1)}
+.tab .tabico{width:1.35em;height:1.35em;vertical-align:-.32em;margin-right:5px}
 .tbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--u)*3.4),1fr));gap:4px;margin-top:4px}
 .tbcell{aspect-ratio:1;border:1px solid var(--line);border-radius:6px;background:radial-gradient(circle at 50% 40%,#3a2f22,#16110b 75%);padding:2px;cursor:pointer}
 .tbcell img{width:100%;height:100%;object-fit:contain;display:block}
@@ -190,8 +191,7 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 #tshow .tsBack{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(20,15,9,.55),rgba(8,6,4,.88) 75%);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 #tshow .tsNav.prev{left:calc(var(--pw)*.7*(1 - var(--slide)) + 10px)} #tshow .tsNav.next{right:calc(var(--pw)*.7*(1 - var(--slide)) + 10px)}
 #tshow .tsMid{position:relative;display:flex;flex-direction:column;align-items:center;max-width:min(calc(100% - var(--u)*8),560px);text-align:center}
-#tsCan{width:min(46vh,62vw,420px);height:min(46vh,62vw,420px);animation:tsFloat 3.2s ease-in-out infinite;filter:drop-shadow(0 18px 24px rgba(0,0,0,.6));transition:filter .3s}
-#tshow.locked #tsCan{filter:grayscale(1) brightness(.45) drop-shadow(0 18px 24px rgba(0,0,0,.6))}
+#tsCan{width:min(46vh,62vw,420px);height:min(46vh,62vw,420px);animation:tsFloat 3.2s ease-in-out infinite;filter:drop-shadow(0 18px 24px rgba(0,0,0,.6))}
 @keyframes tsFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 #tsName{font-family:var(--display);font-weight:700;font-size:calc(var(--u)*2);color:#cfc6b4;text-shadow:0 2px 6px #000}
 #tshow.locked #tsName{color:#8a8478}
@@ -206,6 +206,25 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 .lbr{border-bottom:1px solid rgba(255,255,255,.05)} .lbr em{display:block;font-style:normal;color:var(--muted);font-size:.85em}
 .lbr.won span:nth-child(2){color:var(--gold)} .lbr span:nth-child(3),.lbr span:nth-child(4){font-variant-numeric:tabular-nums;text-align:right}
 #overBox p{margin:0;font-family:var(--display);font-weight:700;font-size:calc(var(--u)*1.2);color:#f3e8cc;text-shadow:0 1px 0 #000,0 0 6px rgba(0,0,0,.95),0 0 2px #000;white-space:nowrap}
+#nameEntry{display:flex;flex-direction:column;align-items:center;gap:6px;margin:2px 0}
+#nameEntry .neT{font-family:var(--display);font-weight:700;color:var(--gold);font-size:calc(var(--u)*1.1);letter-spacing:.1em;text-transform:uppercase;text-shadow:0 1px 0 #000,0 0 6px #000}
+#nameEntry .neRow{display:flex;gap:calc(var(--u)*.5)}
+#nameEntry .neSlot{display:flex;flex-direction:column;align-items:center;background:rgba(20,15,9,.8);border:1px solid var(--line-hi);border-radius:6px;padding:2px 3px;min-width:calc(var(--u)*2.8)}
+#nameEntry .neSlot.cur{border-color:var(--gold);box-shadow:0 0 8px rgba(240,192,96,.45)}
+#nameEntry .neSlot b{font-family:'Courier New',monospace;font-size:calc(var(--u)*2.4);line-height:1.05;color:#f3e8cc;text-shadow:0 0 6px rgba(255,214,110,.5)}
+#nameEntry .neSlot.cur b{color:var(--gold);animation:neBlink 1s steps(2) infinite}
+@keyframes neBlink{50%{opacity:.45}}
+#nameEntry .neUp,#nameEntry .neDn{background:none;border:0;color:var(--gold);font-size:calc(var(--u)*1);padding:2px 8px;cursor:pointer;line-height:1}
+#nameEntry .neOk{min-width:calc(var(--u)*8) !important;padding:5px 16px !important}
+#nameEntry .neDone{font-family:var(--display);color:#f3e8cc;font-size:calc(var(--u)*1.1);text-shadow:0 1px 0 #000,0 0 6px #000} #nameEntry .neDone b{color:var(--gold);font-family:'Courier New',monospace;letter-spacing:.15em}
+@media (max-height:520px){ /* phones: keep the end-of-run panel clear of the title */
+  #overBox{top:56%;gap:4px}
+  #champs .ch img{width:calc(var(--u)*4);height:calc(var(--u)*4)}
+  #champs .chl{display:none}
+  #nameEntry{gap:3px} #nameEntry .neSlot b{font-size:calc(var(--u)*1.8)} #nameEntry .neUp,#nameEntry .neDn{padding:0 8px}
+  #overBox .btn{padding:4px 16px}
+}
+.lbn{font-family:'Courier New',monospace;color:var(--gold);letter-spacing:.08em}
 #overBox .btn{min-width:calc(var(--u)*12);padding:8px 22px;font-size:calc(var(--u)*1.2)}
 #phaseMsg{font-family:var(--display);font-weight:700;font-size:calc(var(--u)*2.3);color:var(--gold);letter-spacing:.05em;line-height:1.05;text-shadow:0 1px 0 #000,0 0 8px rgba(0,0,0,.95),0 0 2px #000}
 #btnPath .orc{width:calc(var(--u)*2.8);height:calc(var(--u)*2.8)}
@@ -413,7 +432,7 @@ table.odds tr.cur td{color:var(--gold);font-weight:700}
     <div id="meter" aria-label="Tower damage this wave" hidden></div>
     <div id="hudTop" aria-live="off"><div id="clock" hidden></div><div id="phaseMsg" hidden></div><div id="feed" role="status" aria-live="polite"></div></div>
     <div id="tshow" hidden><div class="tsBack"></div><button class="tsNav prev" id="tsPrev" aria-label="Previous tower">‹</button><div class="tsMid"><canvas id="tsCan"></canvas><div id="tsName"></div><div id="tsSub"></div><p id="tsDesc"></p><div id="tsCount"></div></div><button class="tsNav next" id="tsNext" aria-label="Next tower">›</button><button class="tsClose" id="tsClose" aria-label="Close">×</button></div>
-    <div id="overBox" hidden><div id="champs"></div><p id="overTxt"></p><button class="btn primary" id="btnAgain">Play again</button></div>
+    <div id="overBox" hidden><div id="champs"></div><p id="overTxt"></p><div id="nameEntry"></div><button class="btn primary" id="btnAgain">Play again</button></div>
     </div>
   </div>
   <aside id="right">
@@ -421,7 +440,7 @@ table.odds tr.cur td{color:var(--gold);font-weight:700}
       <div class="stat frame" id="sLives" role="button" tabindex="0" aria-pressed="false" title="Enemies that got through"><span class="k ico" aria-label="Health"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.3-9.2C1.4 8.4 3.6 4.5 7.3 4.5c2 0 3.5 1.1 4.7 2.8 1.2-1.7 2.7-2.8 4.7-2.8 3.7 0 5.9 3.9 4.6 7.3C19.5 16.4 12 21 12 21z" fill="#c8402f" stroke="#f3c9a8" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 8.2c.6-1.2 1.7-1.7 2.6-1.5" stroke="#ffd9c4" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".8"/></svg></span><b id="hLives">100</b></div>
       <div class="stat frame" id="sGold"><span class="k ico" aria-label="Gold"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="14.6" rx="8.4" ry="5.6" fill="#8a5f16"/><ellipse cx="12" cy="11.4" rx="8.4" ry="5.6" fill="#e2b53d" stroke="#fff0b8" stroke-width="1.1"/><ellipse cx="12" cy="11.4" rx="5.3" ry="3.3" fill="none" stroke="#9a6c18" stroke-width="1.2"/><path d="M8.6 9.6c.9-.8 2-1.1 3-1.1" stroke="#fff6cf" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg></span><b id="hGold">0</b></div>
       <div class="stat frame" id="sWave"><span class="k ico" aria-label="Wave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v19" stroke="#8a6a3c" stroke-width="2" stroke-linecap="round"/><circle cx="5" cy="2.8" r="1.4" fill="#e2b53d"/><path d="M6 4.2h13l-3 4.3 3 4.3H6z" fill="#b8392b" stroke="#f3c9a8" stroke-width="1.1" stroke-linejoin="round"/><circle cx="11.2" cy="8.5" r="2" fill="#e2b53d" stroke="#7a2418" stroke-width=".8"/></svg></span><b><span id="hWave">1</span><small>/50</small></b></div>
-      <button class="iconbtn frame" id="btnModes" aria-label="Leaderboard" title="Leaderboard"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21h11v-2.2c0-1-.6-1.6-1.4-2.1 0-3 .6-5.3 1.9-7.4-1.2-3-3.8-5.3-7.4-5.8l-.6 1.9-1.6-1.3-.6 2.3C6 7.5 5 9.3 5 11.2l1.2 1.3 2.3-1.1 1.6.4c-.7 1.6-2 2.8-3.1 4.4z" fill="#c9b48a" stroke="#f1e2bc" stroke-width="1" stroke-linejoin="round"/><circle cx="9.6" cy="8.6" r=".9" fill="#2a1d10"/><rect x="5.5" y="19.8" width="14" height="2.2" rx=".7" fill="#8a7650"/></svg></button>
+      <button class="iconbtn frame" id="btnModes" aria-label="Book of Records" title="Book of Records"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.2c0-1 .8-1.7 1.8-1.7H19v15.6H6.8c-1 0-1.8.7-1.8 1.7z" fill="#7a2e22" stroke="#f1e2bc" stroke-width=".9" stroke-linejoin="round"/><path d="M5 19.8c0 1 .8 1.7 1.8 1.7H19v-3.4H6.8c-1 0-1.8.7-1.8 1.7z" fill="#efe2c2" stroke="#f1e2bc" stroke-width=".9" stroke-linejoin="round"/><path d="M7 19.1h11.2M7 20.5h11.2" stroke="#b8a47a" stroke-width=".55"/><path d="M8.2 2.5v15.6" stroke="#5a1f16" stroke-width="1.2"/><rect x="10.5" y="6" width="6.4" height="3.6" rx=".5" fill="#d9b25a" stroke="#5a3d14" stroke-width=".5"/><path d="M11.5 7.8h4.4" stroke="#5a3d14" stroke-width=".6"/><path d="M10.4 12.3l3.3 1.4 3.3-1.4" fill="none" stroke="#d9b25a" stroke-width=".8" stroke-linejoin="round"/></svg></button>
       <button class="iconbtn frame" id="btnMenu" aria-label="Menu">☰</button>
     </header>
     <div id="rMain" class="rview">
@@ -551,7 +570,7 @@ adv('carmen',      'Bard’s Cathedral',     'Carmen-Lucia',         '#ff4fa3', 
 adv('yellowsap',   'Ice Spire',            'Yellow Sapphire',      '#ffe36e', 'B5 Y4 R4',           {dmg:20, cd:1, rng:600, ice:[.85, 300], desc:'Enemies nearby move 85% slower'});
 adv('northern',    'Frostbite Watch',      'Northern Saber’s Eye', '#9fd8ff', '@yellowsap @bloodstone B5', {dmg:60, cd:1, rng:500, ice:[.85, 300], chainFrost:.25, desc:'Ice aura; frost balls bounce between enemies'});
 adv('starsap',     'Star of Winter',       'Star Sapphire',        '#bcd7ff', 'B1 B2 B3 B4 B5',     {dmg:20, cd:1, rng:600, slow:.75, ice:[.9, 556], spdAura:[70, 664], sight:true, desc:'Massive slow and ice aura; boosts nearby towers', ult:true});
-adv('obsidian',    'Obsidian Keep',        'Obsidian',             '#2b2733', 'B5 Y5 D5',           {dmg:820, cd:.8, rng:800, splash:500, splashPct:.7, slow:.5, desc:'Secret: huge cleaving, slowing hits', secret:true});
+adv('obsidian',    'Dark Matter',          'Obsidian',             '#8a5cf0', 'B5 Y5 D5',           {dmg:820, cd:.8, rng:800, splash:500, splashPct:.7, slow:.5, desc:'Secret: a floating black planet that hurls huge dark-matter orbs; each blasts and slows everything around its target', secret:true});
 adv('agate',       'Agate Tower',          'Agate',                '#c8875a', 'Q5 E5 G5',           {dmg:430, cd:.3, rng:5000, targets:5, desc:'Secret: rapid shots at 5 enemies anywhere', secret:true});
 adv('shrimp',      'Mad Jester’s Keep',    'Fantastic Miss Shrimp','#ff8a65', 'R5 G5 B5',           {dmg:1225, cd:.5, rng:1000, chain:[.3, 150, 5, 1000], fork:[.25, 2500, 5], melancholy:.03, desc:'Secret: devastating, but sometimes sulks and stops', secret:true});
 adv('yaphets',     'Yaphet’s Monolith',    'Yaphets Stone',        '#5a4b8a', 'B5 G5 B4 G4',        {dmg:140, cd:1, rng:800, pierce:64, decadent:[30, 1200], antifly:[64, .9, 1, 600], piercesi:true, desc:'Secret: shreds armor; destroys flyers', secret:true});
@@ -1012,15 +1031,11 @@ function waveInfo(w){
   const n = boss ? 1 : waveSize;
   return {vars, n, boss, bossK, fly: vars.some(v => v.fly), label: vars.map(v => v.label).join(' & '), gold: boss ? 15*g : g, gap: .8};
 }
-// Tower reach is measured from the edges of its square, not its centre: an enemy is in range when the gap between the
-// tower's square and the enemy is no more than the range, and auras reach towers whose squares are within that gap.
-const edgeD = (tx, ty, x, y) => Math.hypot(Math.max(0, Math.abs(x - tx) - .5), Math.max(0, Math.abs(y - ty) - .5)); // from a square's edge to a point
-const tileD = (ax, ay, bx, by) => Math.hypot(Math.max(0, Math.abs(bx - ax) - 1), Math.max(0, Math.abs(by - ay) - 1)); // edge to edge between two squares
-function rangePath(cx, cz, R){ // outline of everything within R of a square's edge: the square grown by R with rounded corners
-  const a = .5 + R, P = Math.PI; ctx.beginPath(); ctx.moveTo(cx - .5, cz - a); ctx.lineTo(cx + .5, cz - a); ctx.arc(cx + .5, cz - .5, R, -P/2, 0);
-  ctx.lineTo(cx + a, cz + .5); ctx.arc(cx + .5, cz + .5, R, 0, P/2); ctx.lineTo(cx - .5, cz + a); ctx.arc(cx - .5, cz + .5, R, P/2, P);
-  ctx.lineTo(cx - a, cz - .5); ctx.arc(cx - .5, cz - .5, R, P, P*1.5); ctx.closePath();
-}
+// Tower reach is measured from the edge of its square: its range is a circle reaching R squares beyond the square's edge
+// (radius R + half a square from the centre). Auras reach towers whose squares come within R squares (centres within R + 1).
+const edgeD = (tx, ty, x, y) => Math.max(0, Math.hypot(x - tx, y - ty) - .5); // from a square's edge to a point, along a circle
+const tileD = (ax, ay, bx, by) => Math.max(0, Math.hypot(bx - ax, by - ay) - 1); // edge to edge between two squares
+function rangePath(cx, cz, R){ ctx.beginPath(); ctx.arc(cx, cz, R + .5, 0, Math.PI*2); } // the reach drawn as a circle, R squares beyond the square's edge
 const leakMax = (K, w = wave) => K.boss ? w*w/10 : w/2; // health an unhurt leaker costs: half the wave number, bosses wave x (wave/10)
 const leakDmg = (K, frac, w = wave) => Math.max(1, K.boss ? leakMax(K, w)*frac : Math.round(leakMax(K, w)*frac)); // normal leakers round to whole health; every leaker costs at least 1
 const fmtLeak = (K, w = wave) => Math.max(1, K.boss ? +leakMax(K, w).toFixed(1) : Math.round(leakMax(K, w)));
@@ -1562,14 +1577,15 @@ function endGame(won){
   const reached = won ? MAX_WAVE : wave;
   best = Math.max(best, reached); store.set(BEST_KEY, String(best)); store.del(SAVE_KEY);
   const kept = keptGems(), runDmg = kept.reduce((n, g) => n + (g.total || 0), 0) + (lostDamage || 0);
-  recordRun({when: Date.now(), wave: reached, won: !!won, damage: Math.round(runDmg), kills, time: Math.floor(elapsed), hp: Math.max(0, Math.round(lives))});
+  const runId = Date.now(); pendingRun = runId; nameSlots = (store.get(NAME_KEY) || 'AAAAA').padEnd(5, ' ').slice(0, 5).split('').map(ch => Math.max(0, NAME_CHARS.indexOf(ch))); nameCur = 0;
+  recordRun({when: runId, wave: reached, won: !!won, damage: Math.round(runDmg), kills, time: Math.floor(elapsed), hp: Math.max(0, Math.round(lives)), built: [...new Set(keptGems().filter(g => g.special).map(g => g.special))]});
   renderUI();
   hideSheet(); overTitle = ''; $('#overBox').hidden = true;
   const sheet = () => { // the verdict floats under the clock; the summary and Play again sit two-fifths of the way down the board
     overTitle = won ? `Victory! All ${MAX_WAVE} waves survived. The people of ${KINGDOM} are saved!` : 'The keep has fallen';
     $('#hudTop').classList.toggle('won', !!won); $('#champs').innerHTML = won ? championsHTML() : '';
     $('#overTxt').textContent = `${won ? `You beat all ${MAX_WAVE} waves with ${fmtHp(lives)} health left.` : `Overrun on wave ${wave}.`} ${kills} enemies defeated · Best: wave ${best}`;
-    $('#overBox').hidden = false;
+    renderNameEntry(); $('#overBox').hidden = false;
   };
   if (won){ sheet(); return; }
   const [c, r] = CPS[CPS.length-1]; sel = null; selInfo = null;
@@ -1578,6 +1594,44 @@ function endGame(won){
   setTimeout(() => { if (phase === 'over') sheet(); }, 2600); // let the player watch the keep burn first
 }
 const KINGDOM = 'Eldermere', RUNS_KEY = 'castlemaze.runs.v1';
+// ----- signing the Book of Records: when a run ends the player enters a five-letter name, arcade style (▲▼ on each letter, or type) -----
+const NAME_KEY = 'castlemaze.name', NAME_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ';
+let pendingRun = null, nameSlots = [0,0,0,0,0], nameCur = 0;
+const nameStr = () => nameSlots.map(i => NAME_CHARS[i]).join('');
+function renderNameEntry(){
+  const el = document.getElementById('nameEntry'); if (!el) return;
+  if (pendingRun == null){ el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="neT">Sign the Book of Records</div><div class="neRow">${nameSlots.map((ci, i) => `<div class="neSlot${i === nameCur ? ' cur' : ''}" data-ns="${i}"><button type="button" class="neUp" data-nu="${i}" aria-label="Next letter">▲</button><b>${NAME_CHARS[ci] === ' ' ? '·' : NAME_CHARS[ci]}</b><button type="button" class="neDn" data-nd="${i}" aria-label="Previous letter">▼</button></div>`).join('')}</div><button type="button" class="btn primary neOk" data-nok="1">Sign</button>`;
+}
+function signRecord(){
+  if (pendingRun == null) return;
+  const nm = nameStr().trim() || '?????', runs = loadRuns(), r = runs.find(x => x.when === pendingRun);
+  if (r){ r.name = nm; store.set(RUNS_KEY, JSON.stringify(sortRuns(runs))); }
+  store.set(NAME_KEY, nameStr()); pendingRun = null;
+  const el = document.getElementById('nameEntry'); if (el) el.innerHTML = `<div class="neDone">Signed by <b>${esc(nm)}</b></div>`;
+  if (rView === 'board') renderRightPanel(true);
+}
+{ const el = document.getElementById('nameEntry');
+  el.addEventListener('click', e => {
+    const up = e.target.closest('[data-nu]'), dn = e.target.closest('[data-nd]'), sl = e.target.closest('[data-ns]'), ok = e.target.closest('[data-nok]');
+    if (ok){ signRecord(); return; }
+    if (up || dn){ const i = +(up || dn).dataset[up ? 'nu' : 'nd']; nameCur = i; nameSlots[i] = (nameSlots[i] + (up ? 1 : -1) + NAME_CHARS.length) % NAME_CHARS.length; renderNameEntry(); return; }
+    if (sl){ nameCur = +sl.dataset.ns; renderNameEntry(); }
+  });
+  document.addEventListener('keydown', e => { // typing fills the letters left to right; arrows work like the arcade stick
+    if (pendingRun == null || $('#overBox').hidden) return;
+    const k = e.key; let used = true;
+    if (/^[a-z0-9]$/i.test(k)){ nameSlots[nameCur] = NAME_CHARS.indexOf(k.toUpperCase()); nameCur = Math.min(4, nameCur + 1); }
+    else if (k === ' '){ nameSlots[nameCur] = NAME_CHARS.length - 1; nameCur = Math.min(4, nameCur + 1); }
+    else if (k === 'Backspace'){ nameCur = Math.max(0, nameCur - (nameSlots[nameCur] === NAME_CHARS.length - 1 ? 1 : 0)); nameSlots[nameCur] = NAME_CHARS.length - 1; }
+    else if (k === 'ArrowLeft') nameCur = Math.max(0, nameCur - 1);
+    else if (k === 'ArrowRight') nameCur = Math.min(4, nameCur + 1);
+    else if (k === 'ArrowUp' || k === 'ArrowDown') nameSlots[nameCur] = (nameSlots[nameCur] + (k === 'ArrowUp' ? 1 : -1) + NAME_CHARS.length) % NAME_CHARS.length;
+    else if (k === 'Enter'){ signRecord(); }
+    else used = false;
+    if (used){ e.preventDefault(); e.stopImmediatePropagation(); if (pendingRun != null) renderNameEntry(); }
+  }, true);
+}
 function loadRuns(){ try { const v = JSON.parse(store.get(RUNS_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
 const sortRuns = runs => runs.slice().sort((a, b) => b.wave - a.wave || b.damage - a.damage); // longest run first, then highest damage
 function recordRun(r){ const runs = sortRuns(loadRuns().concat([r])).slice(0, 100); store.set(RUNS_KEY, JSON.stringify(runs)); }
@@ -1593,10 +1647,10 @@ function championsHTML(){ // the run's champions in a row, each with its portrai
 }
 function leaderboardHTML(){
   const runs = sortRuns(loadRuns());
-  if (!runs.length) return `<p class="muted">No finished runs yet. Every run you finish, won or lost, is saved here: the longest runs first, then the highest damage.</p><p class="muted">Endless mode is coming later.</p>`;
+  if (!runs.length) return `<p class="muted">The Book of Records is empty. Every run you finish, won or lost, is signed into it: the longest runs first, then the highest damage.</p><p class="muted">Endless mode is coming later.</p>`;
   const when = t => { const d = new Date(t); return d.toLocaleDateString(undefined, {month:'short', day:'numeric'}); };
   const mmss = s => `${Math.floor(s/60)}:${String(s % 60).padStart(2, '0')}`;
-  return `<div class="lbh"><span>#</span><span>Run</span><span>Damage</span><span>Time</span></div>` + runs.map((r, i) => `<div class="lbr${r.won ? ' won' : ''}"><span>${i + 1}</span><span>${r.won ? `★ Victory · ${r.hp} hp left` : `Fell on wave ${r.wave}`}<em>${when(r.when)} · ${r.kills.toLocaleString()} kills</em></span><span>${fmtBig(r.damage)}</span><span>${mmss(r.time || 0)}</span></div>`).join('') + `<p class="muted" style="margin-top:8px">Endless mode is coming later.</p>`;
+  return `<div class="lbh"><span>#</span><span>Run</span><span>Damage</span><span>Time</span></div>` + runs.map((r, i) => `<div class="lbr${r.won ? ' won' : ''}"><span>${i + 1}</span><span><b class="lbn">${esc(r.name || '-----')}</b> ${r.won ? `★ Victory · ${r.hp} hp left` : `Fell on wave ${r.wave}`}<em>${when(r.when)} · ${r.kills.toLocaleString()} kills</em></span><span>${fmtBig(r.damage)}</span><span>${mmss(r.time || 0)}</span></div>`).join('') + `<p class="muted" style="margin-top:8px">Endless mode is coming later.</p>`;
 }
 let camTween = null; const DEFEAT_TILES = 5.2, DEFEAT_LIFT = .45; // the defeat close-up frames about 4 squares; centre aimed this high on the castle
 { // Towers built showcase: swipe or the arrows to flip through, × to go back to the runs list
@@ -1611,7 +1665,7 @@ let camTween = null; const DEFEAT_TILES = 5.2, DEFEAT_LIFT = .45; // the defeat 
   ov.addEventListener('wheel', e => { e.preventDefault(); e.stopPropagation(); }, {passive:false});
   document.addEventListener('keydown', e => { if (ov.hidden) return; if (e.key === 'ArrowLeft') go(-1); else if (e.key === 'ArrowRight') go(1); else if (e.key === 'Escape') $('#tsClose').click(); });
 }
-$('#btnAgain').addEventListener('click', () => { $('#overBox').hidden = true; overTitle = ''; $('#hudTop').classList.remove('won'); $('#champs').innerHTML = ''; camTween = null; newGame(); resetView(); });
+$('#btnAgain').addEventListener('click', () => { if (pendingRun != null) signRecord(); $('#overBox').hidden = true; overTitle = ''; $('#hudTop').classList.remove('won'); $('#champs').innerHTML = ''; camTween = null; newGame(); resetView(); });
 function stepCamTween(dt){ // eases the camera from where it was to the fallen castle: all the way in, at the lowest angle
   if (!camTween) return; const T = camTween; T.t = Math.min(1, T.t + dt/T.dur); const e = T.t*T.t*(3 - 2*T.t);
   view.defeat = true; // closer than normal play allows, with the castle in the middle of the screen
@@ -2303,8 +2357,8 @@ function renderRightPanel(force){
     $('#rpTitle').textContent = 'How to play';
     if (force) { el.innerHTML = HELP_HTML; el.scrollTop = 0; }
   } else if (rView === 'board'){
-    $('#rpTitle').textContent = 'Leaderboard';
-    if (force) { setTimeout(() => syncTowerShow(), 0); el.innerHTML = `<div class="tabs" role="tablist"><button class="tab" role="tab" data-lbtab="runs" aria-selected="${lbTab === 'runs'}">Runs</button><button class="tab" role="tab" data-lbtab="towers" aria-selected="${lbTab === 'towers'}">Towers built</button></div>` + (lbTab === 'towers' ? towersBuiltHTML() : leaderboardHTML()); el.scrollTop = 0; }
+    $('#rpTitle').textContent = 'Book of Records';
+    if (force) { setTimeout(() => syncTowerShow(), 0); el.innerHTML = `<div class="tabs" role="tablist"><button class="tab" role="tab" data-lbtab="runs" aria-selected="${lbTab === 'runs'}"><svg class="tabico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21h11v-2.2c0-1-.6-1.6-1.4-2.1 0-3 .6-5.3 1.9-7.4-1.2-3-3.8-5.3-7.4-5.8l-.6 1.9-1.6-1.3-.6 2.3C6 7.5 5 9.3 5 11.2l1.2 1.3 2.3-1.1 1.6.4c-.7 1.6-2 2.8-3.1 4.4z" fill="#c9b48a" stroke="#f1e2bc" stroke-width="1" stroke-linejoin="round"/><circle cx="9.6" cy="8.6" r=".9" fill="#2a1d10"/><rect x="5.5" y="19.8" width="14" height="2.2" rx=".7" fill="#8a7650"/></svg>Runs</button><button class="tab" role="tab" data-lbtab="towers" aria-selected="${lbTab === 'towers'}"><svg class="tabico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.2C9.6 4.6 6.4 4.2 2.6 4.6v13.6c3.8-.4 7 .1 9.4 1.6 2.4-1.5 5.6-2 9.4-1.6V4.6c-3.8-.4-7 0-9.4 1.6z" fill="#7a2e22" stroke="#f1e2bc" stroke-width=".8" stroke-linejoin="round"/><path d="M12 6.8C9.8 5.4 7 5.1 3.8 5.4v11.9c3.2-.2 6 .2 8.2 1.4 2.2-1.2 5-1.6 8.2-1.4V5.4c-3.2-.3-6 0-8.2 1.4z" fill="#efe2c2"/><path d="M12 6.8v11.9" stroke="#b8a47a" stroke-width=".7"/><path d="M5.4 8.4c1.9-.2 3.6 0 5 .6M5.4 10.6c1.9-.2 3.6 0 5 .6M5.4 12.8c1.9-.2 3.6 0 5 .6M13.6 9c1.4-.6 3.1-.8 5-.6M13.6 11.2c1.4-.6 3.1-.8 5-.6M13.6 13.4c1.4-.6 3.1-.8 5-.6" stroke="#9a8660" stroke-width=".55" fill="none"/></svg>Towers built</button></div>` + (lbTab === 'towers' ? towersBuiltHTML() : leaderboardHTML()); el.scrollTop = 0; }
   } else if (rView === 'leaks'){
     $('#rpTitle').textContent = 'Breaches';
     const key = leakLog.length + '|' + lives; if (!force && key === leakKey) return; leakKey = key;
@@ -2324,13 +2378,19 @@ let leakKey = '';
 // the rest are greyed out and dimmed until the first time they're built (remembered across runs) -----
 const BUILT_KEY = 'castlemaze.built.v1';
 let builtSet = (() => { try { const v = JSON.parse(store.get(BUILT_KEY) || '[]'); return new Set(Array.isArray(v) ? v : []); } catch (e) { return new Set(); } })();
+function isBuilt(key){ // built at least once: remembered on this device, recorded in a finished run, or standing on the board right now
+  if (builtSet.has(key)) return true;
+  for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){ const g = grid[r][c]; if (g && g.special === key){ markBuilt(key); return true; } }
+  if (loadRuns().some(rn => Array.isArray(rn.built) && rn.built.includes(key))){ markBuilt(key); return true; }
+  return false;
+}
 function markBuilt(key){ if (builtSet.has(key)) return; builtSet.add(key); store.set(BUILT_KEY, JSON.stringify([...builtSet])); if (rView === 'board' && lbTab === 'towers') renderRightPanel(true); }
 let lbTab = 'runs', tshowIdx = 0;
 const SHOW_KEYS = Object.keys(SPECIALS);
 function towersBuiltHTML(){
-  const n = SHOW_KEYS.filter(k => builtSet.has(k)).length;
+  const n = SHOW_KEYS.filter(isBuilt).length;
   return `<p class="muted" style="margin:6px 0">${n} of ${SHOW_KEYS.length} advanced towers built. Swipe the tower in the middle of the board (or tap one here) to look through them all.</p>
-    <div class="tbgrid">${SHOW_KEYS.map((k, i) => `<button type="button" class="tbcell${builtSet.has(k) ? '' : ' locked'}${i === tshowIdx ? ' cur' : ''}" data-tshow="${i}" aria-label="${esc(SPECIALS[k].name)}${builtSet.has(k) ? '' : ' (not built yet)'}"><img src="${iconFor('sp:' + k)}" alt=""></button>`).join('')}</div>`;
+    <div class="tbgrid">${SHOW_KEYS.map((k, i) => `<button type="button" class="tbcell${isBuilt(k) ? '' : ' locked'}${i === tshowIdx ? ' cur' : ''}" data-tshow="${i}" aria-label="${esc(SPECIALS[k].name)}${isBuilt(k) ? '' : ' (not built yet)'}"><img src="${iconFor('sp:' + k)}" alt=""></button>`).join('')}</div>`;
 }
 function syncTowerShow(rerenderList){
   const ov = document.getElementById('tshow'); if (!ov) return;
@@ -2338,7 +2398,7 @@ function syncTowerShow(rerenderList){
   if (ov.hidden === on) ov.hidden = !on;
   if (!on) return;
   tshowIdx = ((tshowIdx % SHOW_KEYS.length) + SHOW_KEYS.length) % SHOW_KEYS.length;
-  const k = SHOW_KEYS[tshowIdx], sp = SPECIALS[k], built = builtSet.has(k);
+  const k = SHOW_KEYS[tshowIdx], sp = SPECIALS[k], built = isBuilt(k);
   ov.classList.toggle('locked', !built);
   $('#tsName').textContent = sp.name; $('#tsName').style.color = built ? sp.c : '';
   $('#tsSub').textContent = built ? (sp.secret ? 'Secret tower' : sp.ult ? 'Ultimate tower' : 'Advanced tower') + ' · built' : 'Not built yet';
@@ -2346,12 +2406,25 @@ function syncTowerShow(rerenderList){
   $('#tsCount').textContent = `${tshowIdx + 1} / ${SHOW_KEYS.length}`;
   if (rerenderList) document.querySelectorAll('#rpBody .tbcell').forEach((b, i) => b.classList.toggle('cur', i === tshowIdx));
 }
+let tsMaskCan = null;
+function renderPortraitMask(c2, W, H, d, g){ // draws the portrait again (opaque) so 'destination-in' keeps only the tower's own pixels
+  if (!tsMaskCan) tsMaskCan = document.createElement('canvas');
+  if (tsMaskCan.width !== c2.canvas.width || tsMaskCan.height !== c2.canvas.height){ tsMaskCan.width = c2.canvas.width; tsMaskCan.height = c2.canvas.height; }
+  renderPortrait(tsMaskCan.getContext('2d'), W, H, d, g, 0, 0, null, true);
+  c2.drawImage(tsMaskCan, 0, 0);
+}
 function drawTowerShow(){ // the showcased tower, animated, drawn big
   const ov = document.getElementById('tshow'); if (!ov || ov.hidden) return;
   const el = document.getElementById('tsCan'), W = el.clientWidth || 200, H = el.clientHeight || 200, d = Math.min(2, view.dpr || 1);
   if (el.width !== Math.round(W*d) || el.height !== Math.round(H*d)){ el.width = Math.round(W*d); el.height = Math.round(H*d); }
-  const g = {kind:'gem', special:SHOW_KEYS[tshowIdx], type:null, q:null, c:0, r:0, aura:0, round:false};
-  renderPortrait(el.getContext('2d'), W, H, d, g, 0, 0, null, true);
+  const key = SHOW_KEYS[tshowIdx], g = {kind:'gem', special:key, type:null, q:null, c:0, r:0, aura:0, round:false}, c2 = el.getContext('2d');
+  renderPortrait(c2, W, H, d, g, 0, 0, null, true);
+  if (ov.classList.contains('locked')){ // not built yet: drained of colour and dimmed, painted into the canvas itself (more reliable than a CSS filter on iPhone)
+    c2.save(); c2.setTransform(1,0,0,1,0,0);
+    c2.globalCompositeOperation = 'saturation'; c2.fillStyle = '#808080'; c2.fillRect(0, 0, el.width, el.height);
+    c2.globalCompositeOperation = 'multiply'; c2.fillStyle = '#777'; c2.fillRect(0, 0, el.width, el.height);
+    c2.globalCompositeOperation = 'destination-in'; renderPortraitMask(c2, W, H, d, g); c2.restore();
+  }
 }
 function leakHTML(){ // every enemy that got into the castle, newest wave first, with the health it cost
   const fmt = d => { const v = Math.round(d*10)/10; return v ? '−' + v.toLocaleString() : '0'; };
@@ -2471,7 +2544,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.4 · October 24, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.5 · October 24, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
@@ -3194,7 +3267,7 @@ const UNIT = {
   yellowsap: {kind:'hero', hero:'icecrystals', scale:1.4, missile:'orb', sfx:'staff', n:1}, // a pedestal with ice crystals circling above it
   northern: {kind:'fig', robe:'#6aa8d8', hat:'wizard', hatCol:'#3a6a98', weapon:'staff', glow:'#bfe6ff', n:3},
   starsap: {kind:'fig', robe:'#8aa8e8', hat:'wizard', hatCol:'#4a6ab8', weapon:'staff', glow:'#ffffff', n:4},
-  obsidian: {kind:'cannon', col:'#2a2830', n:1, big:true, model:4},
+  obsidian: {kind:'hero', hero:'darkmatter', scale:1.35, missile:'ballDark', n:1}, // Dark Matter: a floating black planet hurling dark-matter orbs (they blast like cannonballs)
   agate: {kind:'fig', robe:'#8a5a3a', hat:'cap', hatCol:'#5a3a22', weapon:'crossbow', n:5},
   shrimp: {kind:'fig', robe:'#e05a3a', hat:'wizard', hatCol:'#3a8ae0', weapon:'lance', glow:'#ffd23f', n:3},
   yaphets: {kind:'hero', hero:'bookmage', robe:'#3a2c5a', hat:'#241a3a', sash:'#c9a227', hair:'#c8b8e8', scale:1.35, missile:'orb', sfx:'staff', n:1}, // a mage floating among circling spell books
@@ -3225,7 +3298,7 @@ function drawHero(x, y, u, cfg, face, act, champ, ang){
   const poly = (pts, c) => { ctx.fillStyle = c; ctx.beginPath(); pts.forEach(([px, py], i) => i ? ctx.lineTo(X(px), Y(py)) : ctx.moveTo(X(px), Y(py))); ctx.closePath(); ctx.fill(); };
   const glowAt = (gx, gy, r, inner, outer) => { const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, r); g.addColorStop(0, inner); g.addColorStop(1, outer); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(gx, gy, r, 0, Math.PI*2); ctx.fill(); };
   const k = cfg.hero;
-  if (['golem','wyvern','icecrystals','stonehand','bookmage','monolith','gravestone'].includes(k)) return drawHero2(x, y, u, cfg, face, act, champ, ang);
+  if (['golem','wyvern','icecrystals','stonehand','bookmage','monolith','gravestone','darkmatter'].includes(k)) return drawHero2(x, y, u, cfg, face, act, champ, ang);
   if (k === 'observatory') return drawObservatory(x, y, u, cfg, ang, act);
   // ---------- armoured knights: short, broad and heavy ----------
   if (k === 'knight' || k === 'kneel'){
@@ -3658,6 +3731,25 @@ function drawHero2(x, y, u, cfg, face, act, champ, ang){
     if (grab > .2){ const g = ctx.createRadialGradient(px, py, 0, px, py, .2*s2); g.addColorStop(0, `rgba(60,200,190,${.5*grab})`); g.addColorStop(1, 'rgba(20,60,60,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, .2*s2, 0, Math.PI*2); ctx.fill(); }
     return;
   }
+  if (k === 'darkmatter'){ // a black planet floating over the bastion, wrapped in a violet glow with a tilted ring of dust; it swells and flares as it throws
+    const bob = Math.sin(anim*1.6)*.04, fl = act > 0 ? act : 0, cx = X(0), cy = Y(-.78 + bob), R = H*(.36 + fl*.04);
+    ctx.fillStyle = 'rgba(0,0,0,.32)'; ctx.beginPath(); ctx.ellipse(x, y, H*(.3 - bob), H*.08, 0, 0, Math.PI*2); ctx.fill(); // its shadow on the bastion
+    glow(cx, cy, R*2.1, `rgba(120,60,200,${.32 + fl*.35})`);
+    const ring = (front) => { ctx.save(); ctx.translate(cx, cy); ctx.rotate(-.35); ctx.scale(1, .28);
+      ctx.strokeStyle = `rgba(170,120,255,${front ? .75 : .4})`; ctx.lineWidth = Math.max(1, H*.035); ctx.beginPath(); ctx.arc(0, 0, R*1.55, front ? 0 : Math.PI, front ? Math.PI : Math.PI*2); ctx.stroke();
+      ctx.strokeStyle = `rgba(90,50,160,${front ? .6 : .3})`; ctx.lineWidth = Math.max(1, H*.06); ctx.beginPath(); ctx.arc(0, 0, R*1.3, front ? 0 : Math.PI, front ? Math.PI : Math.PI*2); ctx.stroke();
+      for (let i=0;i<10;i++){ const a = anim*.8 + i*.63; if ((Math.sin(a) > 0) !== front) continue; ctx.fillStyle = 'rgba(210,180,255,.85)'; ctx.beginPath(); ctx.arc(Math.cos(a)*R*1.45, Math.sin(a)*R*1.45, Math.max(.8, H*.012)*3.5, 0, Math.PI*2); ctx.fill(); }
+      ctx.restore(); };
+    ring(false); // the far half of the ring passes behind the planet
+    const g = ctx.createRadialGradient(cx - R*.35, cy - R*.4, R*.1, cx, cy, R); g.addColorStop(0, '#2c2438'); g.addColorStop(.6, '#0d0a12'); g.addColorStop(1, '#050308');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.clip(); // slow dark bands drifting across its face
+    for (let i=0;i<4;i++){ const yy = cy + R*(-.6 + i*.4) + Math.sin(anim*.5 + i)*R*.05; ctx.fillStyle = `rgba(${60 + i*8},${40 + i*4},${90 + i*10},.22)`; ctx.beginPath(); ctx.ellipse(cx + Math.sin(anim*.3 + i*2)*R*.2, yy, R*1.1, R*.09, 0, 0, Math.PI*2); ctx.fill(); }
+    ctx.restore();
+    ctx.strokeStyle = `rgba(190,140,255,${.55 + fl*.4})`; ctx.lineWidth = Math.max(1, H*.02); ctx.beginPath(); ctx.arc(cx, cy, R, Math.PI*.9, Math.PI*1.9); ctx.stroke(); // violet rim light
+    ring(true);
+    return;
+  }
   if (k === 'monolith'){ // a tall black monolith carved with runes, a blue flame burning at its tip
     ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x, y, H*.28, H*.09, 0, 0, Math.PI*2); ctx.fill();
     const w0 = .2, w1 = .14, h = 1.25;
@@ -3846,7 +3938,7 @@ function missileOf(g){
   if (cfg.kind === 'brazier') return 'orb';
   return {bow:'arrow', crossbow:'bolt', staff:'orb', lance:'spark', flask:'flask', drum:'note', hammer:'hammer', spear:'none'}[cfg.weapon] || 'orb';
 }
-const MISSILE_ARC = {bolt1:.15, bolt2:.15, bolt3:.15, boltL1:.15, boltL2:.15, ball1:.9, ball2:.9, ball3:.9, ballL:1, ballXL:1.1, stone:1.3, firerock:1.2, icespike:.25, flask:.8, arrow:.35, hammer:.5, bigbolt:.15, bolt:.1};
+const MISSILE_ARC = {ballDark:.9, bolt1:.15, bolt2:.15, bolt3:.15, boltL1:.15, boltL2:.15, ball1:.9, ball2:.9, ball3:.9, ballL:1, ballXL:1.1, stone:1.3, firerock:1.2, icespike:.25, flask:.8, arrow:.35, hammer:.5, bigbolt:.15, bolt:.1};
 function drawHexBolt(p){ // a violet hex orb hopping in a low arc from enemy to enemy, trailing sparks
   const e = p.tg, rem = Math.hypot(e.x - p.x, e.y - p.y), tot = Math.max(.01, p.trav + rem), k = Math.max(0, Math.min(1, 1 - p.eta/p.hopDur));
   const hop = Math.min(1.2, .45 + tot*.18)*4*k*(1 - k); // the arc follows the hop's clock, so even a rebound onto the same enemy leaps
@@ -3890,6 +3982,12 @@ function drawMissile(p){
         ctx.fillStyle = '#7d858f'; ctx.beginPath(); ctx.moveTo(L*.45, 0); ctx.lineTo(L*.1, -S*.1*k); ctx.lineTo(L*.18, 0); ctx.lineTo(L*.1, S*.1*k); ctx.closePath(); ctx.fill();
         ctx.fillStyle = p.color; for (const sd of [-1, 1]){ ctx.beginPath(); ctx.moveTo(-L*.7, 0); ctx.lineTo(-L, sd*S*.12*k); ctx.lineTo(-L*.95, 0); ctx.closePath(); ctx.fill(); }
         ctx.restore(); }
+      break; }
+    case 'ballDark': { const r = S*.2; // a dark-matter orb: a black core in a violet haze, trailing purple wisps
+      for (let i=1;i<=4;i++){ ctx.fillStyle = `rgba(120,70,200,${.32 - i*.07})`; ctx.beginPath(); ctx.arc(-vx*r*(.9 + i*.8), -vy*r*(.9 + i*.8), r*(.75 - i*.1), 0, Math.PI*2); ctx.fill(); }
+      const gg = ctx.createRadialGradient(0, 0, r*.5, 0, 0, r*1.7); gg.addColorStop(0, 'rgba(150,90,255,.55)'); gg.addColorStop(1, 'rgba(150,90,255,0)'); ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(0, 0, r*1.7, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#07050b'; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = 'rgba(200,160,255,.7)'; ctx.lineWidth = Math.max(1, r*.12); ctx.beginPath(); ctx.arc(0, 0, r, Math.PI*.95, Math.PI*1.75); ctx.stroke();
       break; }
     case 'ball1': case 'ball2': case 'ball3': case 'ballL': case 'ballXL': { // recruit→veteran fire 1-3 small balls; elite a 3× ball, master a 5× ball
       const small = S*.06, r = p.kind === 'ballL' ? small*3 : p.kind === 'ballXL' ? small*5 : small;
