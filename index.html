@@ -1658,7 +1658,11 @@ function clampView(){
   // (zoomed in, or the top view, which is taller than the screen); a board smaller than the screen stays centred
   const s = view.s0*view.zoom, halfW = view.w/2/s, halfH = view.h/2/(s*Math.sin(view.pitch)), m = .8;
   const lim = (v, half, n) => n + 2*m <= half*2 ? n/2 : Math.min(n + m - half, Math.max(half - m, v));
-  view.cx = lim(view.cx, halfW, COLS); view.cz = lim(view.cz, halfH, ROWS);
+  { // left/right limits use only the strip of board between the side panels, so every edge square can be panned into the open
+    const lp = document.getElementById('left'), cov = .7*(lp ? lp.offsetWidth : 0)*(1 - panelSlide), L = cov/s, R = cov/s, vis = halfW*2 - L - R;
+    view.cx = COLS + 2*m <= vis ? COLS/2 + (R - L)/2 : Math.min(COLS + m - halfW + R, Math.max(halfW - L - m, view.cx));
+  }
+  view.cz = lim(view.cz, halfH, ROWS);
   camera();
   $('#btnFit').hidden = atDefault();
 }
@@ -2370,7 +2374,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.1 · October 24, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.2 · October 24, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, mine and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>

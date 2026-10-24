@@ -2,6 +2,11 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.2 — October 24, 2026
+
+### Fixed
+- **Panning to the edges.** You can now drag the board far enough to bring every edge square out from under the side panels, so squares along the left and right edges are easy to see and tap.
+
 ## 1.1 — October 24, 2026
 
 ### Added
