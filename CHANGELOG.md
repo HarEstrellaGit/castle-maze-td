@@ -2,6 +2,21 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.4 — October 24, 2026
+
+### Added
+- **Towers built collection.** The Leaderboard has a new **Towers built** tab showing every advanced tower and how many you've built.
+  - Towers you've built are in full color. The rest stay greyed out until you build them for the first time.
+  - Tap one, or swipe the big turning tower on the board (or use the arrows), to look through them all. Tap × to go back to the runs list.
+  - Your collection is remembered across runs on that device.
+
+### Changed
+- The Volcano's advanced tower is renamed **Dragon's Perch** (was Dragon's Forge).
+
+### Fixed
+- A trap's mark on the ground no longer freezes on screen between waves.
+- A sprung trap's effect now plays faster at 2× and 3× speed, matching the trap itself.
+
 ## 1.3 — October 24, 2026
 
 ### Added

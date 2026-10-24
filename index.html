@@ -180,6 +180,28 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 #hudTop.won #phaseMsg{white-space:normal;max-width:min(86vw,560px);font-size:calc(var(--u)*1.9)}
 #hudTop.won{white-space:normal}
 .lbh,.lbr{display:grid;grid-template-columns:1.6em 1fr auto auto;gap:6px;align-items:center;padding:3px 4px;font-size:calc(var(--u)*1)}
+.tbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--u)*3.4),1fr));gap:4px;margin-top:4px}
+.tbcell{aspect-ratio:1;border:1px solid var(--line);border-radius:6px;background:radial-gradient(circle at 50% 40%,#3a2f22,#16110b 75%);padding:2px;cursor:pointer}
+.tbcell img{width:100%;height:100%;object-fit:contain;display:block}
+.tbcell.locked img{filter:grayscale(1) brightness(.5)}
+.tbcell.cur{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+#tshow{position:absolute;inset:0;z-index:4;display:flex;padding:0 calc(var(--pw)*.7*(1 - var(--slide)));box-sizing:border-box;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none}
+#tshow[hidden]{display:none}
+#tshow .tsBack{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(20,15,9,.55),rgba(8,6,4,.88) 75%);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+#tshow .tsNav.prev{left:calc(var(--pw)*.7*(1 - var(--slide)) + 10px)} #tshow .tsNav.next{right:calc(var(--pw)*.7*(1 - var(--slide)) + 10px)}
+#tshow .tsMid{position:relative;display:flex;flex-direction:column;align-items:center;max-width:min(calc(100% - var(--u)*8),560px);text-align:center}
+#tsCan{width:min(46vh,62vw,420px);height:min(46vh,62vw,420px);animation:tsFloat 3.2s ease-in-out infinite;filter:drop-shadow(0 18px 24px rgba(0,0,0,.6));transition:filter .3s}
+#tshow.locked #tsCan{filter:grayscale(1) brightness(.45) drop-shadow(0 18px 24px rgba(0,0,0,.6))}
+@keyframes tsFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+#tsName{font-family:var(--display);font-weight:700;font-size:calc(var(--u)*2);color:#cfc6b4;text-shadow:0 2px 6px #000}
+#tshow.locked #tsName{color:#8a8478}
+#tsSub{font-family:var(--display);font-size:calc(var(--u)*1);color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+#tshow.locked #tsSub{color:var(--muted)}
+#tsDesc{color:#e8dfcc;font-size:calc(var(--u)*1.1);margin:6px 0 4px;line-height:1.3;text-shadow:0 1px 3px #000}
+#tshow.locked #tsDesc{color:#9a9384}
+#tsCount{color:var(--muted);font-size:calc(var(--u)*.95)}
+.tsNav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;background:rgba(30,23,15,.7);border:1px solid var(--line-hi);color:var(--gold);font-size:calc(var(--u)*2.6);line-height:1;width:calc(var(--u)*3);height:calc(var(--u)*4.4);border-radius:8px;cursor:pointer}
+.tsClose{position:absolute;top:8px;right:calc(8px + var(--pw)*.7*(1 - var(--slide)));z-index:2;background:rgba(30,23,15,.75);border:1px solid var(--line-hi);color:#e8dfcc;font-size:22px;width:36px;height:36px;border-radius:50%;cursor:pointer}
 .lbh{color:var(--muted);font-family:var(--display);border-bottom:1px solid var(--line)}
 .lbr{border-bottom:1px solid rgba(255,255,255,.05)} .lbr em{display:block;font-style:normal;color:var(--muted);font-size:.85em}
 .lbr.won span:nth-child(2){color:var(--gold)} .lbr span:nth-child(3),.lbr span:nth-child(4){font-variant-numeric:tabular-nums;text-align:right}
@@ -390,6 +412,7 @@ table.odds tr.cur td{color:var(--gold);font-weight:700}
     <button class="btn rot" id="btnTilt" aria-label="Change view angle">Tilt</button>
     <div id="meter" aria-label="Tower damage this wave" hidden></div>
     <div id="hudTop" aria-live="off"><div id="clock" hidden></div><div id="phaseMsg" hidden></div><div id="feed" role="status" aria-live="polite"></div></div>
+    <div id="tshow" hidden><div class="tsBack"></div><button class="tsNav prev" id="tsPrev" aria-label="Previous tower">‹</button><div class="tsMid"><canvas id="tsCan"></canvas><div id="tsName"></div><div id="tsSub"></div><p id="tsDesc"></p><div id="tsCount"></div></div><button class="tsNav next" id="tsNext" aria-label="Next tower">›</button><button class="tsClose" id="tsClose" aria-label="Close">×</button></div>
     <div id="overBox" hidden><div id="champs"></div><p id="overTxt"></p><button class="btn primary" id="btnAgain">Play again</button></div>
     </div>
   </div>
@@ -501,7 +524,7 @@ adv('u238',        'Necromancer’s Crypt',  'Uranium-238',          '#b6ff4f', 
 adv('u235',        'Lich Sanctum',         'Uranium-235',          '#d4ff7a', '@u238 @vividmal @malachite', {dmg:220, cd:.7, rng:800, targets:10, desc:'Blight strikes up to 10 enemies'});
 adv('kyparium',    'Demon Hunter’s Spire', 'Depleted-Kyparium',    '#eaffb0', 'Q1 Q2 Q3 Q4 Q5',     {dmg:410, cd:.4, rng:5000, targets:10, desc:'Hits 10 enemies anywhere on the board', ult:true});
 adv('starruby',    'Dragon Brazier',       'Asteriated Ruby',      '#ff2f55', 'R2 R1 P1',           {burn:[60, 400], desc:'Burns everything nearby (magic)'});
-adv('volcano',     'Dragon’s Forge',       'Volcano',              '#ff6a1c', '@starruby R4 P3',    {burn:[320, 500], desc:'Burns everything in a wide ring (magic)'});
+adv('volcano',     'Dragon’s Perch',       'Volcano',              '#ff6a1c', '@starruby R4 P3',    {burn:[320, 500], desc:'Burns everything in a wide ring (magic)'});
 adv('bloodstone',  'Thunder Bombard',      'Bloodstone',           '#c2183a', 'R5 Q4 P3',           {dmg:35, cd:1, rng:700, chain:[.3, 150, 5, 1000], desc:'Chain lightning jumps between enemies'});
 adv('antiquebs',   'Kaminari-Homura',        'Antique Bloodstone',   '#e0345a', '@bloodstone @volcano R2', {dmg:50, cd:1, rng:800, fork:[.25, 2500, 5], burn:[320, 500], attacks:true, desc:'Strikes once a second (25% chance to fork lightning) inside a burning aura'});
 adv('crownprince', 'Crown Prince’s Keep',  'The Crown Prince',     '#ffd23f', 'R1 R2 R3 R4 R5',     {dmg:70, cd:1, rng:800, fork:[.25, 2500, 5], burn:[2500, 800], poison:128, poisonDur:5, attacks:true, desc:'Strikes once a second (25% chance to fork lightning, poisons) inside a huge burning aura', ult:true});
@@ -891,6 +914,7 @@ function gridChanged(){
   for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
     const g = grid[r][c];
     if (g && g.kind === 'gem') towers.push({g, x:c+.5, y:r+.5, st:stats(g), cd:0, bonus:0, flash:0});
+    if (g && g.special) markBuilt(g.special);
   }
   for (const t of towers){
     let b = 0;
@@ -1506,7 +1530,8 @@ function adaptWaveSize(){ // decide the next wave's size from how this wave went
   sizeNote = ch ? `Next waves: ${waveSize} enemies (${ch > 0 ? '+' : '−'}${Math.abs(ch)}, ${why})` : '';
 }
 function endWave(){
-  projectiles = [];
+  projectiles = []; effects = [];
+  for (const pd of pedals) pd.firedAt = null; // the game clock stops between waves, so a trap's ground mark (timed on that clock) would otherwise freeze on screen
   const bonus = 4 + Math.floor(wave/2); gold += bonus;
   const meterSnap = meterRows();
   const champ = awardAura();
@@ -1574,6 +1599,18 @@ function leaderboardHTML(){
   return `<div class="lbh"><span>#</span><span>Run</span><span>Damage</span><span>Time</span></div>` + runs.map((r, i) => `<div class="lbr${r.won ? ' won' : ''}"><span>${i + 1}</span><span>${r.won ? `★ Victory · ${r.hp} hp left` : `Fell on wave ${r.wave}`}<em>${when(r.when)} · ${r.kills.toLocaleString()} kills</em></span><span>${fmtBig(r.damage)}</span><span>${mmss(r.time || 0)}</span></div>`).join('') + `<p class="muted" style="margin-top:8px">Endless mode is coming later.</p>`;
 }
 let camTween = null; const DEFEAT_TILES = 5.2, DEFEAT_LIFT = .45; // the defeat close-up frames about 4 squares; centre aimed this high on the castle
+{ // Towers built showcase: swipe or the arrows to flip through, × to go back to the runs list
+  const ov = $('#tshow'); let sx = null;
+  const go = dlt => { tshowIdx += dlt; syncTowerShow(true); SFX.click && SFX.click(); };
+  $('#tsPrev').addEventListener('click', e => { e.stopPropagation(); go(-1); });
+  $('#tsNext').addEventListener('click', e => { e.stopPropagation(); go(1); });
+  $('#tsClose').addEventListener('click', e => { e.stopPropagation(); lbTab = 'runs'; renderRightPanel(true); syncTowerShow(); });
+  ov.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; sx = e.clientX; ov.setPointerCapture && ov.setPointerCapture(e.pointerId); });
+  ov.addEventListener('pointerup', e => { if (sx == null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 35) go(dx < 0 ? 1 : -1); });
+  ov.addEventListener('pointercancel', () => { sx = null; });
+  ov.addEventListener('wheel', e => { e.preventDefault(); e.stopPropagation(); }, {passive:false});
+  document.addEventListener('keydown', e => { if (ov.hidden) return; if (e.key === 'ArrowLeft') go(-1); else if (e.key === 'ArrowRight') go(1); else if (e.key === 'Escape') $('#tsClose').click(); });
+}
 $('#btnAgain').addEventListener('click', () => { $('#overBox').hidden = true; overTitle = ''; $('#hudTop').classList.remove('won'); $('#champs').innerHTML = ''; camTween = null; newGame(); resetView(); });
 function stepCamTween(dt){ // eases the camera from where it was to the fallen castle: all the way in, at the lowest angle
   if (!camTween) return; const T = camTween; T.t = Math.min(1, T.t + dt/T.dur); const e = T.t*T.t*(3 - 2*T.t);
@@ -2076,6 +2113,8 @@ $('#skinFile').addEventListener('change', async e => { const fi = e.target, f = 
   catch (err){ const s2 = $('#devStatus'); if (s2) s2.textContent = 'Upload failed: ' + (err && err.message || err); } });
 $('#rpBody').addEventListener('click', e => {
   const dt = e.target.closest('[data-devtab]'); if (dt){ devTab = dt.dataset.devtab; renderRightPanel(true); return; }
+  const lt = e.target.closest('[data-lbtab]'); if (lt){ lbTab = lt.dataset.lbtab; renderRightPanel(true); return; }
+  const tb = e.target.closest('[data-tshow]'); if (tb){ tshowIdx = +tb.dataset.tshow; syncTowerShow(true); return; }
   const sb = e.target.closest('[data-sk]'); if (sb && (sb.dataset.sk === 'up' || sb.dataset.sk === 'rm')){
     const k = sb.closest('.skrow').dataset.key;
     if (sb.dataset.sk === 'up'){ const fi = $('#skinFile'); fi.dataset.key = k; fi.value = ''; fi.click(); }
@@ -2248,7 +2287,7 @@ function setBpTab(root, t){ root.querySelectorAll('[data-tab]').forEach(b => b.s
 let bpTab = 'adv', bpKey = null;
 let devTab = 'tower';
 let rView = null; // null: the wave (default) · 'bp': blueprints · 'favor': royal favor
-function openRight(v){ rView = rView === v ? null : v; bpKey = null; hideTip(); renderRightPanel(true); }
+function openRight(v){ rView = rView === v ? null : v; bpKey = null; hideTip(); renderRightPanel(true); syncTowerShow(); }
 function renderRightPanel(force){
   $('#rMain').hidden = !!rView; $('#rPanel').hidden = !rView;
   $('#btnRecipes').setAttribute('aria-pressed', rView === 'bp'); $('#btnModes').setAttribute('aria-pressed', rView === 'board'); $('#sLives').setAttribute('aria-pressed', rView === 'leaks'); $('#btnLuck').setAttribute('aria-pressed', rView === 'favor');
@@ -2265,7 +2304,7 @@ function renderRightPanel(force){
     if (force) { el.innerHTML = HELP_HTML; el.scrollTop = 0; }
   } else if (rView === 'board'){
     $('#rpTitle').textContent = 'Leaderboard';
-    if (force) { el.innerHTML = leaderboardHTML(); el.scrollTop = 0; }
+    if (force) { setTimeout(() => syncTowerShow(), 0); el.innerHTML = `<div class="tabs" role="tablist"><button class="tab" role="tab" data-lbtab="runs" aria-selected="${lbTab === 'runs'}">Runs</button><button class="tab" role="tab" data-lbtab="towers" aria-selected="${lbTab === 'towers'}">Towers built</button></div>` + (lbTab === 'towers' ? towersBuiltHTML() : leaderboardHTML()); el.scrollTop = 0; }
   } else if (rView === 'leaks'){
     $('#rpTitle').textContent = 'Breaches';
     const key = leakLog.length + '|' + lives; if (!force && key === leakKey) return; leakKey = key;
@@ -2281,6 +2320,39 @@ function renderRightPanel(force){
   }
 }
 let leakKey = '';
+// ----- Towers built: every advanced tower, shown big and turning in front of the board. Ones the player has built are in full colour;
+// the rest are greyed out and dimmed until the first time they're built (remembered across runs) -----
+const BUILT_KEY = 'castlemaze.built.v1';
+let builtSet = (() => { try { const v = JSON.parse(store.get(BUILT_KEY) || '[]'); return new Set(Array.isArray(v) ? v : []); } catch (e) { return new Set(); } })();
+function markBuilt(key){ if (builtSet.has(key)) return; builtSet.add(key); store.set(BUILT_KEY, JSON.stringify([...builtSet])); if (rView === 'board' && lbTab === 'towers') renderRightPanel(true); }
+let lbTab = 'runs', tshowIdx = 0;
+const SHOW_KEYS = Object.keys(SPECIALS);
+function towersBuiltHTML(){
+  const n = SHOW_KEYS.filter(k => builtSet.has(k)).length;
+  return `<p class="muted" style="margin:6px 0">${n} of ${SHOW_KEYS.length} advanced towers built. Swipe the tower in the middle of the board (or tap one here) to look through them all.</p>
+    <div class="tbgrid">${SHOW_KEYS.map((k, i) => `<button type="button" class="tbcell${builtSet.has(k) ? '' : ' locked'}${i === tshowIdx ? ' cur' : ''}" data-tshow="${i}" aria-label="${esc(SPECIALS[k].name)}${builtSet.has(k) ? '' : ' (not built yet)'}"><img src="${iconFor('sp:' + k)}" alt=""></button>`).join('')}</div>`;
+}
+function syncTowerShow(rerenderList){
+  const ov = document.getElementById('tshow'); if (!ov) return;
+  const on = rView === 'board' && lbTab === 'towers';
+  if (ov.hidden === on) ov.hidden = !on;
+  if (!on) return;
+  tshowIdx = ((tshowIdx % SHOW_KEYS.length) + SHOW_KEYS.length) % SHOW_KEYS.length;
+  const k = SHOW_KEYS[tshowIdx], sp = SPECIALS[k], built = builtSet.has(k);
+  ov.classList.toggle('locked', !built);
+  $('#tsName').textContent = sp.name; $('#tsName').style.color = built ? sp.c : '';
+  $('#tsSub').textContent = built ? (sp.secret ? 'Secret tower' : sp.ult ? 'Ultimate tower' : 'Advanced tower') + ' · built' : 'Not built yet';
+  $('#tsDesc').textContent = sp.desc || '';
+  $('#tsCount').textContent = `${tshowIdx + 1} / ${SHOW_KEYS.length}`;
+  if (rerenderList) document.querySelectorAll('#rpBody .tbcell').forEach((b, i) => b.classList.toggle('cur', i === tshowIdx));
+}
+function drawTowerShow(){ // the showcased tower, animated, drawn big
+  const ov = document.getElementById('tshow'); if (!ov || ov.hidden) return;
+  const el = document.getElementById('tsCan'), W = el.clientWidth || 200, H = el.clientHeight || 200, d = Math.min(2, view.dpr || 1);
+  if (el.width !== Math.round(W*d) || el.height !== Math.round(H*d)){ el.width = Math.round(W*d); el.height = Math.round(H*d); }
+  const g = {kind:'gem', special:SHOW_KEYS[tshowIdx], type:null, q:null, c:0, r:0, aura:0, round:false};
+  renderPortrait(el.getContext('2d'), W, H, d, g, 0, 0, null, true);
+}
 function leakHTML(){ // every enemy that got into the castle, newest wave first, with the health it cost
   const fmt = d => { const v = Math.round(d*10)/10; return v ? '−' + v.toLocaleString() : '0'; };
   if (!leakLog.length) return `<p class="muted">No enemy has reached the castle yet. Each one that gets through costs health: half the wave number if unhurt (a boss costs wave × wave/10), less the more you've wounded it, but never less than 1.</p>`;
@@ -2399,7 +2471,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.3 · October 24, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.4 · October 24, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
@@ -4340,11 +4412,31 @@ function renderWaypointPortrait(c2, Wc, Hc, dpr, cp){ // the waypoint's landmark
     }
   } finally { Object.assign(view, keepView); VW = keepVW; ctx = keepCtx; }
 }
-function renderPortrait(c2, Wc, Hc, dpr, g, c, r, crewG, tight){
+const portraitFitCache = new Map();
+function portraitFit(g, Wc, Hc, tight, crewG){ // how far to zoom out so a big tower (a dragon, a giant hand...) fits its frame: measured once per tower and frame shape
+  const key = `${g.special || g.type + ':' + g.q}|${tight ? 't' : 'n'}|${Math.round(Wc/Hc*20)}|${crewG && crewG.special || ''}`;
+  let k = portraitFitCache.get(key); if (k != null) return k;
+  const S = 160, Wm = S, Hm = Math.round(S*Hc/Wc), kt = .4, cn = document.createElement('canvas'); cn.width = Wm; cn.height = Hm;
+  const c2 = cn.getContext('2d'); renderPortrait(c2, Wm, Hm, 1, g, 0, 0, crewG, tight, kt);
+  const px = c2.getImageData(0, 0, Wm, Hm).data; let x0 = Wm, x1 = -1, y0 = Hm, y1 = -1;
+  for (let y=0;y<Hm;y++) for (let x=0;x<Wm;x++) if (px[(y*Wm + x)*4 + 3] > 24){ if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  k = 1;
+  if (x1 >= 0){ // everything scales about (W/2, a): find the largest scale whose drawing stays inside the frame with a small margin
+    const sN = Wm/(tight ? 1.35 : 1.55), st = sN*kt, a = Hm*(tight ? .62 : .8), m = Wm*.04;
+    const X0 = (x0 - Wm/2)/st, X1 = (x1 + 1 - Wm/2)/st, Y0 = (y0 - a)/st, Y1 = (y1 + 1 - a)/st;
+    let sMax = Infinity;
+    if (X0 < 0) sMax = Math.min(sMax, (Wm/2 - m)/-X0); if (X1 > 0) sMax = Math.min(sMax, (Wm/2 - m)/X1);
+    if (Y0 < 0) sMax = Math.min(sMax, (a - m)/-Y0); // the bastion's foot may run off the bottom as usual; only the top and sides must fit
+    k = Math.max(.35, Math.min(1, sMax/sN*.94)); // a little extra room for wings, swings and breath that move while it animates
+  }
+  portraitFitCache.set(key, k); return k;
+}
+function renderPortrait(c2, Wc, Hc, dpr, g, c, r, crewG, tight, kFit){
+  if (kFit == null) kFit = portraitFit(g, Wc, Hc, tight, crewG);
   const keepView = Object.assign({}, view), keepVW = VW, keepCtx = ctx;
   ctx = c2;
   try {
-    Object.assign(view, {yaw:0, pitch:.72, zoom:1, cx:c+.5, cz:r+.5, w:Wc, h:Hc, s0:Wc/(tight ? 1.35 : 1.55), fitOff:0, dpr});
+    Object.assign(view, {yaw:0, pitch:.72, zoom:1, cx:c+.5, cz:r+.5, w:Wc, h:Hc, s0:Wc/(tight ? 1.35 : 1.55)*kFit, fitOff:0, dpr});
     camera(); VW.oy = Hc*(tight ? .62 : .8) + (tight ? .9 : .7)*VW.cp*VW.s;
     c2.setTransform(dpr,0,0,dpr,0,0); c2.clearRect(0, 0, Wc, Hc);
     const o3 = [0,0,0]; proj(c+.5, 0, r+.5, o3);
@@ -4453,14 +4545,15 @@ function drawWaypointAnims(cp){ // live parts of the waypoint buildings: the chu
   if (cp == null || cp === 5) drawBarracksFlag();
   if (cp == null || cp === 4){ drawElderCrown(); drawElderLights(); }
 }
-const TRAP_LINGER = {ensnare:[2,3,4], gale:[5,7,11], torrent:[4,6,10], howl:[10,10,10], acid:[10,15,20], paralysis:[2,3,4], terrorize:[6,6,6], decrepify:[5,6,7]}; // how long each trap's mark stays on the ground
+const TRAP_LINGER = {ensnare:[2,3,4], gale:[5,7,11], torrent:[4,6,10], howl:[10,10,10], acid:[10,15,20], paralysis:[1,2,3], terrorize:[6,6,6], decrepify:[5,6,7]}; // how long each trap's mark stays on the ground
 function drawTrapZone(pd){ // the trap's reach on the ground: a faint ring at rest, and a themed patch that lingers after it springs
-  const P = PEDALS[pd.key], x = pd.c + .5, z = pd.r + .5, rgb = rgbOf(P.c), t = anim, tier = pd.tier || 0;
+  const P = PEDALS[pd.key], x = pd.c + .5, z = pd.r + .5, rgb = rgbOf(P.c), t0 = anim, tier = pd.tier || 0;
   const R = pd.key === 'howl' ? T([256,384,512][tier]) : Math.min(5, P.r);
   const col = a => `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`;
   ctx.fillStyle = col(.06); ctx.beginPath(); ctx.arc(x, z, R, 0, Math.PI*2); ctx.fill();
-  ctx.setLineDash([.18, .14]); ctx.lineDashOffset = -t*.2; ctx.strokeStyle = col(.32); ctx.lineWidth = .035; ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+  ctx.setLineDash([.18, .14]); ctx.lineDashOffset = -t0*.2; ctx.strokeStyle = col(.32); ctx.lineWidth = .035; ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
   if (pd.firedAt == null) return;
+  const t = simClock; // the sprung patch animates on the game clock, so 2× / 3× speed plays it (and ends it) faster, like the trap's effect itself
   const since = simClock - pd.firedAt, dur = (TRAP_LINGER[pd.key] || [3])[tier]; if (since < 0 || since > dur) return;
   const k = Math.min(1, since/.25)*Math.min(1, (dur - since)/(dur*.35 + .2)); // fades in fast, fades out over the last third
   ctx.save(); ctx.beginPath(); ctx.arc(x, z, R, 0, Math.PI*2); ctx.clip();
@@ -5684,7 +5777,7 @@ function frame(now){
   effects = effects.filter(f => f.t < f.dur);
   if (selEnemy && (selEnemy.dead || !enemies.includes(selEnemy))){ selEnemy = null; renderUI(); }
   draw();
-  drawAvatarLive();
+  drawAvatarLive(); drawTowerShow();
   drawWaveAvatar(); renderWaveCard(false);
   requestAnimationFrame(frame);
 }
@@ -5713,7 +5806,7 @@ window.__gem = {
     return cn.toDataURL(); }, enemyNames: () => CREEPS.flat().map(k => k[0]), enemyFlags: nm => { const k = CREEPS.flat().find(k => k[0] === nm); return [!!k[5], !!k[6]]; }, missileOf, tap, startWave, buyLuck, tryPlace, computePath, options, isCP, pedals: () => pedals, placing: () => placing, confirmPedal, specials: SPECIALS,
   grid: () => grid, rounds: () => roundGems, kept: () => keptGems(), view, pickEnemy, selEnemy: () => selEnemy, selectEnemy,
   cellToScreen(c, r, y = 0){ camera(); const o = proj(c+.5, y, r+.5, [0,0,0]); return [o[0], o[1]]; },
-  refresh: () => gridChanged(), warn: w => warnSpecialWave(w), dbg: () => ({tileLevel, initRoad, isCP, inFarm, COLS, ROWS}), simClockSet: v => { simClock = v; }, towers: () => towers,
+  refresh: () => gridChanged(), warn: w => warnSpecialWave(w), fitk: (sp, W, H) => portraitFit({kind:'gem', special:sp, type:null, q:null, c:0, r:0, aura:0, round:false}, W, H, true), dbg: () => ({tileLevel, initRoad, isCP, inFarm, COLS, ROWS}), simClockSet: v => { simClock = v; }, towers: () => towers,
   drawBench(n = 30){ const t0 = performance.now(); for (let i=0;i<n;i++) draw(); return (performance.now()-t0)/n; },
   simWave(){ let n = 0; while (phase === 'wave' && n < 200000){ step(.05); n++; } renderUI(); },
 };
