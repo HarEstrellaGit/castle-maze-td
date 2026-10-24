@@ -1,0 +1,16 @@
+{
+  "name": "Castle Maze TD",
+  "short_name": "Castle Maze",
+  "description": "Build a maze of castle walls and towers to hold back the waves.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#17130e",
+  "theme_color": "#17130e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
