@@ -43,8 +43,12 @@ html,body{height:100%}
 body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #241c13 0%, var(--bg) 60%);color:var(--ink);font-family:var(--body);overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 /* landscape layout: details on the left, the board in the middle, wave and controls on the right */
 :root{--u:clamp(8px,1.05vh + .2vw,13px)}
-#app{height:100%;display:grid;grid-template-columns:clamp(165px,22.5vw,460px) minmax(0,1fr) clamp(165px,22.5vw,460px);grid-template-rows:minmax(0,1fr);gap:clamp(3px,.6vh,8px);padding:max(4px,env(safe-area-inset-top,0px)) max(6px,env(safe-area-inset-right,0px)) max(4px,env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));box-sizing:border-box}
-#left,#right{display:flex;flex-direction:column;gap:clamp(3px,.6vh,7px);min-height:0;min-width:0}
+#app{--pw:clamp(165px,22.5vw,460px);--slide:0;height:100%;overflow:hidden;display:grid;grid-template-columns:calc(var(--pw)*.3) minmax(0,1fr) calc(var(--pw)*.3);grid-template-rows:minmax(0,1fr);gap:clamp(3px,.6vh,8px);padding:max(4px,env(safe-area-inset-top,0px)) max(6px,env(safe-area-inset-right,0px)) max(4px,env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));box-sizing:border-box}
+#left,#right{display:flex;flex-direction:column;gap:clamp(3px,.6vh,7px);min-height:0;min-width:0;width:var(--pw)} /* zooming in slides the side panels up to 70% off screen; the board takes the room */
+#left,#right{position:relative;z-index:3;transition:transform .14s ease-out} /* the board always has its full size; the side panels lie over its edges and slide aside as you zoom in (no resizing, so no flicker) */
+#left{transform:translateX(calc(var(--pw)*-.7*var(--slide)))}
+#right{transform:translateX(calc(var(--pw)*-.7*(1 - var(--slide))))}
+#boardWrap{z-index:1}
 #left > #ctx{flex:1 1 auto;min-height:0}
 #acts{flex:0 0 auto;padding:4px;border-radius:6px}
 #acts{min-height:calc(var(--u)*6 + 12px);box-sizing:border-box}
@@ -131,7 +135,11 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 .lk-r b{color:var(--danger);min-width:2.6em;text-align:right;font-variant-numeric:tabular-nums}
 .lk-r.boss span:nth-child(2){color:var(--gold);font-weight:700}
 #sLives b{color:var(--danger)} #sGold b{color:var(--gold)}
-#sWave{border-color:var(--line-hi)}
+#sWave{border-color:var(--line-hi);padding:2px 4px 3px}
+#sWave b{font-size:calc(var(--u)*1.1)} #sWave b small{font-size:.72em}
+#sLives,#sGold,#sWave{align-items:center;text-align:center;padding:2px 3px 3px}
+.stat .k.ico{display:block;line-height:0;height:calc(var(--u)*1.45)}
+.stat .k.ico svg{height:100%;width:auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
 .iconbtn{flex:0 0 calc(var(--u)*3.2);border-radius:6px;color:var(--ink);font-size:18px;display:grid;place-items:center;cursor:pointer}
 #boardWrap{position:relative;min-height:0;min-width:0}
 #cv{display:block;width:100%;height:100%;touch-action:none;border-radius:6px;background:#120e0a}
@@ -145,9 +153,9 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 @keyframes tmIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 #stage{position:absolute;inset:0}
 .btn.rot{position:absolute;top:5px;min-height:30px;min-width:34px;padding:0;font-size:15px;background:rgba(37,30,22,.85)}
-#btnTilt{right:5px;min-width:46px;font-size:12px}
-#btnFit{position:absolute;right:5px;bottom:5px;min-height:28px;padding:0 8px;font-size:11px}
-#meter{position:absolute;top:6px;left:8px;z-index:2;pointer-events:none;display:flex;flex-direction:column;gap:1px;max-width:42%;font-size:calc(var(--u)*1.05);line-height:1.2;color:#f3e8cc;text-shadow:0 1px 0 #000,0 0 5px rgba(0,0,0,.95),0 0 2px #000}
+#btnTilt{right:calc(5px + var(--pw)*.7*(1 - var(--slide)));transition:right .14s ease-out;min-width:46px;font-size:12px}
+#btnFit{position:absolute;right:calc(5px + var(--pw)*.7*(1 - var(--slide)));transition:right .14s ease-out;bottom:5px;min-height:28px;padding:0 8px;font-size:11px}
+#meter{position:absolute;top:6px;left:calc(8px + var(--pw)*.7*(1 - var(--slide)));transition:left .14s ease-out;z-index:2;pointer-events:none;display:flex;flex-direction:column;gap:1px;max-width:42%;font-size:calc(var(--u)*1.05);line-height:1.2;color:#f3e8cc;text-shadow:0 1px 0 #000,0 0 5px rgba(0,0,0,.95),0 0 2px #000}
 #meter .mh{font-family:var(--display);font-weight:700;font-size:calc(var(--u)*.8);letter-spacing:.12em;text-transform:uppercase;color:#d8c8a0}
 #meter .mr{display:grid;grid-template-columns:1.3em minmax(0,1fr) auto;gap:5px;align-items:baseline;white-space:nowrap}
 #meter .mr i{font-style:normal;color:#b8a888;text-align:right}
@@ -383,9 +391,9 @@ table.odds tr.cur td{color:var(--gold);font-weight:700}
   </div>
   <aside id="right">
     <header id="hud" class="hudrow">
-      <div class="stat frame" id="sLives" role="button" tabindex="0" aria-pressed="false" title="Enemies that got through"><span class="k">Health</span><b id="hLives">100</b></div>
-      <div class="stat frame" id="sGold"><span class="k">Gold</span><b id="hGold">0</b></div>
-      <div class="stat frame" id="sWave"><span class="k">Wave</span><b><span id="hWave">1</span><small>/50</small></b></div>
+      <div class="stat frame" id="sLives" role="button" tabindex="0" aria-pressed="false" title="Enemies that got through"><span class="k ico" aria-label="Health"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.3-9.2C1.4 8.4 3.6 4.5 7.3 4.5c2 0 3.5 1.1 4.7 2.8 1.2-1.7 2.7-2.8 4.7-2.8 3.7 0 5.9 3.9 4.6 7.3C19.5 16.4 12 21 12 21z" fill="#c8402f" stroke="#f3c9a8" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 8.2c.6-1.2 1.7-1.7 2.6-1.5" stroke="#ffd9c4" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".8"/></svg></span><b id="hLives">100</b></div>
+      <div class="stat frame" id="sGold"><span class="k ico" aria-label="Gold"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="14.6" rx="8.4" ry="5.6" fill="#8a5f16"/><ellipse cx="12" cy="11.4" rx="8.4" ry="5.6" fill="#e2b53d" stroke="#fff0b8" stroke-width="1.1"/><ellipse cx="12" cy="11.4" rx="5.3" ry="3.3" fill="none" stroke="#9a6c18" stroke-width="1.2"/><path d="M8.6 9.6c.9-.8 2-1.1 3-1.1" stroke="#fff6cf" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg></span><b id="hGold">0</b></div>
+      <div class="stat frame" id="sWave"><span class="k ico" aria-label="Wave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v19" stroke="#8a6a3c" stroke-width="2" stroke-linecap="round"/><circle cx="5" cy="2.8" r="1.4" fill="#e2b53d"/><path d="M6 4.2h13l-3 4.3 3 4.3H6z" fill="#b8392b" stroke="#f3c9a8" stroke-width="1.1" stroke-linejoin="round"/><circle cx="11.2" cy="8.5" r="2" fill="#e2b53d" stroke="#7a2418" stroke-width=".8"/></svg></span><b><span id="hWave">1</span><small>/50</small></b></div>
       <button class="iconbtn frame" id="btnModes" aria-label="Leaderboard" title="Leaderboard"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21h11v-2.2c0-1-.6-1.6-1.4-2.1 0-3 .6-5.3 1.9-7.4-1.2-3-3.8-5.3-7.4-5.8l-.6 1.9-1.6-1.3-.6 2.3C6 7.5 5 9.3 5 11.2l1.2 1.3 2.3-1.1 1.6.4c-.7 1.6-2 2.8-3.1 4.4z" fill="#c9b48a" stroke="#f1e2bc" stroke-width="1" stroke-linejoin="round"/><circle cx="9.6" cy="8.6" r=".9" fill="#2a1d10"/><rect x="5.5" y="19.8" width="14" height="2.2" rx=".7" fill="#8a7650"/></svg></button>
       <button class="iconbtn frame" id="btnMenu" aria-label="Menu">☰</button>
     </header>
@@ -491,8 +499,8 @@ adv('kyparium',    'Demon Hunter’s Spire', 'Depleted-Kyparium',    '#eaffb0', 
 adv('starruby',    'Dragon Brazier',       'Asteriated Ruby',      '#ff2f55', 'R2 R1 P1',           {burn:[60, 400], desc:'Burns everything nearby (magic)'});
 adv('volcano',     'Dragon’s Forge',       'Volcano',              '#ff6a1c', '@starruby R4 P3',    {burn:[320, 500], desc:'Burns everything in a wide ring (magic)'});
 adv('bloodstone',  'Thunder Bombard',      'Bloodstone',           '#c2183a', 'R5 Q4 P3',           {dmg:35, cd:1, rng:700, chain:[.3, 150, 5, 1000], desc:'Chain lightning jumps between enemies'});
-adv('antiquebs',   'Kaminari-Homura',        'Antique Bloodstone',   '#e0345a', '@bloodstone @volcano R2', {dmg:70, cd:1, rng:800, fork:[.25, 2500, 5], burn:[320, 500], desc:'Forked lightning and a burning aura'});
-adv('crownprince', 'Crown Prince’s Keep',  'The Crown Prince',     '#ffd23f', 'R1 R2 R3 R4 R5',     {dmg:70, cd:1, rng:800, fork:[.25, 2500, 5], burn:[2500, 800], poison:128, poisonDur:5, desc:'Forked lightning, huge burning aura, poison', ult:true});
+adv('antiquebs',   'Kaminari-Homura',        'Antique Bloodstone',   '#e0345a', '@bloodstone @volcano R2', {dmg:50, cd:1, rng:800, fork:[.25, 2500, 5], burn:[320, 500], attacks:true, desc:'Strikes once a second (25% chance to fork lightning) inside a burning aura'});
+adv('crownprince', 'Crown Prince’s Keep',  'The Crown Prince',     '#ffd23f', 'R1 R2 R3 R4 R5',     {dmg:70, cd:1, rng:800, fork:[.25, 2500, 5], burn:[2500, 800], poison:128, poisonDur:5, attacks:true, desc:'Strikes once a second (25% chance to fork lightning, poisons) inside a huge burning aura', ult:true});
 adv('jade',        'Apothecary Guild',     'Jade',                 '#7be0a2', 'G3 E3 B2',           {dmg:10, cd:.5, rng:800, poison:16, poisonDur:5, desc:'Fast poisoned shots'});
 adv('quartz',      'Falconer’s Roost',     'Quartz',               '#bfe3ff', 'G4 R3 P2',           {dmg:15, cd:.6, rng:500, antifly:[10, .5, 0, 600], desc:'Grounds flyers: −10 armor, 50% slower nearby'});
 adv('greyjade',    'Astronomer’s Guild',    'Grey Jade',            '#a9c9b5', '@jade B4 Q3',        {dmg:30, cd:.5, rng:800, poison:32, poisonDur:5, overlook:[300, 290], desc:'Poison; nearby towers gain +2.5 squares of range'});
@@ -720,7 +728,7 @@ function stats(g){
   if (g.special){
     const sp = SPECIALS[g.special], s = Object.assign({}, sp);
     s.color = sp.c; s.rng = T(sp.rng || 0); if (sp.splash) s.splash = T(sp.splash);
-    if (sp.burn){ s.auraDps = sp.burn[0]; s.rng = T(sp.burn[1]); }
+    if (sp.burn){ s.auraDps = sp.burn[0]; if (sp.attacks){ s.burnR = T(sp.burn[1]); s.attacks = true; } else s.rng = T(sp.burn[1]); } // a tower that also attacks keeps its own range; the aura has its own
     if (sp.spdAura){ s.auraSpd = sp.spdAura[0]/100; s.auraR = T(sp.spdAura[1]); }
     if (sp.slow) s.slowDur = 2;
     return s;
@@ -1035,14 +1043,17 @@ const SFX = (() => {
   try { const a = localStorage.getItem('gemmaze.vol.sfx'), b = localStorage.getItem('gemmaze.vol.music'); if (a != null) sfxVol = +a; if (b != null) musicVol = +b; } catch (e) {}
   const last = new Map(), MAX_VOICES = 30;
   const seed = s => { let h = 2166136261; for (const ch of String(s)) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return ((h >>> 0) % 1000)/1000; };
+  let primed = false;
   function unlock(){
     if (!on) return;
+    try { if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback'; } catch (e) {} // play like a game, not like a ringtone: keeps sound on even with the silent switch
     try {
       if (!ac){ const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; ac = new AC(); master = ac.createGain(); master.gain.value = .5;
         const comp = ac.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 6; master.connect(comp); comp.connect(ac.destination);
         sfxBus = ac.createGain(); sfxBus.gain.value = sfxVol*sfxVol; sfxBus.connect(master); musicBus = ac.createGain(); musicBus.gain.value = musicVol*musicVol; musicBus.connect(master);
         noiseBuf = ac.createBuffer(1, ac.sampleRate*2, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i=0;i<d.length;i++) d[i] = Math.random()*2 - 1; }
-      if (ac.state === 'suspended') ac.resume();
+      if (ac.state === 'suspended' || ac.state === 'interrupted') ac.resume();
+      if (!primed){ primed = true; const b = ac.createBuffer(1, 1, 22050), src = ac.createBufferSource(); src.buffer = b; src.connect(ac.destination); src.start(0); } // iPhones only open the audio after a sound is started inside a tap
       musicStart();
     } catch (e) { ac = null; }
   }
@@ -1391,12 +1402,12 @@ function step(dt){
     if (t.g.hold){ t.cd = 0; continue; } // ordered to hold fire: no attacks and no burning aura
     if (st.auraDps){
       for (const e of enemies){
-        if (e.dead || Math.hypot(e.x-t.x, e.y-t.y) > st.rng) continue;
-        if (simClock - (t.fireAt ?? -9) > .6){ t.fireAt = simClock; t.aim = [e.x, e.y]; }
+        if (e.dead || Math.hypot(e.x-t.x, e.y-t.y) > (st.burnR || st.rng)) continue;
+        if (!st.attacks && simClock - (t.fireAt ?? -9) > .6){ t.fireAt = simClock; t.aim = [e.x, e.y]; }
         damage(e, st.auraDps*dt, false, st, t);
         if (st.auraSlow) slow(e, st.auraSlow, .3);
       }
-      continue;
+      if (!st.attacks) continue; // Kaminari-Homura burns and attacks
     }
     let disarmed = false, slowed = 1;
     for (const e of enemies){
@@ -1593,6 +1604,7 @@ function save(){ if (phase !== 'wave' && !over) store.set(SAVE_KEY, JSON.stringi
 // as far out as the camera goes. Pinch or wheel zooms in, one finger pans while zoomed in,
 // and two fingers dragged up/down (or the Tilt button) tilt between bird's eye and top view.
 const TILT_MIN = Math.PI/6, TILT_MAX = Math.PI/2, PITCH0 = 1.0, ZOOM_TILES = 7; // tilt from 30° above the board to straight down; full zoom shows about 7×7 squares
+const PANEL_ZOOM = 5; // zoom level where the side panels start sliding out of the way
 const TILT_PRESETS = [{name:'Low angle', p:Math.PI/6}, {name:'Bird’s eye', p:1.0}, {name:'Top view', p:Math.PI/2}];
 const view = {yaw:0, pitch:PITCH0, zoom:1, cx:COLS/2, cz:ROWS/2, w:300, h:300, s0:10, dpr:1, aspect:1, fitOff:0};
 let VW = {cy:1, sy:0, cp:1, sp:0, s:10, ox:0, oy:0, vx:0, vy:1, vz:0};
@@ -1620,7 +1632,8 @@ function computeFit(){ // one scale for every tilt, fitted to the bird's-eye vie
     return {x0, x1, y0, y1};
   };
   let s0 = 1e9;
-  { const m = measure(PITCH0); s0 = Math.min((view.w - 8)/(m.x1 - m.x0), (view.h - 8)/(m.y1 - m.y0)); view.birdAspect = (m.x1 - m.x0 + 8/s0)/(m.y1 - m.y0 + 8/s0); }
+  const lp = document.getElementById('left'), fitW = Math.max(120, view.w - 2*.7*(lp ? lp.offsetWidth : 0)); // the default (3-panel) view fits the board between the panels
+  { const m = measure(PITCH0); s0 = Math.min((fitW - 8)/(m.x1 - m.x0), (view.h - 8)/(m.y1 - m.y0)); view.birdAspect = (m.x1 - m.x0 + 8/s0)/(m.y1 - m.y0 + 8/s0); }
   const m = measure(keep.pitch);
   view.aspect = (m.x1 - m.x0)/(m.y1 - m.y0);
   Object.assign(view, keep, {s0, fitOff: -((m.y0 + m.y1)/2 - view.h/2) * s0});
@@ -1630,12 +1643,17 @@ const portrait = () => window.matchMedia('(max-aspect-ratio: 6/5)').matches;
 const TOP_ASPECT = (COLS + 1.6) / (ROWS + 1.6); // (kept for reference; the stage is now sized to the bird's-eye view)
 function fitStage(){ const bw = $('#boardWrap'); if (bw.style.height) bw.style.height = ''; } // landscape layout: the board fills the middle column
 const atDefault = () => Math.abs(view.pitch-PITCH0) < .02 && view.zoom < 1.01;
+let panelSlide = 0;
+function setPanelSlide(v){ // 0: all three panels at their normal width · 1: side panels pushed 70% out of view, the board widened
+  v = Math.round(v*50)/50; if (v === panelSlide) return; panelSlide = v; document.getElementById('app').style.setProperty('--slide', v);
+}
 function clampView(){
   view.pitch = Math.min(TILT_MAX, Math.max(TILT_MIN, view.pitch));
   computeFit();
-  const zoomMax = Math.max(1, Math.min(view.w, view.h)/(ZOOM_TILES*view.s0));
+  const zoomMax = Math.max(PANEL_ZOOM + 1.5, Math.min(view.w, view.h)/(ZOOM_TILES*view.s0)); // always leaves room past 5× for the panels to slide away
   if (view.defeat){ camera(); $('#btnFit').hidden = false; return; } // the defeat close-up: free of the usual zoom and pan limits
   view.zoom = Math.min(zoomMax, Math.max(1, view.zoom));
+  setPanelSlide(Math.max(0, Math.min(1, (view.zoom - PANEL_ZOOM)/Math.max(.5, zoomMax - PANEL_ZOOM)))); // panels hold still until 5× zoom, then slide out by full zoom
   // pan limits come from what is on screen: the view may travel until the board's edge reaches the screen edge
   // (zoomed in, or the top view, which is taller than the screen); a board smaller than the screen stays centred
   const s = view.s0*view.zoom, halfW = view.w/2/s, halfH = view.h/2/(s*Math.sin(view.pitch)), m = .8;
@@ -1994,13 +2012,18 @@ function renderUI(){
   else if (phase === 'over'){ goText('New game'); go.disabled = false; }
   if (phase === 'place' || phase === 'select'){ goIcon(GO_START, 'Start wave (build and keep your towers first)'); go.disabled = true; } // always shown; inactive until the towers are placed and one is kept
 }
-const rtip = $('#rtip'); let tipEl = null;
+const rtip = $('#rtip'); if (rtip) document.body.appendChild(rtip); let tipEl = null; // lives on body so it sits above both side panels
 function hideTip(){ tipEl = null; if (rtip) rtip.hidden = true; }
 function showTip(el){
   const html = el.dataset.tiptext != null ? `<div class="tt">${el.dataset.tiptext}</div>` : tipData[+el.dataset.tip]; if (html == null) return;
   tipEl = el; rtip.innerHTML = html; rtip.hidden = false;
   const r = el.getBoundingClientRect(), tw = rtip.offsetWidth, th = rtip.offsetHeight;
-  const left = Math.max(8, Math.min(innerWidth - tw - 8, r.left + r.width/2 - tw/2));
+  const lp = el.closest('#left') && document.getElementById('left');
+  let left;
+  if (lp){ // tips from the left panel (blueprints, stats) line up with the panel's left border, clear of the iPhone camera cutout
+    const pad = parseFloat(getComputedStyle(document.getElementById('app')).paddingLeft) || 8;
+    left = Math.min(innerWidth - tw - 8, Math.max(pad, lp.getBoundingClientRect().left));
+  } else left = Math.max(8, Math.min(innerWidth - tw - 8, r.left + r.width/2 - tw/2));
   let top = r.top - th - 8; if (top < 8) top = Math.min(innerHeight - th - 8, r.bottom + 8);
   rtip.style.left = left + 'px'; rtip.style.top = top + 'px';
 }
@@ -2347,7 +2370,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.1 · October 24, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, mine and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
@@ -2454,6 +2477,7 @@ const WP_PEAK = 3, WP_HILL = (() => { const t = new Map(), rnd = (c, r, k) => { 
       if (c < 0 || r < 0 || c >= COLS || r >= ROWS) continue;
       const h = d === 0 ? WP_PEAK : Math.min(WP_PEAK - 1, Math.max(0, Math.round((3 - d)*.85 + rnd(c, r, i)*1.6 - .55)));
       const k = r*COLS + c; t.set(k, Math.max(t.get(k) || 0, h)); } }
+  { const [bc, br] = CPS[5]; for (const dc of [-1, 1]) t.set(br*COLS + bc + dc, WP_PEAK); } // the barracks hall is wider than its square: the squares either side are raised to its height so it sits flat
   return t; })();
 const tileLevel = (c, r) => Math.max(mountLevel(c, r), WP_HILL.get(r*COLS + c) || 0);
 const tileElev = (c, r) => tileLevel(c, r)*TERR_STEP;
@@ -4139,7 +4163,7 @@ function drawMiasma(t){ // black miasma creeping over the ground where the plagu
   }
 }
 function drawFloorFlames(t){ // licks of fire on the ground along the edge of a fire aura
-  const R = t.st.rng, n = Math.max(10, Math.round(R*2*Math.PI/.75)), o = [0,0,0];
+  const R = t.st.burnR || t.st.rng, n = Math.max(10, Math.round(R*2*Math.PI/.75)), o = [0,0,0];
   ctx.setTransform(view.dpr,0,0,view.dpr,0,0);
   for (let i=0;i<n;i++){
     const a = i/n*Math.PI*2 + Math.sin(i*7.3)*.08, rr = R*(.94 + .06*Math.sin(i*3.1)), fx = t.x + Math.cos(a)*rr, fz = t.y + Math.sin(a)*rr;
@@ -5225,12 +5249,18 @@ function renderStatic(){
   ctx = main;
 }
 function occlude(x, z, dep, strict, lvl = 0){ // redraw static cell objects, and higher hill squares, just in front of a moving thing
-  const c0 = Math.floor(x), r0 = Math.floor(z);
+  const c0 = Math.floor(x), r0 = Math.floor(z), wps = new Set();
   for (let r = r0; r <= r0 + 2; r++) for (let c = c0 - 1; c <= c0 + 1; c++){
-    if (tileLevel(c, r) > lvl && (strict ? r > r0 : r >= r0)){ drawTerrainTile(c, r); const prop = propAt.get(r*COLS + c); if (prop){ prop(); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); } const cp = isCP(c, r), wsc = cp > 0 ? scenery.find(o => o.cp === cp) : null; if (wsc){ drawObjParts(wsc); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); } const pd = pedalAt(c, r); if (pd){ groundSpace(tileElev(c, r)); drawPedal(pd); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); } } // a trap on a raised square is redrawn with it, so it never sinks out of sight
+    if (tileLevel(c, r) > lvl && (strict ? r > r0 : r >= r0)){
+      drawTerrainTile(c, r);
+      const prop = propAt.get(r*COLS + c); if (prop){ prop(); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); }
+      for (let i=1;i<CPS.length-1;i++){ const [wc, wr] = CPS[i]; if (Math.abs(wc - c) <= 1 && Math.abs(wr - r) <= 1 && (strict ? wr > r0 : wr >= r0)) wps.add(i); } // a waypoint building overhangs its neighbours: redraw it over any of them
+      const pd = pedalAt(c, r); if (pd){ groundSpace(tileElev(c, r)); drawPedal(pd); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); }
+    }
     const o = cellIndex.get(r*COLS + c);
     if (o && objDepth(o) > dep) drawObjParts(o);
   }
+  for (const i of wps){ const sc = scenery.find(o => o.cp === i); if (sc){ drawObjParts(sc); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); } }
 }
 function draw(){
   setPixelScale();
@@ -5256,7 +5286,7 @@ function draw(){
   // ground overlays: range, aura, selection frame, effects
   ctx.lineWidth = .05;
   if (phase === 'wave') for (const t of towers) if (t.st.auraDps){
-    ctx.strokeStyle = t.st.color; ctx.globalAlpha = .3 + .15*Math.sin(anim*6); ctx.beginPath(); ctx.arc(t.x, t.y, t.st.rng, 0, Math.PI*2); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = t.st.color; ctx.globalAlpha = .3 + .15*Math.sin(anim*6); ctx.beginPath(); ctx.arc(t.x, t.y, t.st.burnR || t.st.rng, 0, Math.PI*2); ctx.stroke(); ctx.globalAlpha = 1;
   }
   { let any = false; for (const t of towers) if ((t.g.special === 'volcano' || t.g.special === 'antiquebs') && t.st.rng){ drawFloorFlames(t); any = true; } for (const t of towers) if (t.g.special === 'paraiba'){ drawMiasma(t); any = true; } if (any) groundSpace(); }
   if (moving){
@@ -5448,7 +5478,8 @@ window.__gem = {
   simWave(){ let n = 0; while (phase === 'wave' && n < 200000){ step(.05); n++; } renderUI(); },
 };
 initSkins();
-['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => SFX.unlock(), {capture:true, passive:true}));
+['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach(ev => window.addEventListener(ev, () => SFX.unlock(), {capture:true, passive:true})); // iOS only allows audio to start from a finished tap (touchend / click)
+document.addEventListener('visibilitychange', () => { if (!document.hidden) SFX.unlock(); });
 if (window.claude?.hot?.ready) window.claude.hot.ready(start); else start(window.claude?.hot?.data ?? {});
 })();
 </script>
