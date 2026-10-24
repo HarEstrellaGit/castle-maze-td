@@ -16,7 +16,7 @@ After that it runs full screen and plays offline, even in airplane mode. Your ru
 
 ## How to play
 
-**The path.** Enemies leave the hell portal and pass the church, the wishing well, the graveyard, the mine and the barracks, in that order, before reaching the castle.
+**The path.** Enemies leave the hell portal and pass the church, the wishing well, the graveyard, the elder tree and the barracks, in that order, before reaching the castle.
 
 **Losing health.** An enemy that reaches the castle costs health:
 - An unhurt enemy costs half the wave number.
@@ -53,7 +53,7 @@ Your run saves automatically between waves.
 ## Updating the game (for the maintainer)
 
 1. Upload the new `index.html` (replacing the old one).
-2. Open `sw.js` and bump the version, for example `castle-maze-v3` → `castle-maze-v4`.
+2. Open `sw.js` and bump the version, for example `castle-maze-v4` → `castle-maze-v5`.
 3. Add the changes to `CHANGELOG.md`.
 
 Installed copies pick up the update the next time they're opened online. If an old version still shows, close the app and open it again.

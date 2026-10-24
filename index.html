@@ -150,6 +150,10 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 .tmsg:not(:first-child){opacity:.72;font-size:calc(var(--u)*1)}
 .tmsg.out{opacity:0;transform:translateY(10px);max-height:0}
 .tmsg.pulse{animation:tmIn .3s ease-out}
+.tmsg.warn,.tmsg.warn:not(:first-child){opacity:1;font-size:calc(var(--u)*1.9);max-height:3.2em;color:#ff7a5c;white-space:normal;text-align:center;line-height:1.1;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 1px 0 #000,0 0 10px rgba(0,0,0,1),0 0 18px rgba(160,20,0,.7);animation:tmWarn .5s ease-out;transition:opacity 2.6s ease,transform 2.6s ease,max-height 2.6s ease}
+.tmsg.warn .wk{display:block;font-size:.55em;color:#f3d08a;letter-spacing:.14em}
+.tmsg.warn.out{opacity:0;transform:translateY(6px);max-height:0}
+@keyframes tmWarn{0%{opacity:0;transform:scale(1.35)}60%{opacity:1;transform:scale(.96)}100%{transform:scale(1)}}
 @keyframes tmIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 #stage{position:absolute;inset:0}
 .btn.rot{position:absolute;top:5px;min-height:30px;min-width:34px;padding:0;font-size:15px;background:rgba(37,30,22,.85)}
@@ -890,13 +894,13 @@ function gridChanged(){
   }
   for (const t of towers){
     let b = 0;
-    for (const o of towers) if (o !== t && o.st.auraSpd && Math.hypot(o.x-t.x, o.y-t.y) <= o.st.auraR) b = Math.max(b, o.st.auraSpd);
+    for (const o of towers) if (o !== t && o.st.auraSpd && tileD(o.x, o.y, t.x, t.y) <= o.st.auraR) b = Math.max(b, o.st.auraSpd);
     t.bonus = b;
   }
   towerOf.clear(); for (const t of towers) towerOf.set(t.g, t);
   for (const t of towers){ // glory: each level gives its own tower +10% damage and every other tower within 1.5 squares +5%; auras stack
     const own = !t.g.round ? (t.g.aura || 0) : 0; let near = 0;
-    for (const o of towers) if (o !== t && !o.g.round && o.g.aura && Math.hypot(o.x-t.x, o.y-t.y) <= AURA_R + 1e-6) near += o.g.aura;
+    for (const o of towers) if (o !== t && !o.g.round && o.g.aura && tileD(o.x, o.y, t.x, t.y) <= AURA_R + 1e-6) near += o.g.aura;
     const lv = own + near; t.auraOwn = own; t.auraNear = near;
     t.auraLv = lv; t.auraMult = 1 + OWN_STEP*own + AURA_STEP*near; t.dealt = 0;
     if (lv){ const b = t.st; t.st = Object.assign({}, b); if (b.dmg) t.st.dmg = b.dmg*t.auraMult; if (b.auraDps) t.st.auraDps = b.auraDps*t.auraMult; if (b.poison) t.st.poison = b.poison*t.auraMult; }
@@ -904,7 +908,7 @@ function gridChanged(){
   for (const t of towers){ // support auras from advanced towers: inspire (damage), overlook (range), never-miss, extra attack speed
     let insp = 1, ov = 0, mkb = false, spd2 = 0;
     for (const o of towers){
-      const d = Math.hypot(o.x-t.x, o.y-t.y), S = o.st;
+      const d = tileD(o.x, o.y, t.x, t.y), S = o.st;
       if (S.inspire && d <= T(S.inspire[1])) insp = Math.max(insp, 1 + S.inspire[0]);
       if (S.overlook && d <= T(S.overlook[1])) ov = Math.max(ov, T(S.overlook[0]));
       if (S.mkb && d <= T(S.mkb)) mkb = true;
@@ -984,6 +988,15 @@ function waveInfo(w){
   const n = boss ? 1 : waveSize;
   return {vars, n, boss, bossK, fly: vars.some(v => v.fly), label: vars.map(v => v.label).join(' & '), gold: boss ? 15*g : g, gap: .8};
 }
+// Tower reach is measured from the edges of its square, not its centre: an enemy is in range when the gap between the
+// tower's square and the enemy is no more than the range, and auras reach towers whose squares are within that gap.
+const edgeD = (tx, ty, x, y) => Math.hypot(Math.max(0, Math.abs(x - tx) - .5), Math.max(0, Math.abs(y - ty) - .5)); // from a square's edge to a point
+const tileD = (ax, ay, bx, by) => Math.hypot(Math.max(0, Math.abs(bx - ax) - 1), Math.max(0, Math.abs(by - ay) - 1)); // edge to edge between two squares
+function rangePath(cx, cz, R){ // outline of everything within R of a square's edge: the square grown by R with rounded corners
+  const a = .5 + R, P = Math.PI; ctx.beginPath(); ctx.moveTo(cx - .5, cz - a); ctx.lineTo(cx + .5, cz - a); ctx.arc(cx + .5, cz - .5, R, -P/2, 0);
+  ctx.lineTo(cx + a, cz + .5); ctx.arc(cx + .5, cz + .5, R, 0, P/2); ctx.lineTo(cx - .5, cz + a); ctx.arc(cx - .5, cz + .5, R, P/2, P);
+  ctx.lineTo(cx - a, cz - .5); ctx.arc(cx - .5, cz - .5, R, P, P*1.5); ctx.closePath();
+}
 const leakMax = (K, w = wave) => K.boss ? w*w/10 : w/2; // health an unhurt leaker costs: half the wave number, bosses wave x (wave/10)
 const leakDmg = (K, frac, w = wave) => Math.max(1, K.boss ? leakMax(K, w)*frac : Math.round(leakMax(K, w)*frac)); // normal leakers round to whole health; every leaker costs at least 1
 const fmtLeak = (K, w = wave) => Math.max(1, K.boss ? +leakMax(K, w).toFixed(1) : Math.round(leakMax(K, w)));
@@ -1027,7 +1040,7 @@ function damage(e, amt, phys, st, src){
     e.dead = true; kills++; SFX.death(e);
     if (e.walk){ wStat.kills++; wStat.ratio += Math.min(1.5, (simClock - e.born)/e.walk); }
     let bounty = e.gold + (st && st.goldBonus ? st.goldBonus : 0);
-    if (towers.some(t => t.st.greedy && Math.hypot(t.x-e.x, t.y-e.y) <= T(t.st.greedy)) && Math.random() < .05){ bounty *= 10; toast(`Treasure! +${bounty} gold`); }
+    if (towers.some(t => t.st.greedy && edgeD(t.x, t.y, e.x, e.y) <= T(t.st.greedy)) && Math.random() < .05){ bounty *= 10; toast(`Treasure! +${bounty} gold`); }
     gold += bounty;
     effects.push({x:e.x, y:e.y, r0:.1, r1:.6, t:0, dur:.3, color:e.K.col});
   }
@@ -1185,8 +1198,9 @@ const SFX = (() => {
         for (let k=0;k<3;k++) tone({type:'sine', f:850 + k*120, f1:1600 + k*200, dur:.07, gain:.1, delay:k*.22, pan}); noise({dur:.35, gain:.1, delay:.7, filter:{type:'bandpass', f:1200, f1:500, q:1, dur:.3}, pan}); break;
       case 3: // graveyard: a cold wind and a raven
         noise({dur:2, gain:.1, a:.5, filter:{type:'bandpass', f:400, f1:900, q:6, dur:1.8}, pan}); tone({type:'sawtooth', f:700, f1:470, dur:.16, gain:.07, delay:.6, filter:{type:'bandpass', f:1100, q:3}, pan}); tone({type:'sawtooth', f:660, f1:430, dur:.18, gain:.06, delay:.85, filter:{type:'bandpass', f:1000, q:3}, pan}); break;
-      case 4: // mine: picks on stone
-        for (let k=0;k<4;k++){ tone({type:'triangle', f:2100 + (k % 2)*350, dur:.12, gain:.08, delay:k*.24, pan}); tone({type:'triangle', f:3150, dur:.08, gain:.04, delay:k*.24, pan}); noise({dur:.06, gain:.06, delay:k*.24, filter:{type:'bandpass', f:1800, q:2}, pan}); } break;
+      case 4: // elder tree: leaves rustling and soft fairy chimes
+        noise({dur:1.6, gain:.07, a:.4, filter:{type:'bandpass', f:2600, f1:1800, q:1.2, dur:1.5}, pan});
+        [1568, 1976, 2349, 2637, 3136].forEach((f, k) => tone({type:'sine', f, dur:1.1, gain:.05, a:.004, delay:.15 + k*.13, pan})); break;
       case 5: // barracks: swords clashing and a war drum
         for (const d of [0, .28]){ tone({type:'triangle', f:1250, dur:.3, gain:.07, delay:d, pan}); tone({type:'triangle', f:1890, dur:.25, gain:.05, delay:d, pan}); noise({dur:.05, gain:.08, delay:d, filter:{type:'highpass', f:3000}, pan}); }
         for (const d of [.65, .95]) tone({type:'sine', f:110, f1:60, dur:.25, gain:.3, delay:d, pan}); break;
@@ -1349,7 +1363,7 @@ function step(dt){
   for (const e of enemies){
     let arm = 0, mr = 0, sl = 0;
     for (const t of auraT){
-      const d = Math.hypot(e.x-t.x, e.y-t.y), S = t.st;
+      const d = edgeD(t.x, t.y, e.x, e.y), S = t.st;
       if (S.decadent && d <= T(S.decadent[1])) arm = Math.max(arm, S.decadent[0]);
       if (S.ice && d <= T(S.ice[1])) sl = Math.max(sl, S.ice[0]);
       if (S.antifly && e.fly && d <= T(S.antifly[3])){ arm = Math.max(arm, S.antifly[0]); mr = Math.max(mr, S.antifly[2]); sl = Math.max(sl, Math.min(.95, S.antifly[1])); }
@@ -1402,7 +1416,7 @@ function step(dt){
     if (t.g.hold){ t.cd = 0; continue; } // ordered to hold fire: no attacks and no burning aura
     if (st.auraDps){
       for (const e of enemies){
-        if (e.dead || Math.hypot(e.x-t.x, e.y-t.y) > (st.burnR || st.rng)) continue;
+        if (e.dead || edgeD(t.x, t.y, e.x, e.y) > (st.burnR || st.rng)) continue;
         if (!st.attacks && simClock - (t.fireAt ?? -9) > .6){ t.fireAt = simClock; t.aim = [e.x, e.y]; }
         damage(e, st.auraDps*dt, false, st, t);
         if (st.auraSlow) slow(e, st.auraSlow, .3);
@@ -1421,8 +1435,8 @@ function step(dt){
     const n = st.targets || 1, cands = [];
     for (const e of enemies){
       if (e.dead) continue;
-      if (e.K.abil.has('inv') && !sightTowers.some(o => Math.hypot(e.x-o.x, e.y-o.y) <= o.st.rng)) continue; // invisible unless a War Drum sees it
-      if (Math.hypot(e.x-t.x, e.y-t.y) <= st.rng + e.K.r*.5) cands.push(e);
+      if (e.K.abil.has('inv') && !sightTowers.some(o => edgeD(o.x, o.y, e.x, e.y) <= o.st.rng)) continue; // invisible unless a War Drum sees it
+      if (edgeD(t.x, t.y, e.x, e.y) <= st.rng + e.K.r*.5) cands.push(e);
     }
     if (!cands.length){ t.cd = 0; continue; }
     cands.sort((a,b) => a.remain - b.remain);
@@ -1502,6 +1516,7 @@ function endWave(){
   adaptWaveSize();
   wave++; phase = 'place'; roundGems = []; sel = null;
   toast(`Wave cleared · +${bonus} gold`); renderMeter();
+  setTimeout(() => { if (phase === 'place') warnSpecialWave(); }, 2200); // after the round's other messages, so it stays on top
   if (sizeNote) setTimeout(() => toast(sizeNote), 1700);
   gridChanged(); save();
   if (champ){
@@ -1806,7 +1821,7 @@ function triggerPedal(pd, trig){
     case 'ensnare':   for (const e of near(P.r)) e.rootT = Math.max(e.rootT, [2,3,4][t]); break;
     case 'gale':      for (const e of near(P.r)) if (!mi(e)) slowPct(e, [.65,.85,.95][t], [5,7,11][t]); break;
     case 'torrent':   for (const e of near(P.r)) if (!mi(e)){ e.stunT = Math.max(e.stunT, [2,4,8][t]); slowPct(e, [.55,.75,.95][t], [2,4,8][t] + [8,8,12][t]); } break;
-    case 'howl':      for (const tw of towers) if (Math.hypot(tw.x-cx, tw.y-cz) <= T([256,384,512][t])){ tw.howlT = 10; tw.howlAmp = [.2,.4,.8][t]; } break;
+    case 'howl':      for (const tw of towers) if (tileD(tw.x, tw.y, cx, cz) <= T([256,384,512][t])){ tw.howlT = 10; tw.howlAmp = [.2,.4,.8][t]; } break;
     case 'acid':      for (const e of near(P.r)){ e.acid = Math.max(e.acid, [8,16,32][t]); e.acidT = [10,15,20][t]; } break;
     case 'paralysis': { // stun the one that stepped on it, then loose a hex bolt that hops between random enemies a fixed number of times
       if (!trig) break;
@@ -1895,6 +1910,16 @@ function toast(msg){ // messages float under the clock and Build/Keep prompt: th
   while (feed.children.length > 5) feed.lastChild.remove();
   setTimeout(() => m.classList.add('out'), 3200); setTimeout(() => m.remove(), 4400);
 }
+const SPECIAL_WARN = [['inv', 'Invisible'], ['magimm', 'Magic immune'], ['physimm', 'Physical immune']];
+function warnSpecialWave(w = wave){ // a big warning in the message feed when the coming wave has enemies that need a special answer
+  const ab = new Set(); for (const v of waveInfo(w).vars) for (const a of v.abil) ab.add(a);
+  const hits = SPECIAL_WARN.filter(([k]) => ab.has(k)).map(([, t]) => t); if (!hits.length) return;
+  const feed = $('#feed'); if (!feed) return;
+  const m = document.createElement('div'); m.className = 'tmsg warn'; m.setAttribute('role', 'alert');
+  m.innerHTML = `<span class="wk">⚠ Wave ${w}</span>${hits.map(esc).join(' · ')}`; feed.prepend(m);
+  while (feed.children.length > 5) feed.lastChild.remove();
+  setTimeout(() => m.classList.add('out'), 5600); setTimeout(() => m.remove(), 8200); // stays a little over 5 seconds, then fades slowly
+}
 let ctxActs = [];
 const GO_START = '<svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-42 12 12)"><path d="M12 1.8l1.3 1.6v11.2h-2.6V3.4z" fill="#e9edf2" stroke="#5b6470" stroke-width=".6"/><path d="M12 3.2v11.2" stroke="#9aa3ad" stroke-width=".5"/><rect x="8.2" y="14.6" width="7.6" height="1.6" rx=".6" fill="#c9952e" stroke="#5a3f14" stroke-width=".5"/><rect x="11.1" y="16.2" width="1.8" height="4" fill="#6b4423"/><circle cx="12" cy="21.1" r="1.2" fill="#c9952e" stroke="#5a3f14" stroke-width=".5"/></g><g transform="rotate(42 12 12)"><path d="M12 1.8l1.3 1.6v11.2h-2.6V3.4z" fill="#e9edf2" stroke="#5b6470" stroke-width=".6"/><path d="M12 3.2v11.2" stroke="#9aa3ad" stroke-width=".5"/><rect x="8.2" y="14.6" width="7.6" height="1.6" rx=".6" fill="#c9952e" stroke="#5a3f14" stroke-width=".5"/><rect x="11.1" y="16.2" width="1.8" height="4" fill="#6b4423"/><circle cx="12" cy="21.1" r="1.2" fill="#c9952e" stroke="#5a3f14" stroke-width=".5"/></g></svg>', GO_PAUSE = '<svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(-3.6 0)"><path d="M12 1.8l1.3 1.6v11.2h-2.6V3.4z" fill="#e9edf2" stroke="#5b6470" stroke-width=".6"/><path d="M12 3.2v11.2" stroke="#9aa3ad" stroke-width=".5"/><rect x="8.2" y="14.6" width="7.6" height="1.6" rx=".6" fill="#c9952e" stroke="#5a3f14" stroke-width=".5"/><rect x="11.1" y="16.2" width="1.8" height="4" fill="#6b4423"/><circle cx="12" cy="21.1" r="1.2" fill="#c9952e" stroke="#5a3f14" stroke-width=".5"/></g><g transform="translate(3.6 0)"><path d="M12 1.8l1.3 1.6v11.2h-2.6V3.4z" fill="#e9edf2" stroke="#5b6470" stroke-width=".6"/><path d="M12 3.2v11.2" stroke="#9aa3ad" stroke-width=".5"/><rect x="8.2" y="14.6" width="7.6" height="1.6" rx=".6" fill="#c9952e" stroke="#5a3f14" stroke-width=".5"/><rect x="11.1" y="16.2" width="1.8" height="4" fill="#6b4423"/><circle cx="12" cy="21.1" r="1.2" fill="#c9952e" stroke="#5a3f14" stroke-width=".5"/></g></svg>';
 let hudTopKey = '';
@@ -1937,12 +1962,12 @@ function renderUI(){
     const {g, cp, blocks} = selInfo;
     if (cp >= 0){
       const role = cp === 0 ? 'Start · enemies appear here' : cp === CPS.length-1 ? 'Exit · protect it' : `Checkpoint ${['I','II','III','IV','V'][cp-1]} of V`;
-      const lore = ['A burning rift into the underworld. Every wave claws its way out of here.', 'An old stone chapel with a bell tower. The first stop on the road.', 'The village wishing well, ringed with paving stones.', 'A walled graveyard around a stone mausoleum. The dead here do not always rest.', 'A timbered mine shaft cut into the rock, with a cart of ore.', 'The barracks, with its training dummies and archery butts.', 'Your keep. Every enemy that reaches its gate costs you health.'][cp];
+      const lore = ['A burning rift into the underworld. Every wave claws its way out of here.', 'An old stone chapel with a bell tower. The first stop on the road.', 'The village wishing well, ringed with paving stones.', 'A walled graveyard around a stone mausoleum. The dead here do not always rest.', 'An ancient elder tree whose roots wind in and out of the hills. Strange lights drift among its leaves.', 'The barracks, with its training dummies and archery butts.', 'Your keep. Every enemy that reaches its gate costs you health.'][cp];
       html = `<div class="tcard">
         <div class="tc-nm"><div class="nmrow"><b style="color:var(--gold)">${CP_NAMES[cp]}</b></div><div class="subrow"><span class="sub">${role}</span><span class="own">waypoint</span></div></div>
         <canvas id="avatar" class="avatar"></canvas>
         <div class="tc-mt"><p class="tc-desc">${lore}</p></div>
-        <p class="muted" style="text-align:center;font-size:calc(var(--u)*1)">Enemies march past the church, wishing well, graveyard, mine and barracks in that order, then on to the castle. Flyers cut straight between them.</p>
+        <p class="muted" style="text-align:center;font-size:calc(var(--u)*1)">Enemies march past the church, wishing well, graveyard, elder tree and barracks in that order, then on to the castle. Flyers cut straight between them.</p>
       </div>`;
     } else if (!g && pedalAt(sel.c, sel.r)){
       const pd = pedalAt(sel.c, sel.r), P = PEDALS[pd.key], same = pedals.filter(p => p !== pd && p.key === pd.key && p.tier === pd.tier).length;
@@ -2374,8 +2399,8 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.2 · October 24, 2026</p><ol class="help">
-    <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, mine and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
+const HELP_HTML = `<p class="muted gamever">Version 1.3 · October 24, 2026</p><ol class="help">
+    <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
     <li>The right sets of towers construct advanced towers, and pairs build <b>traps</b> you place on any open square. The <b>blueprint</b> button lists them. Spend gold on <b>favor</b> (the crown) for higher ranks. Walls can be torn down for free between waves.</li>
@@ -2641,7 +2666,7 @@ const towerSkinKey = g => g.special ? 'tower:@' + g.special : 'tower:' + g.type;
 function tileSkin(b, kind, x, y, P){ const sk = skinFor('tile:' + kind); if (!sk) return false; b.drawImage(sk.img, x, y, P, P); return true; }
 function tracePath(g, cells){ g.beginPath(); cells.forEach(([c,r],i) => { const x = (c+.5)*PXC, y = (r+.5)*PXC; i ? g.lineTo(x,y) : g.moveTo(x,y); }); }
 // ----- biomes: a round patch (7 squares across) of distinct ground around each waypoint -----
-const BIOMES = ['hell', 'holy', 'plaza', 'grave', 'mine', 'camp', 'court']; // portal, church, well, graveyard, mine, barracks, castle
+const BIOMES = ['hell', 'holy', 'plaza', 'grave', 'forest', 'camp', 'court']; // portal, church, well, graveyard, elder tree, barracks, castle
 const BIOME_R = 3.5, BIOME_MAX = 6.5; // the five waypoint biomes are 13 squares across at full health and shrink to 7 at 20% health
 const fmtHp = v => { const x = Math.ceil(v*10 - 1e-6)/10; return Number.isInteger(x) ? String(x) : x.toFixed(1); };
 const healthF = () => Math.max(0, Math.min(1, ((typeof lives === 'number' ? lives : START_LIVES)/START_LIVES - .2)/.8)); // 1 at full health, 0 at 20% or less
@@ -2688,11 +2713,16 @@ function paintBiomes(b){
           if (H(31) > .82){ b.fillStyle = '#d8d0c0'; const bx = x + H(32)*P*.6 + P*.2, by = y + H(33)*P*.6 + P*.2; b.fillRect(bx - 3, by - .7, 6, 1.4); b.fillRect(bx - .7, by - 3, 1.4, 6); } // bones
           if (H(34) > .9){ b.fillStyle = '#6a4a7a'; b.fillRect(x + H(35)*P, y + H(36)*P, 2, 2); }
           break;
-        case 'mine':
-          b.fillStyle = alt ? '#66482c' : '#5e4228'; b.fillRect(x, y, P, P);
-          for (let k=0;k<8;k++){ b.fillStyle = H(k) > .6 ? 'rgba(160,130,100,.6)' : H(k) > .3 ? 'rgba(40,28,18,.5)' : 'rgba(120,110,100,.6)'; b.beginPath(); b.arc(x + H(k+9)*P, y + H(k+18)*P, 1 + H(k+27)*1.8, 0, Math.PI*2); b.fill(); }
-          if (H(40) > .8){ b.fillStyle = H(41) > .5 ? '#ffd23f' : '#6fd0ff'; b.fillRect(x + H(42)*P, y + H(43)*P, 2, 2); }
-          if (H(44) > .85){ b.strokeStyle = 'rgba(60,40,24,.8)'; b.lineWidth = 2; b.beginPath(); b.moveTo(x, y + P*.5); b.lineTo(x + P, y + P*.5); b.stroke(); } // cart track
+        case 'forest': // an enchanted wood: deep moss, fallen leaves, ferns and glowing toadstools
+          b.fillStyle = alt ? '#263f27' : '#2a4429'; b.fillRect(x, y, P, P);
+          for (let k=0;k<7;k++){ b.fillStyle = H(k) > .62 ? 'rgba(120,170,80,.45)' : H(k) > .3 ? 'rgba(10,26,14,.5)' : 'rgba(150,104,48,.55)'; b.beginPath(); b.ellipse(x + H(k+9)*P, y + H(k+18)*P, 1.2 + H(k+27)*1.6, .8 + H(k+28), H(k+29)*3, 0, Math.PI*2); b.fill(); } // moss and leaf litter
+          if (H(40) > .55){ const fx = x + H(41)*P, fy = y + H(42)*P; b.strokeStyle = 'rgba(90,150,70,.85)'; b.lineWidth = 1.1; // a fern
+            for (const a of [-.9, -.45, 0, .45, .9]){ b.beginPath(); b.moveTo(fx, fy); b.quadraticCurveTo(fx + Math.sin(a)*4, fy - 3, fx + Math.sin(a)*7, fy - Math.cos(a)*5); b.stroke(); } }
+          if (H(44) > .72){ const mx = x + H(45)*P*.8 + P*.1, my = y + H(46)*P*.8 + P*.1, glowing = H(47) > .45, cap = glowing ? '#6fe6d8' : '#c8402f'; // toadstools
+            if (glowing){ const gr = b.createRadialGradient(mx, my - 1, 0, mx, my - 1, 7); gr.addColorStop(0, 'rgba(120,255,230,.45)'); gr.addColorStop(1, 'rgba(120,255,230,0)'); b.fillStyle = gr; b.beginPath(); b.arc(mx, my - 1, 7, 0, Math.PI*2); b.fill(); }
+            b.fillStyle = '#e8e0c8'; b.fillRect(mx - .6, my - 1, 1.2, 2.5); b.fillStyle = cap; b.beginPath(); b.ellipse(mx, my - 1.2, 2.4, 1.5, 0, Math.PI, 0); b.fill();
+            if (!glowing){ b.fillStyle = '#fff'; b.fillRect(mx - 1, my - 2, .8, .8); b.fillRect(mx + .6, my - 1.8, .7, .7); } }
+          if (H(50) > .88){ b.fillStyle = 'rgba(200,255,170,.85)'; b.fillRect(x + H(51)*P, y + H(52)*P, 1.2, 1.2); } // a resting firefly
           break;
         case 'camp':
           b.fillStyle = alt ? '#a48a58' : '#9c8352'; b.fillRect(x, y, P, P);
@@ -2786,14 +2816,22 @@ function paintGround(){
 // ----- static scenery (built once) -----
 const scenery = [];
 // ----- checkpoint landmarks -----
-const CP_NAMES = ['Hell Portal', 'Church', 'Wishing Well', 'Graveyard', 'Mine', 'Barracks', 'Castle'];
+const CP_NAMES = ['Hell Portal', 'Church', 'Wishing Well', 'Graveyard', 'Elder Tree', 'Barracks', 'Castle'];
 function mkGable(w, d, h){ // roof: rectangle w (x) by d (z) at y=0, ridge along x at height h
   const x = w/2, z = d/2;
   return {v:[[-x,0,-z],[x,0,-z],[x,0,z],[-x,0,z],[-x,h,0],[x,h,0]], f:[[0,1,2,3],[0,1,5,4],[3,2,5,4],[0,3,4],[1,2,5]]};
 }
+function mkBlob(n, m){ // a low-poly sphere of radius 1 centred at y=0: n sides, m bands from pole to pole
+  const v = [[0, 1, 0], [0, -1, 0]], f = [];
+  for (let j=1;j<m;j++){ const t = Math.PI*j/m, y = Math.cos(t), r = Math.sin(t); for (let i=0;i<n;i++){ const a = Math.PI*2*i/n; v.push([Math.cos(a)*r, y, Math.sin(a)*r]); } }
+  const at = (j, i) => 2 + (j - 1)*n + (i % n);
+  for (let i=0;i<n;i++){ f.push([0, at(1, i), at(1, i + 1)]); f.push([1, at(m - 1, i + 1), at(m - 1, i)]); }
+  for (let j=1;j<m-1;j++) for (let i=0;i<n;i++) f.push([at(j, i), at(j, i + 1), at(j + 1, i + 1), at(j + 1, i)]);
+  return {v, f};
+}
 const LM = {
   box: (w,h,d) => mkBox(w,h,d), gable: mkGable(1,1,1), spire: mkBipyr(4, 1, 1, .001), cone8: mkBipyr(8, 1, 1, .001),
-  cyl10: mkPrism(10, 1, 1), cyl8: mkPrism(8, 1, 1), mound: mkBipyr(7, 1, 1, .001),
+  cyl10: mkPrism(10, 1, 1), cyl8: mkPrism(8, 1, 1), mound: mkBipyr(7, 1, 1, .001), blob: mkBlob(9, 5),
 };
 let castleStage = 0; // 0 intact .. 5 roofless and blackened (20% health or less) .. 6 a burnt-out ruin (0 health)
 function charCol(hex, k){ const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255], to = [34, 28, 24]; return '#' + c.map((v, i) => Math.round(v + (to[i] - v)*k).toString(16).padStart(2, '0')).join(''); }
@@ -2805,7 +2843,7 @@ function setCastleStage(st){ // rebuild the castle's model for its damage stage 
 }
 function landmark(i, x, z){
   const P = [], S = [], lit = {amb:.5, dif:.62};
-  const k = (i === 6 ? 1.5 : 1.4)*1.5; // landmarks are drawn larger than a square so they read at a glance
+  const k = (i === 6 ? 1.5 : i === 4 ? 2.05 : 1.4)*1.5; // landmarks are drawn larger than a square so they read at a glance (the elder tree towers over the rest)
   const by = tileElev(Math.floor(x), Math.floor(z)); // a waypoint on a hill stands on the hilltop
   const add = (m, px, py, pz, sx, sy, sz, rot, col, opt) => P.push(instance(m, x+px*k, py*k + by, z+pz*k, sx*k, sy*k, sz*k, rot || 0, col, opt || lit));
   const B = (px, py, pz, w, h, d, col, rot, opt) => add(mkBox(w, h, d), px, py, pz, 1, 1, 1, rot, col, opt);
@@ -2833,6 +2871,7 @@ function landmark(i, x, z){
       B(0, 0, .25, .22, .7, .22, '#d4cab1'); add(LM.spire, 0, .7, .25, .16, .34, .16, Math.PI/4, '#5a3324');
       B(0, 1.04, .25, .03, .2, .03, '#f0c060', 0, {emis:.4}); B(0, 1.11, .25, .12, .03, .03, '#f0c060', 0, {emis:.4});
       B(0, .18, .365, .08, .14, .01, '#2a1d14'); // door
+      B(0, .45, .362, .14, .17, .01, '#1a120c', 0, {amb:1, dif:0}); B(0, .62, .364, .17, .025, .02, '#b3a990'); // belfry opening and its lintel; the bell swings in it (see drawWaypointAnims)
       S.push([-.25, -.38, .25, .37, .7]); top = 1.3; break; }
     case 2: { // wishing well: stone ring, water, two posts and a little roof with a bucket
       add(LM.cyl10, 0, 0, 0, .27, .2, .27, 0, '#9a917f'); add(LM.cyl10, 0, .17, 0, .21, .03, .21, 0, '#2f6fa8', {amb:.7, dif:.4, emis:.15});
@@ -2853,17 +2892,21 @@ function landmark(i, x, z){
       for (const px of [-.27, .27]){ B(px, .1, .28, .07, .05, .07, dk); add(LM.cyl8, px, .15, .28, .04, .07, .04, 0, '#8f8a7f'); } // urns either side of the steps
       B(-.36, 0, -.32, .05, .5, .05, '#3b2a1c'); B(-.31, .38, -.32, .14, .03, .03, '#3b2a1c', -.5); B(-.42, .44, -.32, .12, .03, .03, '#3b2a1c', .6); // bare tree
       S.push([-.32, -.3, .32, .3, .7]); top = .95; break; }
-    case 4: { // mine: rocky mound with a timbered entrance and a cart of ore
-      add(LM.mound, 0, 0, -.1, .46, .5, .4, .3, '#76695a', {amb:.45, dif:.7});
-      B(-.15, 0, .2, .06, .34, .06, '#5b3d24'); B(.15, 0, .2, .06, .34, .06, '#5b3d24'); B(0, .34, .2, .4, .06, .07, '#5b3d24');
-      B(0, 0, .19, .24, .32, .02, '#0f0b08', 0, {amb:1, dif:0});
-      B(.2, .05, .36, .2, .1, .12, '#6b5a44'); B(.2, .15, .36, .16, .04, .08, '#c8963a', 0, {emis:.2});
-      S.push([-.45, -.45, .45, .3, .5]); top = .8; break; }
+    case 4: { // elder tree: a huge gnarled trunk on a flared root base, a broad crown of leaves hung with glowing fruit (its roots sprawl over the hills: see ELDER_ROOTS)
+      const bark = '#4e3a2a', barkD = '#3a2a1e', moss = '#4f7a3a', bk = {amb:.5, dif:.65};
+      add(LM.mound, 0, 0, 0, .34, .22, .34, .3, barkD, bk); // the flared foot of the trunk
+      for (let n=0; n<7; n++){ const a = n/7*Math.PI*2 + .4, L = .28 + (n % 3)*.05; B(Math.cos(a)*L*.5, 0, Math.sin(a)*L*.5, L, .07 - (n % 2)*.02, .06, n % 2 ? bark : barkD, -a); } // surface roots fanning out
+      add(LM.cyl8, 0, 0, 0, .14, .62, .14, .2, bark, bk); add(LM.cyl8, .04, .1, .03, .1, .62, .1, .9, barkD, bk); add(LM.cyl8, -.05, .2, -.02, .09, .5, .09, 1.6, bark, bk); // a twisting trunk of braided stems
+      add(LM.cyl8, 0, .05, .12, .07, .14, .02, 0, '#1a120c', {amb:1, dif:0}); // a hollow in the trunk
+      B(-.1, .55, 0, .3, .05, .05, bark, .5); B(.12, .62, .02, .28, .05, .05, barkD, -.6); B(0, .66, -.1, .05, .05, .26, bark, .3); // boughs
+      for (const [px, pz, sz] of [[.1, .13, .06], [-.12, .08, .05], [.02, -.13, .07]]) add(LM.mound, px, .02, pz, sz, .05, sz, 0, moss, {amb:.6, dif:.5}); // moss on the roots
+      for (let n=0; n<7; n++){ const a = n/7*Math.PI*2 + .2, L = .55 + (n % 3)*.12, h = .58 + (n % 4)*.05; B(Math.cos(a)*L*.5, h, Math.sin(a)*L*.5, L, .045, .045, n % 2 ? bark : barkD, -a); B(Math.cos(a)*L*.95, h, Math.sin(a)*L*.95, .045, .3, .045, barkD); } // long boughs reaching out under the crown (drawn separately: see drawElderCrown)
+      S.push([-.5, -.5, .5, .5, 1.1]); top = 1.45; break; }
     case 5: { // barracks: long timber hall, red roof, banner and weapon rack
       B(0, 0, -.05, .78, .3, .44, '#a28462'); add(LM.gable, 0, .3, -.05, .86, .2, .5, 0, '#8e2b22');
       for (const px of [-.3, 0, .3]) B(px, .12, .175, .08, .08, .01, '#2a1d14');
       B(-.34, 0, .3, .03, .7, .03, '#4a3522');
-      F({v:[[0,.7,0],[.26,.66,0],[.24,.52,0],[0,.48,0]], f:[[0,1,2,3]]}, -.34, 0, .3, 0, '#a3241c');
+      // its banner is drawn every frame so it can wave (see drawWaypointAnims)
       B(.24, 0, .3, .2, .03, .03, '#4a3522'); for (const px of [.17, .24, .31]) B(px, 0, .3, .015, .26, .015, '#cfd3db');
       S.push([-.4, -.3, .4, .2, .5]); top = .9; break; }
     case 6: { // castle (exit): keep with battlements, four round towers with conical roofs, gatehouse; it crumbles and burns as health falls (castleStage 0..6)
@@ -4281,12 +4324,13 @@ function renderWaypointPortrait(c2, Wc, Hc, dpr, cp){ // the waypoint's landmark
   const keepView = Object.assign({}, view), keepVW = VW, keepCtx = ctx;
   ctx = c2;
   try {
-    Object.assign(view, {yaw:0, pitch:.72, zoom:1, cx:c+.5, cz:r+.5, w:Wc, h:Hc, s0:Wc/(cp === CPS.length-1 ? 5.4 : 3.9), fitOff:0, dpr});
-    camera(); VW.oy = Hc*.66 + .6*VW.cp*VW.s + (sc.elev || 0)*VW.cp*VW.s; // a waypoint on a hill is framed at its hilltop
+    Object.assign(view, {yaw:0, pitch:.72, zoom:1, cx:c+.5, cz:r+.5, w:Wc, h:Hc, s0:Wc/(cp === CPS.length-1 ? 5.4 : cp === 4 ? 6.4 : 3.9), fitOff:0, dpr});
+    camera(); VW.oy = Hc*(cp === 4 ? .8 : .66) + .6*VW.cp*VW.s + (sc.elev || 0)*VW.cp*VW.s; // a waypoint on a hill is framed at its hilltop
     c2.setTransform(dpr,0,0,dpr,0,0); c2.clearRect(0, 0, Wc, Hc);
     const o3 = [0,0,0]; proj(c+.5, sc.elev || 0, r+.5, o3);
     c2.fillStyle = 'rgba(0,0,0,.35)'; c2.beginPath(); c2.ellipse(o3[0] + VW.s*.1, o3[1] + VW.s*.06, VW.s*1.0, VW.s*1.0*VW.sp, 0, 0, Math.PI*2); c2.fill();
     drawObjParts(sc);
+    if (cp === 1 || cp === 4 || cp === 5) drawWaypointAnims(cp);
     if (cp === CPS.length-1){ drawCastleFlag(); drawCastleFire(); } // the portrait shows the castle's damage, smoke and flames too
     if (cp === 0){ // the portal's fire glows in the portrait too
       const pk = 2.1; proj(c + .5, .3*pk, r + .5, o3);
@@ -4366,23 +4410,48 @@ function drawCastleFire(){ // smoke and flames pour from the castle as it takes 
     for (let i=0;i<3;i++){ const ph = (anim*.8 + i/3 + j*.29) % 1; ctx.fillStyle = `rgba(255,${150 + i*30},60,${1 - ph})`; ctx.fillRect(o[0] + Math.sin(i*7 + j + anim*2)*u*.4, o[1] - ph*u*2.2, Math.max(1, u*.06), Math.max(1, u*.06)); } // rising embers
   }
 }
-function drawCastleFlag(){ // a cloth flag on the castle's pole, rippling in the wind
-  if (castleStage >= 5) return; // the flag has burnt away
-  const [c, r] = CPS[CPS.length-1], k = 1.5*1.5, X = c + .5, Z = r + .5, N = 10, o = [0,0,0];
+function drawClothFlag(X, Y0, Z, k, w, y0, h, col){ // a cloth flag hanging from a pole at (X, Z), rippling in the wind; sizes in landmark units scaled by k
+  const N = 10, o = [0,0,0], ph = X*1.7 + Z*.9;
   const pt = (u, v) => { // u: 0 at the pole .. 1 at the free end; v: 0 bottom .. 1 top
-    const wave = Math.sin(anim*5.5 - u*6) * .07 * u + Math.sin(anim*9.1 - u*11) * .015 * u;
-    const lx = .36*u*(1 - .06*Math.abs(Math.sin(anim*2.3 + u))), lz = wave;
-    const ly = 1.24 + .26*v - .05*u + .02*u*Math.sin(anim*7 - u*8);
-    proj(X + lx*k, ly*k, Z + lz*k, o); return [o[0], o[1]];
+    const t = anim + ph, wave = Math.sin(t*5.5 - u*6) * .07 * u * (w/.36) + Math.sin(t*9.1 - u*11) * .015 * u;
+    const lx = w*u*(1 - .06*Math.abs(Math.sin(t*2.3 + u))), lz = wave;
+    const ly = y0 + h*v - .05*u*(h/.26) + .02*u*Math.sin(t*7 - u*8);
+    proj(X + lx*k, Y0 + ly*k, Z + lz*k, o); return [o[0], o[1]];
   };
   for (let i=0;i<N;i++){
     const u0 = i/N, u1 = (i+1)/N;
     const a = pt(u0, 0), b = pt(u1, 0), cc = pt(u1, 1), d = pt(u0, 1);
-    const slope = Math.cos(anim*5.5 - (u0+u1)*3) * (u0+u1)/2, shade = .82 + .28*slope;
-    ctx.fillStyle = shadeStr(rgbOf('#2d4f8a'), shade);
+    const slope = Math.cos((anim + ph)*5.5 - (u0+u1)*3) * (u0+u1)/2, shade = .82 + .28*slope;
+    ctx.fillStyle = shadeStr(rgbOf(col), shade);
     ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(cc[0], cc[1]); ctx.lineTo(d[0], d[1]); ctx.closePath(); ctx.fill();
     ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = .8; ctx.stroke();
   }
+}
+function drawCastleFlag(){ // a cloth flag on the castle's pole, rippling in the wind
+  if (castleStage >= 5) return; // the flag has burnt away
+  const [c, r] = CPS[CPS.length-1];
+  drawClothFlag(c + .5, 0, r + .5, 1.5*1.5, .36, 1.24, .26, '#2d4f8a');
+}
+function drawChurchBell(){ // a bronze bell swinging back and forth in the church tower's belfry
+  const [c, r] = CPS[1], k = 1.4*1.5, X = c + .5, Z = r + .5 + .37*k, Y0 = tileElev(c, r), o = [0,0,0];
+  const sw = Math.sin(anim*2.4), a = .55*sw, ca = Math.cos(a), sa = Math.sin(a), py = .605;
+  const P = (lx, ly, ang = a) => { const cc = Math.cos(ang), ss = Math.sin(ang); proj(X + (lx*cc - ly*ss)*k, Y0 + (py + lx*ss + ly*cc)*k, Z, o); return [o[0], o[1]]; };
+  const body = [[-.012,-.012],[.012,-.012],[.024,-.03],[.03,-.06],[.045,-.088],[.045,-.095],[-.045,-.095],[-.045,-.088],[-.03,-.06],[-.024,-.03]];
+  ctx.lineJoin = 'round';
+  const cl = P(0, -.095 + .012, a*.55); // the clapper lags behind the swing
+  ctx.fillStyle = '#3a2a18'; ctx.beginPath(); ctx.arc(cl[0], cl[1], Math.max(.8, VW.s*k*.011), 0, Math.PI*2); ctx.fill();
+  const g0 = P(-.045, -.05), g1 = P(.045, -.05), gr = ctx.createLinearGradient(g0[0], g0[1], g1[0], g1[1]);
+  gr.addColorStop(0, '#7a5220'); gr.addColorStop(.35 + .15*sw, '#e9b75a'); gr.addColorStop(1, '#6a4418');
+  ctx.fillStyle = gr; ctx.strokeStyle = '#4a3010'; ctx.lineWidth = Math.max(.6, VW.s*k*.004);
+  ctx.beginPath(); body.forEach(([x, y], i) => { const q = P(x, y); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.closePath(); ctx.fill(); ctx.stroke();
+  const l0 = P(-.046, -.093), l1 = P(.046, -.093); ctx.strokeStyle = '#f3d08a'; ctx.beginPath(); ctx.moveTo(l0[0], l0[1]); ctx.lineTo(l1[0], l1[1]); ctx.stroke(); // bright lip
+  const y0 = P(-.06, .004, 0), y1 = P(.06, .004, 0); ctx.strokeStyle = '#3b2a1c'; ctx.lineWidth = Math.max(1, VW.s*k*.012); ctx.beginPath(); ctx.moveTo(y0[0], y0[1]); ctx.lineTo(y1[0], y1[1]); ctx.stroke(); // the beam it hangs from
+}
+function drawBarracksFlag(){ const [c, r] = CPS[5], k = 1.4*1.5; drawClothFlag(c + .5 - .34*k, tileElev(c, r), r + .5 + .3*k, k, .26, .48, .22, '#a3241c'); }
+function drawWaypointAnims(cp){ // live parts of the waypoint buildings: the church bell and the barracks banner
+  if (cp == null || cp === 1) drawChurchBell();
+  if (cp == null || cp === 5) drawBarracksFlag();
+  if (cp == null || cp === 4){ drawElderCrown(); drawElderLights(); }
 }
 const TRAP_LINGER = {ensnare:[2,3,4], gale:[5,7,11], torrent:[4,6,10], howl:[10,10,10], acid:[10,15,20], paralysis:[2,3,4], terrorize:[6,6,6], decrepify:[5,6,7]}; // how long each trap's mark stays on the ground
 function drawTrapZone(pd){ // the trap's reach on the ground: a faint ring at rest, and a themed patch that lingers after it springs
@@ -5039,23 +5108,170 @@ function drawBarracksProp(p){ // a training dummy or archery target, drawn in th
     }
   
 }
-// ----- the gold mine's rail line: a track leading out of the mine with a cart heaped with gold -----
 const propAt = new Map(); // hand-drawn ground props by square, so they can be redrawn whenever their hill square is
-const MINE_RAILS = (() => { const [c, r] = CPS[4]; return [[c - 1, r, 'h'], [c - 2, r, 'h'], [c - 3, r, 'h'], [c - 3, r - 1, 'v'], [c - 3, r - 2, 'v']].map(([tc, tr, dir], i) => ({c:tc, r:tr, dir, cart: i === 1})); })();
-function drawRailTile(t){ // two iron rails on timber sleepers across one square, at that square's height; a loaded mine cart on one of them
-  const d = view.dpr, e = tileElev(t.c, t.r) + .01, o = [0,0,0], q = (x, z) => { proj(x, e, z, o); return [o[0], o[1]]; };
-  ctx.setTransform(d,0,0,d,0,0);
-  const cx = t.c + .5, cz = t.r + .5, H = t.dir === 'h';
-  for (let k=0;k<4;k++){ const a = -.375 + k*.25; const [x1, y1] = q(H ? cx + a : cx - .22, H ? cz - .22 : cz + a), [x2, y2] = q(H ? cx + a : cx + .22, H ? cz + .22 : cz + a); ctx.strokeStyle = '#5a3d22'; ctx.lineWidth = Math.max(2, VW.s*.07); ctx.lineCap = 'butt'; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); } // sleepers
-  for (const off of [-.13, .13]){ const [x1, y1] = q(H ? cx - .5 : cx + off, H ? cz + off : cz - .5), [x2, y2] = q(H ? cx + .5 : cx + off, H ? cz + off : cz + .5);
-    ctx.strokeStyle = '#3a3c42'; ctx.lineWidth = Math.max(1.5, VW.s*.035); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-    ctx.strokeStyle = 'rgba(200,205,215,.5)'; ctx.lineWidth = Math.max(.6, VW.s*.01); ctx.beginPath(); ctx.moveTo(x1, y1 - 1); ctx.lineTo(x2, y2 - 1); ctx.stroke(); } // rails with a bright top edge
-  if (t.cart){ const [x, y] = q(cx, cz), u = VW.s;
-    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x, y, u*.3, u*.1, 0, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#2a2a2e'; for (const sx of [-.17, .17]){ ctx.beginPath(); ctx.arc(x + sx*u, y - u*.04, u*.06, 0, Math.PI*2); ctx.fill(); } // wheels
-    ctx.fillStyle = '#5a4430'; ctx.beginPath(); ctx.moveTo(x - u*.28, y - u*.34); ctx.lineTo(x + u*.28, y - u*.34); ctx.lineTo(x + u*.22, y - u*.08); ctx.lineTo(x - u*.22, y - u*.08); ctx.closePath(); ctx.fill(); // the tub
-    ctx.fillStyle = '#6e5438'; ctx.fillRect(x - u*.28, y - u*.36, u*.56, u*.05); ctx.fillStyle = '#7a7e86'; for (const yy of [-.3, -.17]) ctx.fillRect(x - u*.26, y + yy*u, u*.52, u*.025); // rim and iron bands
-    for (const [gx, gy, r2] of [[-.14, -.38, .07], [0, -.42, .08], [.13, -.38, .07], [-.05, -.45, .05], [.07, -.46, .05]]){ ctx.fillStyle = '#e8b830'; ctx.beginPath(); ctx.arc(x + gx*u, y + gy*u, r2*u, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#fff2a8'; ctx.beginPath(); ctx.arc(x + gx*u - r2*u*.3, y + gy*u - r2*u*.3, r2*u*.35, 0, Math.PI*2); ctx.fill(); } // heaped gold nuggets
+// ----- the elder tree's roots: thick roots snake out from the trunk across the hills around it, arching out of the ground and diving back in -----
+const ELDER_ROOTS = (() => { const [c, r] = CPS[4], X = c + .5, Z = r + .5, out = [];
+  for (let n=0; n<8; n++){ const a0 = n/8*Math.PI*2 + .35 + Math.sin(n*7.3)*.25, L = 2.4 + ((n*5) % 3)*.45, pts = [];
+    for (let k=0;k<=40;k++){ const t = k/40, a = a0 + Math.sin(t*3.2 + n)*.35*t, d = .35 + t*L; pts.push([X + Math.cos(a)*d, Z + Math.sin(a)*d, t]); }
+    out.push({pts, ph:n*1.7, w:.17 - (n % 3)*.02}); }
+  return out; })();
+const ROOT_TILES = (() => { const m = new Map(); ELDER_ROOTS.forEach((rt, ri) => rt.pts.forEach(([x, z]) => { const k = Math.floor(z)*COLS + Math.floor(x); if (!m.has(k)) m.set(k, {c:Math.floor(x), r:Math.floor(z)}); })); return [...m.values()]; })();
+function drawRootTile(t){ // the parts of every root that cross this square, drawn at the square's height; a root arches above ground in places and dives under it in others
+  const d = view.dpr, e = tileElev(t.c, t.r), o = [0,0,0];
+  ctx.setTransform(d,0,0,d,0,0); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const rt of ELDER_ROOTS){
+    let run = [];
+    const flush = () => { if (run.length > 1){
+        for (const [col, wk, dy] of [['#2a1d12', 1.35, 0], ['#5a4330', 1, 0], ['rgba(170,140,100,.55)', .35, -.3]]){
+          ctx.strokeStyle = col; ctx.beginPath(); run.forEach(([sx, sy, w], q) => { q ? ctx.lineTo(sx, sy + dy*w) : ctx.moveTo(sx, sy + dy*w); });
+          ctx.lineWidth = Math.max(1, run[Math.floor(run.length/2)][2]*wk); ctx.stroke(); } }
+      run = []; };
+    for (const [x, z, tt] of rt.pts){
+      if (Math.floor(x) !== t.c || Math.floor(z) !== t.r){ flush(); continue; }
+      const h = .05 + .13*Math.sin(tt*11 + rt.ph); // above zero: an arch out of the soil; below: under the ground
+      if (h < 0){ flush(); continue; }
+      proj(x, e + h*(1 - tt*.5), z, o); run.push([o[0], o[1], VW.s*rt.w*(1 - tt*.7)]);
+    }
+    flush();
+  }
+}
+// ----- waterfalls: little falls, one terrace step high, spill down the walls of the middle mountain's steps at scattered spots -----
+const FALLS = (() => { const spots = [], h = (c, r) => { const x = Math.sin(c*127.1 + r*311.7)*43758.5453; return x - Math.floor(x); };
+  const roadCols = new Set([MCX]);
+  for (let r = MCZ; r < ROWS - 1; r++) for (let c = 0; c < COLS; c++){
+    if (!mountLevel(c, r) || roadCols.has(c) || tileLevel(c, r + 1) >= tileLevel(c, r)) continue; // a visible step wall: this square is higher than the one in front
+    spots.push({c, r, k:h(c, r)});
+  }
+  spots.sort((a, b) => a.k - b.k);
+  const out = [], used = new Set();
+  for (const sp of spots){ if (out.length >= 9) break; const key = sp.c + ',' + sp.r;
+    if ([...used].some(u => { const [uc, ur] = u.split(',').map(Number); return Math.abs(uc - sp.c) <= 1 && Math.abs(ur - sp.r) <= 1; })) continue; // keep them apart
+    used.add(key); out.push({kind:'fall', c:sp.c, r:sp.r, e:tileElev(sp.c, sp.r), e2:tileElev(sp.c, sp.r + 1), n:out.length}); }
+  // the far side: water spilling over the back edge of a terrace, down a wall the viewer can't see, into a pool on the step behind
+  const back = [];
+  for (let r = 1; r < MCZ; r++) for (let c = 0; c < COLS; c++){
+    if (!mountLevel(c, r) || roadCols.has(c) || tileLevel(c, r - 1) >= tileLevel(c, r)) continue;
+    back.push({c, r, k:h(c + 50, r + 7)});
+  }
+  back.sort((a, b) => a.k - b.k); const usedB = [];
+  for (const sp of back){ if (usedB.length >= 7) break; if (usedB.some(u => Math.abs(u.c - sp.c) <= 1 && Math.abs(u.r - sp.r) <= 1)) continue;
+    usedB.push(sp); const n = out.length;
+    out.push({kind:'lip', c:sp.c, r:sp.r, e:tileElev(sp.c, sp.r), e2:tileElev(sp.c, sp.r - 1), n});
+    out.push({kind:'bpool', c:sp.c, r:sp.r - 1, e:tileElev(sp.c, sp.r - 1), n}); }
+  return out; })();
+function fallDepth(sg){ return sg.kind === 'fall' ? depthOf(sg.c + .5, (sg.e + sg.e2)/2, sg.r + .99) : depthOf(sg.c + .5, sg.e + .02, sg.kind === 'lip' ? sg.r + .3 : sg.r + .7); }
+const SHOW_FALLS = false; // the mountain waterfalls are switched off for now (to be revisited)
+const frac = x => x - Math.floor(x);
+function drawFallSeg(sg){ // a little waterfall pouring down one terrace wall, with spray at its foot
+  const o = [0,0,0], P = (x, y, z) => { proj(x, y, z, o); return [o[0], o[1]]; }, cx = sg.c + .5 + Math.sin(sg.n*2.3)*.12, w = .13, t = anim;
+  ctx.setTransform(view.dpr,0,0,view.dpr,0,0); ctx.lineCap = 'round';
+  if (sg.kind === 'fall'){
+    const z = sg.r + 1 + .02, ww = w*1.1, [a1, b1] = P(cx - ww, sg.e + .01, z), [a2, b2] = P(cx + ww, sg.e + .01, z), [a3, b3] = P(cx + ww*1.25, sg.e2, z + .03), [a4, b4] = P(cx - ww*1.25, sg.e2, z + .03);
+    const gr = ctx.createLinearGradient(0, b1, 0, b4); gr.addColorStop(0, 'rgba(70,140,195,.92)'); gr.addColorStop(1, 'rgba(175,220,250,.92)');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(a1, b1); ctx.lineTo(a2, b2); ctx.lineTo(a3, b3); ctx.lineTo(a4, b4); ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.clip(); ctx.strokeStyle = 'rgba(235,250,255,.75)'; ctx.lineWidth = Math.max(1, VW.s*.02); // white streaks rushing down
+    for (let k=0;k<5;k++){ const fx = -ww + (k + .5)/5*2*ww, ph = frac(t*1.6 + k*.37 + sg.n*.21), ya = sg.e - (sg.e - sg.e2)*ph, yb = Math.max(sg.e2, ya - (sg.e - sg.e2)*.35), [x1, y1] = P(cx + fx, ya, z), [x2, y2] = P(cx + fx*1.1, yb, z); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+    ctx.restore();
+    if (!grid[sg.r + 1][sg.c]){ // a small pool where the water lands, with rings spreading out
+      const [px, py] = P(cx, sg.e2 + .012, z + .36), R = VW.s*.52;
+      ctx.fillStyle = 'rgba(34,86,132,.92)'; ctx.beginPath(); ctx.ellipse(px, py, R, R*.6*VW.sp, 0, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = 'rgba(110,92,70,.85)'; ctx.lineWidth = Math.max(1, VW.s*.025); ctx.stroke();
+      ctx.fillStyle = 'rgba(90,150,200,.55)'; ctx.beginPath(); ctx.ellipse(px - R*.15, py - R*.08*VW.sp, R*.55, R*.3*VW.sp, 0, 0, Math.PI*2); ctx.fill();
+      for (let k=0;k<2;k++){ const ph = frac(t*.7 + k*.5 + sg.n*.3); ctx.strokeStyle = `rgba(210,240,255,${.6*(1 - ph)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(px, py - R*.25*VW.sp, R*(.15 + ph*.75), R*(.15 + ph*.75)*.6*VW.sp, 0, 0, Math.PI*2); ctx.stroke(); }
+    }
+    for (let k=0;k<4;k++){ const ph = frac(t*1.2 + k*.25 + sg.n*.13), [x1, y1] = P(cx + (k - 1.5)*ww*.6, sg.e2 + ph*.12, z + .06), R = VW.s*(.05 + ph*.07); ctx.fillStyle = `rgba(240,250,255,${.6*(1 - ph)})`; ctx.beginPath(); ctx.arc(x1, y1, R, 0, Math.PI*2); ctx.fill(); } // foam and spray at the foot
+  }
+  else if (sg.kind === 'lip'){ // seen from the front: a stream runs back across the terrace and curls over its far edge in a white lip, spray rising behind
+    if (grid[sg.r][sg.c]) return;
+    const y = sg.e + .015, wob = z => Math.sin(z*6 + sg.n)*.04;
+    ctx.fillStyle = 'rgba(52,118,170,.9)'; ctx.beginPath();
+    for (let k=0;k<=5;k++){ const zz = sg.r + .55 - .55*k/5, [x1, y1] = P(cx - w*(1 + .4*k/5) + wob(zz), y, zz); k ? ctx.lineTo(x1, y1) : ctx.moveTo(x1, y1); }
+    for (let k=5;k>=0;k--){ const zz = sg.r + .55 - .55*k/5, [x1, y1] = P(cx + w*(1 + .4*k/5) + wob(zz), y, zz); ctx.lineTo(x1, y1); }
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(210,240,255,.7)'; ctx.lineWidth = Math.max(1, VW.s*.022);
+    for (let k=0;k<3;k++){ const zz = sg.r + .55 - (frac(t*.8 + k/3 + sg.n*.2))*.5, [x1, y1] = P(cx - w*.4 + wob(zz), y, zz), [x2, y2] = P(cx + w*.3 + wob(zz), y, zz - .1); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+    const [l1, m1] = P(cx - w*1.45, y + .01, sg.r + .01), [l2, m2] = P(cx + w*1.45, y + .01, sg.r + .01); // the white lip where it tips over
+    ctx.strokeStyle = 'rgba(240,250,255,.95)'; ctx.lineWidth = Math.max(1.5, VW.s*.05); ctx.beginPath(); ctx.moveTo(l1, m1); ctx.quadraticCurveTo((l1 + l2)/2, m1 - VW.s*.03, l2, m2); ctx.stroke();
+    for (let k=0;k<5;k++){ const ph = frac(t*.9 + k*.2 + sg.n*.17), [x1, y1] = P(cx + (k - 2)*w*.55, sg.e2 + (sg.e - sg.e2)*(.4 + ph*.9), sg.r - .1), R = VW.s*(.05 + ph*.09); ctx.fillStyle = `rgba(240,250,255,${.5*(1 - ph)})`; ctx.beginPath(); ctx.arc(x1, y1, R, 0, Math.PI*2); ctx.fill(); } // spray rising from the hidden fall
+  } else if (sg.kind === 'bpool'){ // the pool on the step behind, mostly hidden behind the terrace in front
+    if (grid[sg.r][sg.c]) return;
+    const [px, py] = P(cx, sg.e + .012, sg.r + .7), R = VW.s*.5, [, edge] = P(cx, tileElev(sg.c, sg.r + 1), sg.r + 1);
+    ctx.save(); ctx.beginPath(); ctx.rect(px - R*2, py - R*3, R*4, edge - (py - R*3)); ctx.clip(); // only the part peeking out above the terrace in front shows
+    ctx.fillStyle = 'rgba(34,86,132,.92)'; ctx.beginPath(); ctx.ellipse(px, py, R, R*.6*VW.sp, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(110,92,70,.85)'; ctx.lineWidth = Math.max(1, VW.s*.025); ctx.stroke();
+    for (let k=0;k<2;k++){ const ph = frac(t*.7 + k*.5 + sg.n*.3); ctx.strokeStyle = `rgba(210,240,255,${.6*(1 - ph)})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(px, py + R*.2*VW.sp, R*(.15 + ph*.75), R*(.15 + ph*.75)*.6*VW.sp, 0, 0, Math.PI*2); ctx.stroke(); }
+    ctx.restore();
+  }
+}
+// ----- the elder tree's crown: a wide canopy (about 7 squares across) drawn every frame at 60% opacity over everything,
+// hung with swaying vines, some glowing a warm yellow, with fireflies drifting round it -----
+const CROWN_R = 3.5, CROWN_H = 2.7; // canopy radius in squares and its height above the hilltop
+const CROWN_MESH = (() => { // one lumpy, flattened dome: drawn as a single shell its overlap stays an even 60% everywhere
+  const n = 18, m = 7, v = [[0, 1.05, 0], [0, -.55, 0]], f = [], h = (a, b) => { const x = Math.sin(a*12.9898 + b*78.233)*43758.5453; return x - Math.floor(x); };
+  for (let j=1;j<m;j++){ const t = Math.PI*j/m, y = Math.cos(t), r = Math.sin(t); for (let i=0;i<n;i++){ const a = Math.PI*2*i/n + (j % 2)*Math.PI/n, k = .86 + .26*h(i, j); v.push([Math.cos(a)*r*k, (y > 0 ? y : y*.55)*(.85 + .3*h(j, i)), Math.sin(a)*r*k]); } }
+  const at = (j, i) => 2 + (j - 1)*n + (((i % n) + n) % n);
+  for (let i=0;i<n;i++){ f.push([0, at(1, i), at(1, i + 1)]); f.push([1, at(m - 1, i + 1), at(m - 1, i)]); }
+  for (let j=1;j<m-1;j++) for (let i=0;i<n;i++){ const o = j % 2; f.push([at(j, i), at(j, i + 1), at(j + 1, i + o)]); f.push([at(j + 1, i + o), at(j + 1, i + o - 1), at(j, i)]); }
+  return {v, f}; })();
+const VINES = (() => { const out = []; for (let n=0; n<40; n++){ const a = n*2.39996, rr = .7 + ((n*37) % 100)/100*2.55; out.push({x:Math.cos(a)*rr, z:Math.sin(a)*rr*.95, len:.7 + ((n*53) % 100)/100*1.4, ph:n*1.31, glow: n % 3 === 0}); } return out; })();
+let crownInst = null, crownKey = '';
+const crownCaches = new WeakMap();
+function drawElderCrown(){
+  const [c, r] = CPS[4], X = c + .5, Z = r + .5, E = tileElev(c, r), o = [0,0,0];
+  const key = `${X}|${E}`; if (key !== crownKey){ crownKey = key; // the canopy's shape never changes, so its faces are built once
+    crownInst = instance(CROWN_MESH, X, E + CROWN_H, Z, CROWN_R, 1.25, CROWN_R, .3, '#3a8044', {amb:.55, dif:.6});
+    const pal = ['#2d6a3a', '#367a42', '#3d8448', '#2a6236', '#43904c', '#33703f'];
+    crownInst.faces.forEach((fc, i) => { const base = rgbOf(pal[(i*7 + (i >> 3)) % pal.length]), k = (.55 + .6*Math.max(0, fc.n[0]*LIGHT[0] + fc.n[1]*LIGHT[1] + fc.n[2]*LIGHT[2])); fc.fill = shadeStr(base, k); }); }
+  // the canopy is drawn into a cached image whenever the camera moves, then laid over the board at 60% each frame
+  const cvs = ctx.canvas, dpr = view.dpr, vk = [view.pitch, view.zoom, view.cx, view.cz, view.w, view.h, dpr, cvs.width, cvs.height, VW.oy].join('|');
+  let cache = crownCaches.get(cvs);
+  if (!cache || cache.key !== vk){
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const w of crownInst.W){ proj(w[0], w[1], w[2], o); x0 = Math.min(x0, o[0]); x1 = Math.max(x1, o[0]); y0 = Math.min(y0, o[1]); y1 = Math.max(y1, o[1]); }
+    const bx = Math.floor(x0*dpr) - 2, by = Math.floor(y0*dpr) - 2, bw = Math.max(1, Math.ceil((x1 - x0)*dpr) + 4), bh = Math.max(1, Math.ceil((y1 - y0)*dpr) + 4);
+    if (!cache){ cache = {can:document.createElement('canvas')}; crownCaches.set(cvs, cache); }
+    cache.key = vk; cache.bx = bx; cache.by = by;
+    if (cache.can.width !== bw || cache.can.height !== bh){ cache.can.width = bw; cache.can.height = bh; } else cache.can.getContext('2d').clearRect(0, 0, bw, bh);
+    const keep = ctx; ctx = cache.can.getContext('2d');
+    try { ctx.setTransform(dpr, 0, 0, dpr, -bx, -by); drawInst(crownInst); } finally { ctx = keep; }
+  }
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha = .6; ctx.drawImage(cache.can, cache.bx, cache.by); ctx.restore(); ctx.globalAlpha = 1;
+  ctx.setTransform(view.dpr,0,0,view.dpr,0,0); ctx.lineCap = 'round';
+  const vineTop = v => E + CROWN_H - .5 - Math.sqrt(Math.max(0, 1 - (v.x*v.x + v.z*v.z)/(CROWN_R*CROWN_R)))*.25;
+  // vines hanging from the canopy, swaying; some glow a warm yellow on and off (stems and leaves are batched into a few paths)
+  const pts = VINES.map(v => { const top = vineTop(v), sw = Math.sin(anim*1.1 + v.ph)*.08, out = []; for (let k=0;k<=5;k++){ const u = k/5; proj(X + v.x + sw*u*u, top - v.len*u, Z + v.z, o); out.push([o[0], o[1]]); } return out; });
+  const glowOf = v => v.glow ? Math.max(0, Math.sin(anim*1.4 + v.ph*2.1)) : 0;
+  ctx.beginPath(); VINES.forEach((v, n) => { if (glowOf(v) > .05) return; pts[n].forEach(([x1, y1], k) => k ? ctx.lineTo(x1, y1) : ctx.moveTo(x1, y1)); });
+  ctx.strokeStyle = '#2f5a2a'; ctx.lineWidth = Math.max(1, VW.s*.04); ctx.stroke();
+  const lw = VW.s*.05, lh = VW.s*.028; ctx.beginPath();
+  pts.forEach(p => { for (let k=1;k<5;k++){ const [x1, y1] = p[k], dx = (k % 2 ? 1 : -1)*VW.s*.04; ctx.moveTo(x1 + dx + lw, y1); ctx.ellipse(x1 + dx, y1, lw, lh, 0, 0, Math.PI*2); } });
+  ctx.fillStyle = '#4c8a3c'; ctx.fill(); // leaves
+  VINES.forEach((v, n) => { const g = glowOf(v); if (g <= .05) return; const p = pts[n];
+    const path = () => { ctx.beginPath(); p.forEach(([x1, y1], k) => k ? ctx.lineTo(x1, y1) : ctx.moveTo(x1, y1)); };
+    path(); ctx.strokeStyle = `rgba(255,190,80,${.25*g})`; ctx.lineWidth = Math.max(2, VW.s*.2); ctx.stroke();
+    path(); ctx.strokeStyle = `rgb(${Math.round(47 + 208*g)},${Math.round(90 + 124*g)},${Math.round(42 + 78*g)})`; ctx.lineWidth = Math.max(1, VW.s*.04); ctx.stroke();
+    const [tx, ty] = p[5], R = VW.s*.16, gr = ctx.createRadialGradient(tx, ty, 0, tx, ty, R); gr.addColorStop(0, `rgba(255,236,160,${g})`); gr.addColorStop(1, 'rgba(255,190,80,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(tx, ty, R, 0, Math.PI*2); ctx.fill(); }); // a glowing bud at the tip
+}
+function drawMountainMist(){ // soft clouds drifting slowly round the middle mountain's slopes
+  const o = [0,0,0]; ctx.setTransform(view.dpr,0,0,view.dpr,0,0);
+  for (let k=0;k<22;k++){
+    const a = k*2.39996 + anim*(.025 + (k % 4)*.008)*(k % 2 ? 1 : -1), rr = .6 + (k % 6)*.65 + Math.sin(anim*.2 + k)*.3, y = TERR_STEP*(MOUNT_TOP - Math.max(1, Math.round(rr)) + .4) + Math.sin(anim*.3 + k*1.7)*.12; // only round the top four terraces (the summit and three rings below it)
+    proj(MCX + .5 + Math.cos(a)*rr, y, MCZ + .5 + Math.sin(a)*rr, o);
+    const R = VW.s*(.9 + (k % 3)*.35), al = .2 + .07*Math.sin(anim*.4 + k*2.3), gr = ctx.createRadialGradient(o[0], o[1], 0, o[0], o[1], R);
+    gr.addColorStop(0, `rgba(235,240,245,${al})`); gr.addColorStop(.55, `rgba(225,232,240,${al*.55})`); gr.addColorStop(1, 'rgba(220,228,236,0)');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(o[0], o[1], R*1.5, R*.75, 0, 0, Math.PI*2); ctx.fill();
+  }
+}
+function drawElderLights(){ // fireflies and fairy lights drifting round the elder tree
+  const [c, r] = CPS[4], X = c + .5, Z = r + .5, E = tileElev(c, r), o = [0,0,0];
+  ctx.setTransform(view.dpr,0,0,view.dpr,0,0);
+  for (let k=0;k<30;k++){
+    const a = k*2.39 + anim*(.15 + (k % 5)*.04)*(k % 2 ? 1 : -1), rr = .9 + (k % 7)*.5 + Math.sin(anim*.7 + k)*.3, y = E + .4 + (k % 5)*.55 + Math.sin(anim*1.3 + k*2.1)*.3;
+    proj(X + Math.cos(a)*rr, y, Z + Math.sin(a)*rr*.85, o);
+    const tw = .5 + .5*Math.sin(anim*4.2 + k*3.3); if (tw < .15) continue;
+    const R = Math.max(2, VW.s*.09), col = k % 3 ? '170,255,200' : '255,236,150', gr = ctx.createRadialGradient(o[0], o[1], 0, o[0], o[1], R*2.4);
+    gr.addColorStop(0, `rgba(${col},${.9*tw})`); gr.addColorStop(.3, `rgba(${col},${.35*tw})`); gr.addColorStop(1, `rgba(${col},0)`);
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(o[0], o[1], R*2.4, 0, Math.PI*2); ctx.fill();
   }
 }
 // ----- gardens and townsfolk round the wishing well and the castle: flower beds and hedges; people dance, drink and celebrate,
@@ -5204,7 +5420,7 @@ function blob(x, z, rx, rz, alpha){ ctx.fillStyle = `rgba(0,0,0,${alpha})`; ctx.
 const staticCan = document.createElement('canvas'); let staticKey = '', cellIndex = new Map();
 const objDepth = o => depthOf(o.x, o.y + .3, o.z);
 function drawObjParts(o){
-  if (o.draw){ o.draw(); return; } // hand-drawn props (training dummies, mine rails) placed in the depth order
+  if (o.draw){ o.draw(); return; } // hand-drawn props (training dummies, the elder tree's roots) placed in the depth order
   if (o.cp != null){ const sk = skinFor('waypoint:' + o.cp); if (sk){ drawSkinAt(sk, o.x, 0, o.z, 2.1); return; } }
   if (o.g){ const sk = skinFor(o.g.kind === 'rock' ? 'bastion:wall' : 'bastion:tower'); if (sk){ drawSkinAt(sk, o.x, o.base || 0, o.z, 1); return; } }
   if (o.sort){ const ps = o.parts.map(p => [depthOf(p.c[0], p.c[1], p.c[2]) + (p.bias || 0), p]); ps.sort((a,b) => a[0]-b[0]); for (const q of ps) drawInst(q[1]); }
@@ -5241,7 +5457,7 @@ function renderStatic(){
     propAt.clear(); const add = (c, r, y, fn) => { put(r, {x:c + .5, y, z:r + .5, draw:fn}); const k = r*COLS + c; const prev = propAt.get(k); propAt.set(k, prev ? () => { prev(); fn(); } : fn); };
     for (const p of BARRACKS_PROPS) if (free(p.c, p.r)) add(p.c, p.r, tileElev(p.c, p.r), () => drawBarracksProp(p));
     for (const t of GARDENS) if (free(t.c, t.r)) add(t.c, t.r, tileElev(t.c, t.r) - .25, () => drawGardenTile(t));
-    for (const t of MINE_RAILS) if (free(t.c, t.r)) add(t.c, t.r, tileElev(t.c, t.r) - .25, () => drawRailTile(t)); }
+    for (const t of ROOT_TILES) if (free(t.c, t.r)) add(t.c, t.r, tileElev(t.c, t.r) - .2, () => drawRootTile(t)); }
   const done = new Set(), tile = (c, r) => { const k = r*COLS + c; if (!done.has(k) && tileLevel(c, r)){ done.add(k); drawTerrainTile(c, r); } };
   for (let r = -2; r < ROWS + 2; r++){
     for (let c = -1; c <= COLS; c++) tile(c, r);
@@ -5252,17 +5468,32 @@ function renderStatic(){
   }
   ctx = main;
 }
-function occlude(x, z, dep, strict, lvl = 0){ // redraw static cell objects, and higher hill squares, just in front of a moving thing
-  const c0 = Math.floor(x), r0 = Math.floor(z), wps = new Set();
-  for (let r = r0; r <= r0 + 2; r++) for (let c = c0 - 1; c <= c0 + 1; c++){
-    if (tileLevel(c, r) > lvl && (strict ? r > r0 : r >= r0)){
-      drawTerrainTile(c, r);
-      const prop = propAt.get(r*COLS + c); if (prop){ prop(); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); }
-      for (let i=1;i<CPS.length-1;i++){ const [wc, wr] = CPS[i]; if (Math.abs(wc - c) <= 1 && Math.abs(wr - r) <= 1 && (strict ? wr > r0 : wr >= r0)) wps.add(i); } // a waypoint building overhangs its neighbours: redraw it over any of them
-      const pd = pedalAt(c, r); if (pd){ groundSpace(tileElev(c, r)); drawPedal(pd); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); }
+function occlude(x, z, dep, strict, lvl = 0, H = 0){ // H: the mover's height; when given, only squares that overlap it on screen are redrawn
+  // (redraw static cell objects, and higher hill squares, just in front of a moving thing)
+  // Once a square is redrawn over the mover, every higher square in front of it in the same column whose top reaches up over it
+  // must be redrawn too, or the redrawn square pokes out over that hill and it looks cut down (the flicker on the hills).
+  const c0 = Math.floor(x), r0 = Math.floor(z), wps = new Set(), bot = [-1e9, -1e9, -1e9], k = VW.cp/Math.max(.05, VW.sp);
+  const ge = elevAt(x, z), feetRow = z - ge*k + .15, headRow = z - (ge + H)*k;
+  for (let r = r0; r <= r0 + 8; r++){
+    let any = false;
+    for (let ci = 0; ci < 3; ci++){
+      const c = c0 - 1 + ci; if (c < 0 || c >= COLS || r >= ROWS) continue;
+      let first = r <= r0 + 2 && tileLevel(c, r) > lvl && (strict ? r > r0 : r >= r0);
+      if (first && H){ // skip squares that don't reach the mover's sprite on screen: redrawing them only wipes the shadows and effects on them (the flicker)
+        const e = tileElev(c, r), top = r - e*k, bottom = r + 1 - Math.min(e, tileElev(c, r + 1))*k;
+        if (c + 1 < x - .6 || c > x + .6 || top > feetRow || bottom < headRow) first = false;
+      }
+      const cover = r - tileElev(c, r)*k < bot[ci] - 1e-3; // its top reaches up over the lowest edge (on screen) of what was redrawn in this column
+      if (first || cover){
+        any = true; bot[ci] = Math.max(bot[ci], r + 1 - Math.min(tileElev(c, r), tileElev(c, r + 1))*k); // the redrawn square's front wall stops at its front neighbour's height
+        drawTerrainTile(c, r);
+        const prop = propAt.get(r*COLS + c); if (prop){ prop(); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); }
+        for (let i=1;i<CPS.length-1;i++){ const [wc, wr] = CPS[i]; if (Math.abs(wc - c) <= 1 && Math.abs(wr - r) <= 1 && (strict ? wr > r0 : wr >= r0)) wps.add(i); } // a waypoint building overhangs its neighbours: redraw it over any of them
+        const pd = pedalAt(c, r); if (pd){ groundSpace(tileElev(c, r)); drawPedal(pd); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); }
+      }
+      if (r <= r0 + 2 || first || cover){ const o = cellIndex.get(r*COLS + c); if (o && (objDepth(o) > dep || (cover && !first))) drawObjParts(o); }
     }
-    const o = cellIndex.get(r*COLS + c);
-    if (o && objDepth(o) > dep) drawObjParts(o);
+    if (r > r0 + 2 && !any) break;
   }
   for (const i of wps){ const sc = scenery.find(o => o.cp === i); if (sc){ drawObjParts(sc); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); } }
 }
@@ -5290,7 +5521,7 @@ function draw(){
   // ground overlays: range, aura, selection frame, effects
   ctx.lineWidth = .05;
   if (phase === 'wave') for (const t of towers) if (t.st.auraDps){
-    ctx.strokeStyle = t.st.color; ctx.globalAlpha = .3 + .15*Math.sin(anim*6); ctx.beginPath(); ctx.arc(t.x, t.y, t.st.burnR || t.st.rng, 0, Math.PI*2); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = t.st.color; ctx.globalAlpha = .3 + .15*Math.sin(anim*6); rangePath(t.x, t.y, t.st.burnR || t.st.rng); ctx.stroke(); ctx.globalAlpha = 1;
   }
   { let any = false; for (const t of towers) if ((t.g.special === 'volcano' || t.g.special === 'antiquebs') && t.st.rng){ drawFloorFlames(t); any = true; } for (const t of towers) if (t.g.special === 'paraiba'){ drawMiasma(t); any = true; } if (any) groundSpace(); }
   if (moving){
@@ -5302,9 +5533,9 @@ function draw(){
     if (g && g.kind === 'gem'){
       const st = stats(g); groundSpace(tileElev(c, r));
       ctx.fillStyle = 'rgba(242,193,78,.1)'; ctx.strokeStyle = 'rgba(255,214,110,.85)'; ctx.lineWidth = .06;
-      ctx.beginPath(); ctx.arc(c+.5, r+.5, st.rng, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-      if (g.aura){ ctx.setLineDash([.25,.15]); ctx.strokeStyle = 'rgba(255,214,110,.75)'; ctx.lineWidth = .07; ctx.beginPath(); ctx.arc(c+.5, r+.5, AURA_R, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]); }
-      if (st.auraSpd){ ctx.setLineDash([.18,.16]); ctx.strokeStyle = 'rgba(255,201,236,.7)'; ctx.beginPath(); ctx.arc(c+.5, r+.5, st.auraR, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]); }
+      rangePath(c+.5, r+.5, st.rng); ctx.fill(); ctx.stroke();
+      if (g.aura){ ctx.setLineDash([.25,.15]); ctx.strokeStyle = 'rgba(255,214,110,.75)'; ctx.lineWidth = .07; rangePath(c+.5, r+.5, AURA_R); ctx.stroke(); ctx.setLineDash([]); }
+      if (st.auraSpd){ ctx.setLineDash([.18,.16]); ctx.strokeStyle = 'rgba(255,201,236,.7)'; rangePath(c+.5, r+.5, st.auraR); ctx.stroke(); ctx.setLineDash([]); }
     }
     if (g && (g.kind === 'gem' || g.kind === 'rock')){ // outline the tower's / wall's own shape (not the crew on top)
       const H = g.kind === 'gem' && g.round ? .54 : WALL_H + .17, h = BW/2 + .01, o = [0,0,0], pts = [];
@@ -5348,6 +5579,7 @@ function draw(){
   for (const e of enemies) items.push({d:depthOf(e.x, elevAt(e.x, e.y) + (e.fly ? 1.1 : .3), e.y), e}); // on the hill, depth includes the terrace height
   for (const p of projectiles) items.push({d:depthOf(p.x, elevAt(p.x, p.y) + .65, p.y), p});
   if (herd) for (const a of herd) items.push({d:depthOf(a.x, .25, a.z), a});
+  if (SHOW_FALLS) for (const sg of FALLS) items.push({d:fallDepth(sg), wf:sg});
   if ((typeof lives === 'number' ? lives : START_LIVES) > START_LIVES*.2) for (const fp of FOLK){ fp.pos = folkPos(fp); const c = Math.floor(fp.pos[0]), r = Math.floor(fp.pos[1]); if (!inB(c, r) || grid[r][c]) continue; items.push({d:depthOf(fp.pos[0], elevAt(fp.pos[0], fp.pos[1]) + .3, fp.pos[1]), fp}); } // townsfolk
   items.sort((a,b) => a.d - b.d);
   const bars = [], names = [], flash = new Map();
@@ -5367,16 +5599,19 @@ function draw(){
       occlude(o.x, o.z + 1, it.d, false, tileLevel(o.c, o.r));
     } else if (it.e){
       const e = it.e, top = drawEnemy(e); proj(e.x, top, e.y, o3); bars.push([o3[0], o3[1], e]);
-      if (!e.fly) occlude(e.x, e.y, it.d, true, tileLevel(Math.floor(e.x), Math.floor(e.y)));
+      if (!e.fly) occlude(e.x, e.y, it.d, true, tileLevel(Math.floor(e.x), Math.floor(e.y)), (e.K.r*2.9*(e.kind === 'boss' ? 1.15 : 1) + .15)/Math.max(.2, VW.cp)); // the sprite (and its health bar) in ground-height units
     } else if (it.p){
       drawMissile(it.p);
     } else if (it.a){
-      drawAnimal(it.a); occlude(it.a.x, it.a.z, it.d, true, 0);
+      drawAnimal(it.a); occlude(it.a.x, it.a.z, it.d, true, 0, .8);
+    } else if (it.wf){
+      const sg = it.wf; drawFallSeg(sg); if (sg.kind === 'fall') occlude(sg.c + .5, sg.r + .99, it.d, true, tileLevel(sg.c, sg.r + 1), .4); // the far-side pieces sit behind higher ground and clip themselves instead
     } else if (it.fp){
-      drawFolk(it.fp); occlude(it.fp.pos[0], it.fp.pos[1], it.d, true, tileLevel(Math.floor(it.fp.pos[0]), Math.floor(it.fp.pos[1])));
+      drawFolk(it.fp); occlude(it.fp.pos[0], it.fp.pos[1], it.d, true, tileLevel(Math.floor(it.fp.pos[0]), Math.floor(it.fp.pos[1])), .9);
     }
   }
-  drawCastleFlag(); drawCastleFire();
+  drawMountainMist();
+  drawCastleFlag(); drawCastleFire(); drawWaypointAnims();
   { // hell portal glow: a pulsing, flickering light in the gateway
     const [pc, pr] = CPS[0], pk = 2.1;
     proj(pc + .5, .3*pk, pr + .5, o3);
@@ -5462,6 +5697,7 @@ function start(data){
   if (!ok){ try { ok = load(JSON.parse(store.get(SAVE_KEY) || 'null')); } catch(e){ ok = false; } }
   if (!ok) newGame();
   resize(); renderUI();
+  if (ok && phase === 'place') setTimeout(() => warnSpecialWave(), 900); // a resumed run still gets warned about a special wave coming up
   if (!store.get(HELP_KEY)) helpSheet();
   requestAnimationFrame(frame);
 }
@@ -5477,7 +5713,7 @@ window.__gem = {
     return cn.toDataURL(); }, enemyNames: () => CREEPS.flat().map(k => k[0]), enemyFlags: nm => { const k = CREEPS.flat().find(k => k[0] === nm); return [!!k[5], !!k[6]]; }, missileOf, tap, startWave, buyLuck, tryPlace, computePath, options, isCP, pedals: () => pedals, placing: () => placing, confirmPedal, specials: SPECIALS,
   grid: () => grid, rounds: () => roundGems, kept: () => keptGems(), view, pickEnemy, selEnemy: () => selEnemy, selectEnemy,
   cellToScreen(c, r, y = 0){ camera(); const o = proj(c+.5, y, r+.5, [0,0,0]); return [o[0], o[1]]; },
-  refresh: () => gridChanged(), simClockSet: v => { simClock = v; }, towers: () => towers,
+  refresh: () => gridChanged(), warn: w => warnSpecialWave(w), dbg: () => ({tileLevel, initRoad, isCP, inFarm, COLS, ROWS}), simClockSet: v => { simClock = v; }, towers: () => towers,
   drawBench(n = 30){ const t0 = performance.now(); for (let i=0;i<n;i++) draw(); return (performance.now()-t0)/n; },
   simWave(){ let n = 0; while (phase === 'wave' && n < 200000){ step(.05); n++; } renderUI(); },
 };

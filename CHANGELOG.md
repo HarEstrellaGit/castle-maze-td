@@ -2,6 +2,23 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.3 — October 24, 2026
+
+### Added
+- **The Elder Tree replaces the Mine** as the fifth landmark. It's a huge gnarled tree with an enchanted forest around it: moss, ferns, glowing toadstools and roots that arch in and out of the hills. Its wide crown hangs with swaying, glowing vines, fireflies drift around it, and it has its own sound of rustling leaves and fairy chimes.
+- **Special wave warnings.** Before a wave with Invisible, Magic immune or Physical immune enemies, a large red warning appears for about 5 seconds, so you know to prepare.
+- **Living landmarks.**
+  - The church bell swings in its tower.
+  - The barracks banner ripples in the wind.
+  - Mist drifts around the top of the middle mountain.
+
+### Changed
+- **Tower range is measured from the edge of the tower's square**, not its center, so every tower reaches about half a square farther. Auras and other tower-to-tower effects work the same way.
+- Range outlines are now rounded squares that match the real reach.
+
+### Fixed
+- Enemies walking over hills no longer flicker or get cut off.
+
 ## 1.2 — October 24, 2026
 
 ### Fixed
