@@ -2,6 +2,18 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.6 — October 24, 2026
+
+### Added
+- **A market town around the Wishing Well.**
+  - Timber-framed shops and market stalls now ring the town square: a baker, smith, tavern, inn, and fruit, cloth, potion and fish sellers.
+  - Strings of pennants run from the well's roof out to the shops and flutter in the breeze.
+  - The shops are scenery on open squares. Building a tower or wall there replaces them as usual.
+
+### Changed
+- **New town square ground.** Packed earth with a few worn, dark flagstones replaces the grey paving, so grey stone towers stand out on it.
+- The Wishing Well's description now reads: "The wishing well in the heart of town, ringed by shops and market stalls. The townsfolk gather here to celebrate."
+
 ## 1.5 — October 24, 2026
 
 ### Added

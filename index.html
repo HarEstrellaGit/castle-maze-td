@@ -2053,7 +2053,7 @@ function renderUI(){
     const {g, cp, blocks} = selInfo;
     if (cp >= 0){
       const role = cp === 0 ? 'Start · enemies appear here' : cp === CPS.length-1 ? 'Exit · protect it' : `Checkpoint ${['I','II','III','IV','V'][cp-1]} of V`;
-      const lore = ['A burning rift into the underworld. Every wave claws its way out of here.', 'An old stone chapel with a bell tower. The first stop on the road.', 'The village wishing well, ringed with paving stones.', 'A walled graveyard around a stone mausoleum. The dead here do not always rest.', 'An ancient elder tree whose roots wind in and out of the hills. Strange lights drift among its leaves.', 'The barracks, with its training dummies and archery butts.', 'Your keep. Every enemy that reaches its gate costs you health.'][cp];
+      const lore = ['A burning rift into the underworld. Every wave claws its way out of here.', 'An old stone chapel with a bell tower. The first stop on the road.', 'The wishing well in the heart of town, ringed by shops and market stalls. The townsfolk gather here to celebrate.', 'A walled graveyard around a stone mausoleum. The dead here do not always rest.', 'An ancient elder tree whose roots wind in and out of the hills. Strange lights drift among its leaves.', 'The barracks, with its training dummies and archery butts.', 'Your keep. Every enemy that reaches its gate costs you health.'][cp];
       html = `<div class="tcard">
         <div class="tc-nm"><div class="nmrow"><b style="color:var(--gold)">${CP_NAMES[cp]}</b></div><div class="subrow"><span class="sub">${role}</span><span class="own">waypoint</span></div></div>
         <canvas id="avatar" class="avatar"></canvas>
@@ -2544,7 +2544,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.5 · October 24, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.6 · October 24, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
@@ -2845,11 +2845,12 @@ function paintBiomes(b){
           for (let k=0;k<3;k++) if (H(k+30) > .45){ b.fillStyle = ['#fff7e0','#ffd84a','#f4a0c8','#c8b0ff'][Math.floor(H(k+33)*4)]; const fx = x + H(k+36)*P, fy = y + H(k+39)*P; b.beginPath(); b.arc(fx, fy, 2, 0, Math.PI*2); b.fill(); b.fillStyle = '#ffe36e'; b.fillRect(fx - .5, fy - .5, 1, 1); }
           if (H(50) > .8){ b.fillStyle = 'rgba(230,226,210,.75)'; b.fillRect(x + P*.2, y + P*.25, P*.6, P*.5); b.strokeStyle = 'rgba(0,0,0,.15)'; b.strokeRect(x + P*.2, y + P*.25, P*.6, P*.5); }
           break;
-        case 'plaza': {
-          b.fillStyle = '#6e685d'; b.fillRect(x, y, P, P);
-          const n = 3, w = P/n; for (let k=0;k<n;k++) for (let j=0;j<n;j++){ const off = (k % 2)*w*.5, sx = x + j*w + off - (off ? w*.5 : 0), sy = y + k*w;
-            b.fillStyle = `rgb(${130 + H(k*3+j)*30|0},${124 + H(k*3+j)*28|0},${112 + H(k*3+j)*24|0})`; b.beginPath(); b.roundRect ? b.roundRect(sx + 1, sy + 1, w - 2, w - 2, 2) : b.rect(sx + 1, sy + 1, w - 2, w - 2); b.fill(); }
-          if (H(60) > .85){ b.fillStyle = 'rgba(80,110,50,.5)'; b.fillRect(x + H(61)*P, y + H(62)*P, 3, 2); }
+        case 'plaza': { // the town square: warm packed earth with a few worn, dark flagstones (dark and plain so grey stone towers stand out on it)
+          b.fillStyle = alt ? '#5a4632' : '#55422f'; b.fillRect(x, y, P, P);
+          for (let k=0;k<6;k++){ b.fillStyle = H(k) > .5 ? 'rgba(120,96,66,.35)' : 'rgba(30,22,14,.3)'; b.fillRect(x + H(k+8)*P, y + H(k+16)*P, 2, 1.5); }
+          if (H(60) > .55){ const fx = x + P*(.15 + H(61)*.3), fy = y + P*(.15 + H(62)*.3), w = P*(.3 + H(63)*.2), h = P*(.25 + H(64)*.2);
+            b.fillStyle = 'rgba(70,58,46,.75)'; b.beginPath(); b.roundRect ? b.roundRect(fx, fy, w, h, 3) : b.rect(fx, fy, w, h); b.fill(); }
+          if (H(65) > .85){ b.fillStyle = 'rgba(70,100,40,.45)'; b.fillRect(x + H(66)*P, y + H(67)*P, 3, 2); } // a tuft of grass
           break; }
         case 'grave':
           b.fillStyle = alt ? '#3b3a33' : '#35352f'; b.fillRect(x, y, P, P);
@@ -4500,7 +4501,7 @@ function renderWaypointPortrait(c2, Wc, Hc, dpr, cp){ // the waypoint's landmark
     const o3 = [0,0,0]; proj(c+.5, sc.elev || 0, r+.5, o3);
     c2.fillStyle = 'rgba(0,0,0,.35)'; c2.beginPath(); c2.ellipse(o3[0] + VW.s*.1, o3[1] + VW.s*.06, VW.s*1.0, VW.s*1.0*VW.sp, 0, 0, Math.PI*2); c2.fill();
     drawObjParts(sc);
-    if (cp === 1 || cp === 4 || cp === 5) drawWaypointAnims(cp);
+    if (cp === 1 || cp === 2 || cp === 4 || cp === 5) drawWaypointAnims(cp);
     if (cp === CPS.length-1){ drawCastleFlag(); drawCastleFire(); } // the portrait shows the castle's damage, smoke and flames too
     if (cp === 0){ // the portal's fire glows in the portrait too
       const pk = 2.1; proj(c + .5, .3*pk, r + .5, o3);
@@ -4640,6 +4641,7 @@ function drawChurchBell(){ // a bronze bell swinging back and forth in the churc
 function drawBarracksFlag(){ const [c, r] = CPS[5], k = 1.4*1.5; drawClothFlag(c + .5 - .34*k, tileElev(c, r), r + .5 + .3*k, k, .26, .48, .22, '#a3241c'); }
 function drawWaypointAnims(cp){ // live parts of the waypoint buildings: the church bell and the barracks banner
   if (cp == null || cp === 1) drawChurchBell();
+  if (cp == null || cp === 2) drawBunting();
   if (cp == null || cp === 5) drawBarracksFlag();
   if (cp == null || cp === 4){ drawElderCrown(); drawElderLights(); }
 }
@@ -5469,7 +5471,57 @@ function drawElderLights(){ // fireflies and fairy lights drifting round the eld
 // panic once the castle's health falls below half, and are gone (fled) at 20% or less -----
 const GARDENS = (() => { const out = [], seen = new Set(), h = (c, r, k) => { const v = Math.sin(c*91.7 + r*47.3 + k*13.1)*43758.5; return v - Math.floor(v); };
   const ring = (wc, wr, r0, r1, chance) => { for (let r = wr - Math.ceil(r1); r <= wr + Math.ceil(r1); r++) for (let c = wc - Math.ceil(r1); c <= wc + Math.ceil(r1); c++){ const d = Math.hypot(c - wc, r - wr); if (d < r0 || d > r1 || c < 0 || r < 0 || c >= COLS || r >= ROWS) continue; const k = r*COLS + c; if (seen.has(k) || h(c, r, 1) > chance) continue; seen.add(k); out.push({c, r, kind: Math.floor(h(c, r, 2)*3), hue: Math.floor(h(c, r, 3)*4)}); } };
-  ring(CPS[2][0], CPS[2][1], 1.2, 3.2, .55); ring(CPS[CPS.length-1][0], CPS[CPS.length-1][1], 3.6, 5.2, .45); return out; })();
+  ring(CPS[CPS.length-1][0], CPS[CPS.length-1][1], 3.6, 5.2, .45); return out; })();
+// ----- the town round the wishing well: timber-framed shops and market stalls ring the square where the townsfolk celebrate -----
+const SHOP_KINDS = ['baker', 'smith', 'tavern', 'fruit', 'cloth', 'potion', 'inn', 'fish'];
+const SHOPS = (() => { const [wc, wr] = CPS[2], out = [], h = (c, r, k) => { const v = Math.sin(c*61.3 + r*29.7 + k*7.9)*43758.5; return v - Math.floor(v); };
+  for (let r = wr - 4; r <= wr + 4; r++) for (let c = wc - 4; c <= wc + 4; c++){
+    const d = Math.hypot(c - wc, r - wr); if (d < 2.2 || d > 3.7 || c < 0 || r < 0 || c >= COLS || r >= ROWS || h(c, r, 1) > .62) continue;
+    out.push({c, r, kind: SHOP_KINDS[Math.floor(h(c, r, 2)*SHOP_KINDS.length)], roof: ['#9a3a26', '#3a5a8a', '#6a4a2a', '#3e6a3a', '#7a3a6a'][Math.floor(h(c, r, 3)*5)], wall: ['#e8dcc0', '#e0c89a', '#d8d0c0', '#ead8b0'][Math.floor(h(c, r, 4)*4)]});
+  }
+  return out; })();
+const shopCache = new Map();
+function shopParts(t){ // the shop's 3D pieces, built once per square and height
+  const e = tileElev(t.c, t.r), key = `${t.c},${t.r},${e}`; let P = shopCache.get(key); if (P) return P; P = [];
+  const X = t.c + .5, Z = t.r + .5, lit = {amb:.55, dif:.6}, add = (m, px, py, pz, sx, sy, sz, rot, col, opt) => P.push(instance(m, X + px, e + py, Z + pz, sx, sy, sz, rot || 0, col, opt || lit));
+  const B = (px, py, pz, w, hh, dd, col, opt) => add(mkBox(w, hh, dd), px, py, pz, 1, 1, 1, 0, col, opt);
+  const beam = '#4a3320', goods = {fruit:['#d83a2a', '#f0b030', '#7ab040'], cloth:['#3a6ab8', '#c8402a', '#e8c040'], fish:['#9ab0c0', '#c0d0d8', '#7a90a0'], potion:['#8a4ad0', '#40c0a0', '#e04080']};
+  if (goods[t.kind]){ // a market stall: posts, a counter heaped with wares and a striped awning
+    for (const [px, pz] of [[-.32, -.22], [.32, -.22], [-.32, .22], [.32, .22]]) B(px, 0, pz, .05, .52, .05, beam);
+    B(0, 0, .12, .66, .26, .26, '#7a5534'); B(0, .26, .12, .7, .03, .3, '#8e6a40');
+    goods[t.kind].forEach((col, i) => { for (let j=0;j<3;j++) B(-.22 + i*.22 + (j - 1)*.05, .29, .06 + (j % 2)*.08, .06, .06, .06, col, {amb:.7, dif:.4}); });
+    for (let i=0;i<4;i++) add(LM.gable, -.27 + i*.18, .52, 0, .18, .12, .56, 0, i % 2 ? '#f3ead8' : t.roof);
+  } else { // a timber-framed shop: plaster walls, dark beams, a pitched roof, a door, a hanging sign and a window box
+    const H = t.kind === 'tavern' || t.kind === 'inn' ? .62 : .5;
+    B(0, 0, 0, .72, H, .62, t.wall);
+    for (const px of [-.35, 0, .35]) B(px, 0, .312, .045, H, .01, beam); B(0, H*.5, .312, .72, .04, .01, beam); B(0, H - .03, .312, .72, .04, .01, beam); // beams on the front
+    add(LM.gable, 0, H, 0, .82, .34, .72, 0, t.roof); add(mkBox(.08, .14, .08), .22, H + .12, -.1, 1, 1, 1, 0, '#8a7a6a'); // roof and chimney
+    B(-.18, 0, .316, .14, .26, .01, '#3a2414'); B(.17, H*.5 + .06, .316, .16, .12, .01, '#bfe0f0', {amb:.9, dif:.2, emis:.15}); // door and window
+    B(.17, H*.5 + .02, .33, .2, .04, .04, '#6a4a2a'); B(.17, H*.5 + .06, .34, .18, .03, .02, ['#e8506a', '#ffd84a', '#b070e0'][t.c % 3]); // window box with flowers
+    B(-.36, H*.7, .38, .1, .02, .02, beam); B(-.4, H*.48, .38, .12, .12, .015, {baker:'#d8a040', smith:'#8a8a90', tavern:'#a0602a', inn:'#3a6ab8'}[t.kind] || '#c8402a', {amb:.8, dif:.3}); // hanging sign
+    if (t.kind === 'tavern') add(LM.cyl8, .3, 0, .4, .07, .14, .07, 0, '#7a5030');
+    if (t.kind === 'smith') B(.28, 0, .42, .14, .1, .08, '#4a4a50');
+  }
+  P.sort((a, b) => depthOf(...a.c) - depthOf(...b.c));
+  shopCache.set(key, P); return P;
+}
+function drawShop(t){
+  const P = shopParts(t); groundSpace(tileElev(t.c, t.r)); rectShadow(t.c + .14, t.r + .16, t.c + .86, t.r + .82, .45, .22);
+  ctx.setTransform(view.dpr,0,0,view.dpr,0,0); for (const it of P) drawInst(it); ctx.setTransform(view.dpr,0,0,view.dpr,0,0);
+}
+function drawBunting(){ // strings of little pennants run from the well's roof out to the shops round the square, fluttering in the breeze
+  const [wc, wr] = CPS[2], we = tileElev(wc, wr), o = [0,0,0], cols = ['#e8506a', '#ffd84a', '#3a8ad8', '#6ac050', '#f08a30', '#b070e0'];
+  const k = 1.4*1.5, top = [wc + .5, we + .7*k, wr + .5];
+  ctx.setTransform(view.dpr,0,0,view.dpr,0,0); ctx.lineCap = 'round';
+  SHOPS.forEach((t, n) => { if (n % 2) return; if (grid[t.r] && grid[t.r][t.c]) return;
+    const end = [t.c + .5, tileElev(t.c, t.r) + .62, t.r + .5], pts = [];
+    for (let i=0;i<=14;i++){ const u = i/14, sag = Math.sin(u*Math.PI)*.35; pts.push([top[0] + (end[0] - top[0])*u, top[1] + (end[1] - top[1])*u - sag, top[2] + (end[2] - top[2])*u]); }
+    ctx.strokeStyle = 'rgba(60,40,24,.8)'; ctx.lineWidth = Math.max(.6, VW.s*.012); ctx.beginPath();
+    pts.forEach(([x, y, z], i) => { proj(x, y, z, o); i ? ctx.lineTo(o[0], o[1]) : ctx.moveTo(o[0], o[1]); }); ctx.stroke();
+    for (let i=1;i<14;i++){ const [x, y, z] = pts[i]; proj(x, y, z, o); const fl = Math.sin(anim*4 + i + n)*VW.s*.02, w = VW.s*.05, hh = VW.s*.09;
+      ctx.fillStyle = cols[(i + n) % cols.length]; ctx.beginPath(); ctx.moveTo(o[0] - w, o[1]); ctx.lineTo(o[0] + w, o[1]); ctx.lineTo(o[0] + fl, o[1] + hh); ctx.closePath(); ctx.fill(); }
+  });
+}
 function drawGardenTile(t){ // a little garden on one square: a flower bed edged with clipped hedge, a rose bush, or a topiary
   const d = view.dpr, e = tileElev(t.c, t.r) + .01, o = [0,0,0], q = (x, z, y = 0) => { proj(x, e + y, z, o); return [o[0], o[1]]; };
   ctx.setTransform(d,0,0,d,0,0);
@@ -5648,6 +5700,7 @@ function renderStatic(){
     propAt.clear(); const add = (c, r, y, fn) => { put(r, {x:c + .5, y, z:r + .5, draw:fn}); const k = r*COLS + c; const prev = propAt.get(k); propAt.set(k, prev ? () => { prev(); fn(); } : fn); };
     for (const p of BARRACKS_PROPS) if (free(p.c, p.r)) add(p.c, p.r, tileElev(p.c, p.r), () => drawBarracksProp(p));
     for (const t of GARDENS) if (free(t.c, t.r)) add(t.c, t.r, tileElev(t.c, t.r) - .25, () => drawGardenTile(t));
+    for (const t of SHOPS) if (free(t.c, t.r)) add(t.c, t.r, tileElev(t.c, t.r) + .1, () => drawShop(t));
     for (const t of ROOT_TILES) if (free(t.c, t.r)) add(t.c, t.r, tileElev(t.c, t.r) - .2, () => drawRootTile(t)); }
   const done = new Set(), tile = (c, r) => { const k = r*COLS + c; if (!done.has(k) && tileLevel(c, r)){ done.add(k); drawTerrainTile(c, r); } };
   for (let r = -2; r < ROWS + 2; r++){
