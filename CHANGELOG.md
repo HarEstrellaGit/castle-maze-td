@@ -2,6 +2,34 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.11 — October 27, 2026
+
+### Added
+- **Flawless wave bonus.** If no enemy gets through a wave, you earn a bonus of 10% of your gold, plus 1% per favor level. Favor 8 adds an extra 3%, for 20% in all. A "Flawless!" message shows how much you got, and the favor panel explains the bonus.
+- **Slow levels.** Every slow in the game now uses one of 10 levels, from level 1 (20% slower) to level 10 (90% slower). Tower details show each slow's level.
+
+### Changed
+- **Slow stacking.** Each tower or trap counts once, using its strongest slow, and slows from different towers multiply together, even at the same level.
+- **Slows strengthened** to fit the new levels:
+
+  | Tower | 1.10 | 1.11 |
+  |---|---|---|
+  | Frost Trebuchet | 30% | 43% |
+  | Frost Siege Engine | 40% | 59% |
+  | Grand Champion's Citadel | 35% | 74% |
+  | Dark Matter | 35% | 82% |
+  | Ice Spire (aura) | 75% | 74% |
+  | Frostbite Watch (aura) | 70% | 82% |
+  | Star of Winter | 60% slow, 75% aura | 67% slow, 90% aura |
+  | Falconer's Roost (flyers) | 45% | 51% |
+  | Healer's Abbey (flyers) | 35% | 43% |
+  | Skyhunter Lodge (flyers) | 65% | 67% |
+  | Robin's Woods (flyers) | 65% | 74% |
+  | Yaphet's Monolith (flyers) | 75% | 90% |
+
+- The Mage Tower's frost slow by rank is now 20%, 28%, 36%, 43%, 51% and 59% (Elite, Master and Lord were 44%, 52% and 60%).
+- Freezing splash now slows by 59% for 3 seconds (was 50%), and frost balls by 51% for 2 seconds (was 45%).
+
 ## 1.10 — October 27, 2026
 
 ### Added

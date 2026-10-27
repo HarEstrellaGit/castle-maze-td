@@ -31,7 +31,7 @@ After that it runs full screen and plays offline, even in airplane mode. Your ru
 
 **Advanced towers and traps.** The right sets of towers combine into advanced towers. Pairs build traps you can place on any open square. The **blueprint** button lists every recipe.
 
-**Gold.** Spend gold on **favor** (the crown button) to get higher-ranked towers. Walls can be torn down for free between waves.
+**Gold.** Spend gold on **favor** (the crown button) to get higher-ranked towers. Walls can be torn down for free between waves. A **flawless wave** (no enemy gets through) pays a bonus of 10% of your gold, plus 1% per favor level, up to 20% at favor 8.
 
 **Waves.**
 - Waves have 10 enemies.
@@ -55,7 +55,7 @@ Your run saves automatically between waves.
 ## Updating the game (for the maintainer)
 
 1. Upload the new `index.html` (replacing the old one).
-2. Open `sw.js` and bump the version, for example `castle-maze-v11` → `castle-maze-v12`.
+2. Open `sw.js` and bump the version, for example `castle-maze-v12` → `castle-maze-v13`.
 3. Add the changes to `CHANGELOG.md`.
 
 Installed copies pick up the update the next time they're opened online. If an old version still shows, close the app and open it again.
@@ -73,3 +73,9 @@ Installed copies pick up the update the next time they're opened online. If an o
 ## Credits
 
 Created by Harley Estrella.
+
+**Inspired by Gem TD.** Castle Maze TD is a fan-made game based on *Gem Tower Defense* (Gem TD), the Warcraft III custom map created by **Bryan K (Bryvx)**. The core ideas come from Bryvx's design: building a maze from random towers each round, keeping one and walling the rest, and combining towers into advanced ones.
+
+**Tower stats.** Tower damage, ranges, abilities and recipes are adapted from the [Dota 2 Gem TD Unofficial Website](https://clementbera.github.io/Website/), made by **Farine** with main contributor **leQ4specialist**. The site's data was extracted from the Dota 2 Gem TD custom game.
+
+Castle Maze TD is not affiliated with or endorsed by Bryvx, the Dota 2 Gem TD developers, Blizzard Entertainment or Valve.

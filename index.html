@@ -531,7 +531,9 @@ const TYPES = {
   aquamarine: {name:'Crossbow Tower',  c:'#4fe3e0', dmg:[2,4,8,16,24,80],   cd:[1,.9,.8,.7,.6,.5],    rng:[400,400,400,400,400,500], desc:'Very fast shots, short range'},
   opal:       {name:'War Drum Tower',  c:'#ffc9ec', dmg:[1,2,3,4,5,6],     cd:[1,1,1,1,1,1],         rng:[500,500,500,500,500,500], desc:'Speeds up nearby towers and reveals invisible enemies'},
 };
-const CLEAVE = [[.3,300],[.4,350],[.5,400],[.6,450],[.7,500],[1,700]], FROST = [.2,.28,.36,.44,.52,.6], VENOM = [2,4,8,16,32,128], PIERCE = [2,4,8,16,32,64], DRUM = [20,30,40,50,60,70];
+// slow levels 1-10, from 20% to 90% (every slow in the game uses one of these)
+const SLOW_LV = [.2,.28,.36,.43,.51,.59,.67,.74,.82,.9], slowLevel = f => { const i = SLOW_LV.findIndex(v => Math.abs(v - f) < .005); return i < 0 ? null : i + 1; };
+const CLEAVE = [[.3,300],[.4,350],[.5,400],[.6,450],[.7,500],[1,700]], FROST = [.2,.28,.36,.43,.51,.59], VENOM = [2,4,8,16,32,128], PIERCE = [2,4,8,16,32,64], DRUM = [20,30,40,50,60,70];
 const TYPE_KEYS = Object.keys(TYPES);
 // ----- advanced (blueprint) towers: combined + secret towers -----
 // Gem codes: B Sapphire/Mage, Y Topaz/Archer, D Diamond/Militia, E Opal/War Drum, G Emerald/Alchemist, P Amethyst/Ballista,
@@ -541,10 +543,10 @@ const GEM_CODE = {B:'sapphire', Y:'topaz', D:'diamond', E:'opal', G:'emerald', P
 const parseRecipe = str => str.split('|').map(alt => alt.trim().split(/\s+/).map(tok => tok[0] === '@' ? {special:tok.slice(1)} : {type:GEM_CODE[tok[0]], q:+tok.slice(1) - 1}));
 const SPECIALS = {};
 function adv(key, name, gem, c, recipe, props){ SPECIALS[key] = Object.assign({name, gem, c, recipes:parseRecipe(recipe)}, props); }
-adv('silver',      'Frost Trebuchet',      'Silver',               '#d5dbe8', 'B1 Y1 D1',           {dmg:30, cd:1, rng:600, slow:.3, desc:'Frost shots slow enemies'});
-adv('silverknight','Frost Siege Engine',   'Silver Knight',        '#e6ecf5', '@silver Q2 R3',      {dmg:100, cd:.8, rng:700, splash:400, splashPct:.5, slow:.4, desc:'Cleaving frost shots'});
+adv('silver',      'Frost Trebuchet',      'Silver',               '#d5dbe8', 'B1 Y1 D1',           {dmg:30, cd:1, rng:600, slow:.43, desc:'Frost shots slow enemies'});
+adv('silverknight','Frost Siege Engine',   'Silver Knight',        '#e6ecf5', '@silver Q2 R3',      {dmg:100, cd:.8, rng:700, splash:400, splashPct:.5, slow:.59, desc:'Cleaving frost shots'});
 adv('pinkdiamond', 'Champion’s Citadel',   'Pink Diamond',         '#ff9ccf', 'D5 Y3 D3',           {dmg:110, cd:1, rng:600, crit:.1, critX:5, desc:'Heavy hits with critical strikes'});
-adv('hugepink',    'Grand Champion’s Citadel',  'Huge Pink Diamond',    '#ff7cc0', '@pinkdiamond @silverknight @silver', {dmg:310, cd:.8, rng:700, splash:400, splashPct:.5, crit:.1, critX:5, slow:.35, desc:'Cleaving critical strikes that slow'});
+adv('hugepink',    'Grand Champion’s Citadel',  'Huge Pink Diamond',    '#ff7cc0', '@pinkdiamond @silverknight @silver', {dmg:310, cd:.8, rng:700, splash:400, splashPct:.5, crit:.1, critX:5, slow:.74, desc:'Cleaving critical strikes that slow'});
 adv('kohinoor',    'Kingsbane Fortress',   'Koh-i-noor Diamond',   '#fff0fa', 'P1 P2 P3 P4 P5',     {dmg:1300, cd:.6, rng:700, splash:400, splashPct:.5, crit:.1, critX:5, pierce:64, desc:'Cleave, crits and armor shred', ult:true});
 adv('malachite',   'Ranger Lodge',         'Malachite',            '#1fae7a', 'E1 Q1 G1',           {dmg:15, cd:.8, rng:600, targets:3, desc:'Hits 3 enemies at once'});
 adv('vividmal',    'Ranger Hall',          'Vivid Malachite',      '#2fe39c', '@malachite D2 Y3',   {dmg:50, cd:.7, rng:700, targets:5, desc:'Hits 5 enemies at once'});
@@ -557,13 +559,13 @@ adv('bloodstone',  'Thunder Bombard',      'Bloodstone',           '#c2183a', 'R
 adv('antiquebs',   'Kaminari-Homura',        'Antique Bloodstone',   '#e0345a', '@bloodstone @volcano R2', {dmg:50, cd:1, rng:800, fork:[.25, 2500, 5], burn:[320, 500], attacks:true, desc:'Strikes once a second (25% chance to fork lightning) inside a burning aura'});
 adv('crownprince', 'Crown Prince’s Keep',  'The Crown Prince',     '#ffd23f', 'R1 R2 R3 R4 R5',     {dmg:70, cd:1, rng:800, fork:[.25, 2500, 5], burn:[2500, 800], poison:128, poisonDur:5, attacks:true, desc:'Strikes once a second (25% chance to fork lightning, poisons) inside a huge burning aura', ult:true});
 adv('jade',        'Apothecary Guild',     'Jade',                 '#7be0a2', 'G3 E3 B2',           {dmg:10, cd:.5, rng:800, poison:16, poisonDur:5, desc:'Fast poisoned shots'});
-adv('quartz',      'Falconer’s Roost',     'Quartz',               '#bfe3ff', 'G4 R3 P2',           {dmg:15, cd:.6, rng:500, antifly:[10, .45, 0, 600], desc:'Grounds flyers: −10 armor, 45% slower nearby'});
+adv('quartz',      'Falconer’s Roost',     'Quartz',               '#bfe3ff', 'G4 R3 P2',           {dmg:15, cd:.6, rng:500, antifly:[10, .51, 0, 600], desc:'Grounds flyers: −10 armor, 51% slower nearby'});
 adv('greyjade',    'Astronomer’s Guild',    'Grey Jade',            '#a9c9b5', '@jade B4 Q3',        {dmg:30, cd:.5, rng:800, poison:32, poisonDur:5, overlook:[300, 290], desc:'Poison; nearby towers gain +2.5 squares of range'});
 adv('mkjade',      'Grand Astronomer’s Tower',  'Monkey King Jade',     '#e8d36a', '@greyjade G4 P2',    {dmg:80, cd:.5, rng:1000, poison:32, poisonDur:5, crit:.1, critX:5, overlook:[300, 290], mkb:300, desc:'Poison with critical strikes; nearby towers gain range and never miss'});
 adv('cullinan',    'Plato’s Scope',         'Diamond Cullinan',     '#f4f8ff', 'D1 D2 D3 D4 D5',     {dmg:3154, cd:.8, rng:1200, crit:.1, critX:5, overlook:[300, 290], mkb:300, desc:'Colossal hits; nearby towers gain range and never miss', ult:true});
-adv('luckyjade',   'Healer’s Abbey',       'Lucky Chinese Jade',   '#9be8b0', '@jade @quartz G3',   {dmg:30, cd:.5, rng:900, poison:32, poisonDur:5, recover:.01, antifly:[10, .35, 0, 600], desc:'Poison, grounds flyers, sometimes restores a life'});
-adv('lazurite',    'Skyhunter Lodge',      'Charming Lazurite',    '#4b6fd8', '@quartz P4 Y2',      {dmg:30, cd:.6, rng:800, antifly:[10, .65, .5, 600], piercesi:true, desc:'Cripples flyers: armor, 65% speed and magic resist'});
-adv('jubilee',     'Robin’s Woods',        'Golden Jubilee',       '#ffcf3f', 'Y1 Y2 Y3 Y4 Y5',     {dmg:300, cd:.7, rng:800, antifly:[10, .65, .5, 600], burned:true, desc:'Shots also burn for the same magic damage; cripples flyers', ult:true});
+adv('luckyjade',   'Healer’s Abbey',       'Lucky Chinese Jade',   '#9be8b0', '@jade @quartz G3',   {dmg:30, cd:.5, rng:900, poison:32, poisonDur:5, recover:.01, antifly:[10, .43, 0, 600], desc:'Poison, grounds flyers, sometimes restores a life'});
+adv('lazurite',    'Skyhunter Lodge',      'Charming Lazurite',    '#4b6fd8', '@quartz P4 Y2',      {dmg:30, cd:.6, rng:800, antifly:[10, .67, .5, 600], piercesi:true, desc:'Cripples flyers: armor, 67% speed and magic resist'});
+adv('jubilee',     'Robin’s Woods',        'Golden Jubilee',       '#ffcf3f', 'Y1 Y2 Y3 Y4 Y5',     {dmg:300, cd:.7, rng:800, antifly:[10, .74, .5, 600], burned:true, desc:'Shots also burn for the same magic damage; cripples flyers', ult:true});
 adv('gold',        'Sunlance Spire',       'Gold',                 '#ffd166', 'P5 P4 D2',           {dmg:60, cd:.8, rng:600, pierce:32, desc:'Corrupting bolts: −32 armor'});
 adv('egyptgold',   'Treasury Spire',       'Egypt Gold',           '#f0b429', '@gold P5 Q2',        {dmg:100, cd:.8, rng:700, pierce:48, greedy:800, desc:'−48 armor; kills nearby sometimes pay 10× gold'});
 adv('darkemerald', 'Warhammer Keep',       'Dark Emerald',         '#13955a', 'G5 B4 Y2',           {dmg:80, cd:.5, rng:700, stun:.1, stunDur:2, desc:'Fast hits that can stun'});
@@ -576,13 +578,13 @@ adv('cateye',      'Royal Banner Hall',    'Chrysoberyl Cat’s Eye','#7a66c4', 
 adv('redcoral',    'Coral War Hall',       'Red Coral',            '#ff6f61', '@cateye @pearl E4',  {dmg:120, cd:.6, rng:500, spdAura:[60, 664], inspire:[.5, 500], sight:true, ward:664, desc:'Nearby towers +60 speed, +50% damage; reveals invisible'});
 adv('zumurud',     'Emerald Watch',        'Natural Zumurud',      '#2c9a52', '@pearl G5 D3',       {dmg:80, cd:1, rng:500, ward:800, desc:'Heavy shots; a wide magic influence shields towers from enemy debuffs'});
 adv('carmen',      'Bard’s Cathedral',     'Carmen-Lucia',         '#ff4fa3', 'E1 E2 E3 E4 E5',     {dmg:6, cd:1, rng:500, spdAura:[70, 664], spdAura2:[200, 200], inspire:[.5, 500], sight:true, desc:'Huge speed and damage boost to nearby towers', ult:true});
-adv('yellowsap',   'Ice Spire',            'Yellow Sapphire',      '#ffe36e', 'B5 Y4 R4',           {dmg:20, cd:1, rng:600, ice:[.75, 300], desc:'Enemies nearby move 75% slower'});
-adv('northern',    'Frostbite Watch',      'Northern Saber’s Eye', '#9fd8ff', '@yellowsap @bloodstone B5', {dmg:60, cd:1, rng:500, ice:[.7, 300], chainFrost:.25, desc:'Ice aura; frost balls bounce between enemies'});
-adv('starsap',     'Star of Winter',       'Star Sapphire',        '#bcd7ff', 'B1 B2 B3 B4 B5',     {dmg:20, cd:1, rng:600, slow:.6, ice:[.75, 556], spdAura:[70, 664], sight:true, desc:'Massive slow and ice aura; boosts nearby towers', ult:true});
-adv('obsidian',    'Dark Matter',          'Obsidian',             '#8a5cf0', 'B5 Y5 D5',           {dmg:820, cd:.8, rng:800, splash:500, splashPct:.7, slow:.35, desc:'Secret: a floating black planet that hurls huge dark-matter orbs; each blasts and slows everything around its target', secret:true});
+adv('yellowsap',   'Ice Spire',            'Yellow Sapphire',      '#ffe36e', 'B5 Y4 R4',           {dmg:20, cd:1, rng:600, ice:[.74, 300], desc:'Enemies nearby move 74% slower'});
+adv('northern',    'Frostbite Watch',      'Northern Saber’s Eye', '#9fd8ff', '@yellowsap @bloodstone B5', {dmg:60, cd:1, rng:500, ice:[.82, 300], chainFrost:.25, desc:'Ice aura; frost balls bounce between enemies'});
+adv('starsap',     'Star of Winter',       'Star Sapphire',        '#bcd7ff', 'B1 B2 B3 B4 B5',     {dmg:20, cd:1, rng:600, slow:.67, ice:[.9, 556], spdAura:[70, 664], sight:true, desc:'Massive slow and ice aura; boosts nearby towers', ult:true});
+adv('obsidian',    'Dark Matter',          'Obsidian',             '#8a5cf0', 'B5 Y5 D5',           {dmg:820, cd:.8, rng:800, splash:500, splashPct:.7, slow:.82, desc:'Secret: a floating black planet that hurls huge dark-matter orbs; each blasts and slows everything around its target', secret:true});
 adv('agate',       'Agate Tower',          'Agate',                '#c8875a', 'Q5 E5 G5',           {dmg:430, cd:.3, rng:5000, targets:5, desc:'Secret: rapid shots at 5 enemies anywhere', secret:true});
 adv('shrimp',      'Mad Jester’s Keep',    'Fantastic Miss Shrimp','#ff8a65', 'R5 G5 B5',           {dmg:1225, cd:.5, rng:1000, chain:[.3, 150, 5, 1000], fork:[.25, 2500, 5], melancholy:.03, desc:'Secret: devastating, but sometimes sulks and stops', secret:true});
-adv('yaphets',     'Yaphet’s Monolith',    'Yaphets Stone',        '#5a4b8a', 'B5 G5 B4 G4',        {dmg:140, cd:1, rng:800, pierce:64, decadent:[30, 1200], antifly:[64, .75, 1, 600], piercesi:true, desc:'Secret: shreds armor; destroys flyers', secret:true});
+adv('yaphets',     'Yaphet’s Monolith',    'Yaphets Stone',        '#5a4b8a', 'B5 G5 B4 G4',        {dmg:140, cd:1, rng:800, pierce:64, decadent:[30, 1200], antifly:[64, .9, 1, 600], piercesi:true, desc:'Secret: shreds armor; destroys flyers', secret:true});
 adv('burning',     'Burning Monolith',     'Burning Stone',        '#ff3d00', 'R5 P5 R4 P4',        {burn:[2500, 800], desc:'Secret: an inferno around it', secret:true});
 
 // The Great Stone: any 4 Master towers built in the same round (no fixed recipe)
@@ -832,7 +834,7 @@ function statItems(s){ // [glyph, colour, short value, name, explanation]
   if (!s.auraDps || s.attacks) out.push(['dmg', '#ffd27a', Math.round(s.dmg), 'Damage', `${Math.round(s.dmg)} damage per hit`], ['spd', '#d8c7a0', `${s.cd.toFixed(2).replace(/0$/,'')}s`, 'Attack speed', `Attacks every ${s.cd.toFixed(2).replace(/0$/,'')} seconds`]);
   out.push(['rng', '#9fd0ff', +s.rng.toFixed(1), 'Range', `Reaches ${+s.rng.toFixed(1)} squares`]);
   if (s.splash) out.push(['cleave', '#ff8a6a', pct(s.splashPct), 'Cleave', `Also hits enemies near the target for ${pct(s.splashPct)} damage, as pure damage (no armor, resistance or immunity reduces or blocks it)`]);
-  if (s.slow) out.push(['slow', '#bfe6ff', `−${Math.round(s.slow*100)}%`, 'Slow', `Hits slow enemies by ${Math.round(s.slow*100)}% for ${s.slowDur || 2}s (slows from different towers, traps and auras stack)`]);
+  if (s.slow) out.push(['slow', '#bfe6ff', `−${Math.round(s.slow*100)}%`, 'Slow', `${slowLevel(s.slow) ? `Slow level ${slowLevel(s.slow)}: h` : 'H'}its slow enemies by ${Math.round(s.slow*100)}% for ${s.slowDur || 2}s (slows from different towers stack, even at the same level)`]);
   if (s.slowSplash) out.push(['slow', '#bfe6ff', `−${Math.round(s.slowSplash*100)}%`, 'Frost', `Slows enemies in the splash by ${Math.round(s.slowSplash*100)}%`]);
   if (s.chain) out.push(['chain', '#fff36e', pct(s.chain[0]), 'Chain lightning', `${pct(s.chain[0])} chance: ${s.chain[1]} damage jumping across ${s.chain[2]} enemies`]);
   if (s.fork) out.push(['fork', '#c9a8ff', pct(s.fork[0]), 'Forked lightning', `${pct(s.fork[0])} chance: ${s.fork[1]} damage to ${s.fork[2]} nearby enemies`]);
@@ -846,10 +848,10 @@ function statItems(s){ // [glyph, colour, short value, name, explanation]
   if (s.overlook) out.push(['reach', '#9fd0ff', `+${tiles(s.overlook[0])}`, 'Star chart', `Towers within ${tiles(s.overlook[1])} squares gain +${tiles(s.overlook[0])} squares of range`]);
   if (s.mkb) out.push(['aim', '#ffe36e', '100%', 'True strike', `Towers within ${tiles(s.mkb)} squares never miss evasive enemies`]);
   if (s.decadent) out.push(['armor', '#3fd0c9', `−${s.decadent[0]}`, 'Plague aura', `Enemies within ${tiles(s.decadent[1])} squares lose ${s.decadent[0]} armor`]);
-  if (s.ice) out.push(['ice', '#cfe8ff', `−${pct(s.ice[0])}`, 'Ice aura', `Enemies within ${tiles(s.ice[1])} squares move ${pct(s.ice[0])} slower`]);
-  if (s.frost) out.push(['ice', '#cfe8ff', '3s', 'Freezing splash', 'Hits freeze enemies around the target (slow, no regeneration)']);
-  if (s.antifly) out.push(['fly', '#bfe3ff', `−${s.antifly[0]}`, 'Grounding', `Flyers within ${tiles(s.antifly[3])} squares lose ${s.antifly[0]} armor and move ${Math.round(s.antifly[1]*100)}% slower`]);
-  if (s.chainFrost) out.push(['slow', '#bfe6ff', pct(s.chainFrost), 'Frost ball', `${pct(s.chainFrost)} chance of a frost ball bouncing between enemies`]);
+  if (s.ice) out.push(['ice', '#cfe8ff', `−${pct(s.ice[0])}`, 'Ice aura', `Slow level ${slowLevel(s.ice[0])}: enemies within ${tiles(s.ice[1])} squares move ${pct(s.ice[0])} slower`]);
+  if (s.frost) out.push(['ice', '#cfe8ff', '3s', 'Freezing splash', 'Slow level 6: hits freeze enemies around the target (59% slower for 3s, no regeneration)']);
+  if (s.antifly) out.push(['fly', '#bfe3ff', `−${s.antifly[0]}`, 'Grounding', `Slow level ${slowLevel(s.antifly[1])}: flyers within ${tiles(s.antifly[3])} squares lose ${s.antifly[0]} armor and move ${Math.round(s.antifly[1]*100)}% slower`]);
+  if (s.chainFrost) out.push(['slow', '#bfe6ff', pct(s.chainFrost), 'Frost ball', `${pct(s.chainFrost)} chance of a frost ball bouncing between enemies (slow level 5: 51% slower for 2s)`]);
   if (s.recover) out.push(['inspire', '#7fe0a0', pct(s.recover), 'Healing', `${pct(s.recover)} chance per hit to restore a life`]);
   if (s.greedy) out.push(['crit', '#ffd166', '10×', 'Treasure', 'Kills nearby sometimes pay 10× gold']);
   if (s.sight) out.push(['sight', '#ffffff', '✓', 'True sight', 'Reveals invisible enemies in range']);
@@ -1067,7 +1069,7 @@ function waveSummary(wi){
 function startWave(){
   if (phase !== 'ready' || placing) return;
   preWave = serialize();
-  curWave = waveInfo(wave); queue = curWave.n; wStat = {kills:0, ratio:0, leak:0}; spawnIdx = 0; spawnT = 0; phase = 'wave'; paused = false; sel = null; selInfo = null; moving = null;
+  curWave = waveInfo(wave); queue = curWave.n; wStat = {kills:0, ratio:0, leak:0, leaks:0}; spawnIdx = 0; spawnT = 0; phase = 'wave'; paused = false; sel = null; selInfo = null; moving = null;
   computeMarks(); renderUI(); renderMeter();
 }
 let spawnIdx = 0;
@@ -1111,10 +1113,14 @@ const FROSTY = new Set(['silver', 'silverknight', 'hugepink', 'starsap']); // to
 const slowPct = (e, f, d, key = 'misc', frost = false) => { const s = e.slows.get(key); if (!s) e.slows.set(key, {f:Math.min(.95, f), t:d, frost}); else { if (f >= s.f) s.f = Math.min(.95, f); s.t = Math.max(s.t, d); s.frost = s.frost || frost; } };
 const slow = (e, f, d, key, frost) => { if (e.K.abil.has('magimm')) return; slowPct(e, f, d, key, frost); };
 const isFrozen = e => e.auraIce > 0 || [...e.slows.values()].some(s => s.frost); // slowed by ice or frost
-const slowMul = e => { let m = 1 - (e.auraSlow || 0); for (const s of e.slows.values()) m *= 1 - s.f; return m; }; // what is left of the enemy's speed
+const slowMul = e => { // what is left of the enemy's speed: each tower (or trap) counts once, with its strongest slow; different ones multiply
+  let m = 1;
+  if (e.auraSlows && e.auraSlows.size){ for (const [k, s] of e.slows) m *= 1 - Math.max(s.f, e.auraSlows.get(k) || 0); for (const [k, f] of e.auraSlows) if (!e.slows.has(k)) m *= 1 - f; }
+  else for (const s of e.slows.values()) m *= 1 - s.f;
+  return m; };
 const MIN_SPD = 2; // slows can't push an enemy below 2 squares a second (one that is naturally slower keeps its own speed)
 const slowedSpd = e => Math.max(Math.min(e.spd, MIN_SPD), e.spd*slowMul(e));
-const isSlowed = e => e.slows.size > 0 || e.auraSlow > 0;
+const isSlowed = e => e.slows.size > 0 || (e.auraSlows && e.auraSlows.size > 0);
 // ===== sound effects: all synthesised with Web Audio (no sound files) =====
 // Starts on the first tap (browsers only allow audio after a gesture). Voices are capped and each kind of sound has a
 // short cooldown, so a big battle at 3x speed stays a battle, not a wall of noise.
@@ -1405,7 +1411,7 @@ function hit(e, st, color, src){
   if (st.burned) damage(e, dmg, false, st, src);
   if (st.recover && Math.random() < st.recover && lives < START_LIVES){ lives++; effects.push({x:e.x, y:e.y, r0:.2, r1:1, t:0, dur:.5, color:'#7fe0a0'}); }
   if (st.gaze && Math.random() < st.gaze){ e.stunT = Math.max(e.stunT, 2); e.gazeT = 3; effects.push({x:e.x, y:e.y, r0:.6, r1:.2, t:0, dur:.5, color:'#9a9a9a'}); }
-  if (st.frost){ for (const o of enemies){ if (!o.dead && Math.hypot(o.x-e.x, o.y-e.y) <= T(st.frost)){ slowPct(o, .5, 3, src || 'frost', true); o.noRegenT = 3; } } effects.push({x:e.x, y:e.y, r0:.2, r1:T(st.frost), t:0, dur:.35, color:'#cfe8ff'}); }
+  if (st.frost){ for (const o of enemies){ if (!o.dead && Math.hypot(o.x-e.x, o.y-e.y) <= T(st.frost)){ slowPct(o, SLOW_LV[5], 3, src || 'frost', true); o.noRegenT = 3; } } effects.push({x:e.x, y:e.y, r0:.2, r1:T(st.frost), t:0, dur:.35, color:'#cfe8ff'}); }
   if (st.chain && Math.random() < st.chain[0]) zap(e, st.chain[1], st.chain[2], T(st.chain[3]), '#fff36e', st, src);
   if (st.chainFrost && Math.random() < st.chainFrost) zap(e, 0, 10, 4, '#bfe6ff', st, src, true);
   if (st.fork && Math.random() < st.fork[0]){
@@ -1420,7 +1426,7 @@ function zap(from, dmg, jumps, radius, color, st, src, frost){ // a bolt that ju
     for (const o of enemies){ if (o.dead || hitSet.has(o)) continue; const d = Math.hypot(o.x-cur.x, o.y-cur.y); if (d <= bd){ bd = d; best = o; } }
     if (!best) break;
     effects.push({line:true, x:cur.x, y:cur.y, x2:best.x, y2:best.y, t:0, dur:.25, color});
-    if (frost) slowPct(best, .45, 2, src || 'frostball', true); else damage(best, dmg, false, st, src);
+    if (frost) slowPct(best, SLOW_LV[4], 2, src || 'frostball', true); else damage(best, dmg, false, st, src);
     hitSet.add(best); cur = best;
   }
 }
@@ -1429,15 +1435,15 @@ function step(dt){
   // enemy-facing auras from advanced towers: armor loss, crippled flyers, ice
   const auraT = towers.filter(t => t.st.decadent || t.st.antifly || t.st.ice);
   for (const e of enemies){
-    let arm = 0, mr = 0, keep = 1, ice = 0; // what each aura in range leaves of the speed, multiplied together
+    let arm = 0, mr = 0, ice = 0; const mi = e.K.abil.has('magimm'); if (!e.auraSlows) e.auraSlows = new Map(); e.auraSlows.clear(); // each aura tower in range, with its slow
     for (const t of auraT){ let sl = 0;
       const d = edgeD(t.x, t.y, e.x, e.y), S = t.st;
       if (S.decadent && d <= T(S.decadent[1])) arm = Math.max(arm, S.decadent[0]);
       if (S.ice && d <= T(S.ice[1])){ sl = Math.max(sl, S.ice[0]); ice = 1; }
       if (S.antifly && e.fly && d <= T(S.antifly[3])){ arm = Math.max(arm, S.antifly[0]); mr = Math.max(mr, S.antifly[2]); sl = Math.max(sl, Math.min(.95, S.antifly[1])); }
-      keep *= 1 - sl;
+      if (sl > 0 && !mi) e.auraSlows.set(t, sl);
     }
-    e.auraArmor = arm; e.auraMr = mr; e.auraSlow = e.K.abil.has('magimm') ? 0 : 1 - keep; e.auraIce = e.K.abil.has('magimm') ? 0 : ice;
+    e.auraArmor = arm; e.auraMr = mr; e.auraIce = mi ? 0 : ice;
   }
   // pedals (traps) trigger when an enemy steps near them
   for (const pd of pedals){
@@ -1472,7 +1478,7 @@ function step(dt){
       else { e.x += dx/d*move; e.y += dy/d*move; move = 0; }
     }
     if (e.i >= e.pts.length){
-      { const dmg = leakDmg(e.K, Math.max(0, e.hp)/e.max); wStat.leak += dmg; leakLog.push({w:wave, n:e.K.label, c:e.K.col, p:Math.round(Math.max(0, e.hp)/e.max*100), d:Math.round(dmg*10)/10, b:!!e.K.boss}); if (leakLog.length > 300) leakLog.shift(); e.dead = true; SFX.leak(); lives = Math.max(0, Math.round((lives - dmg)*100)/100); } // a leaker costs its full damage only if unhurt
+      { const dmg = leakDmg(e.K, Math.max(0, e.hp)/e.max); wStat.leak += dmg; wStat.leaks = (wStat.leaks || 0) + 1; leakLog.push({w:wave, n:e.K.label, c:e.K.col, p:Math.round(Math.max(0, e.hp)/e.max*100), d:Math.round(dmg*10)/10, b:!!e.K.boss}); if (leakLog.length > 300) leakLog.shift(); e.dead = true; SFX.leak(); lives = Math.max(0, Math.round((lives - dmg)*100)/100); } // a leaker costs its full damage only if unhurt
       effects.push({x:e.x, y:e.y, r0:.2, r1:1.4, t:0, dur:.5, color:'#ff6177'});
       continue;
     }
@@ -1574,10 +1580,12 @@ function adaptWaveSize(){ // decide the next wave's size from how this wave went
   const ch = waveSize - before;
   sizeNote = ch ? `Next waves: ${waveSize} enemies (${ch > 0 ? '+' : '−'}${Math.abs(ch)}, ${why})` : '';
 }
+const flawlessPct = () => 10 + Math.min(luck, 7) + (luck >= 8 ? 3 : 0); // a flawless wave pays 10% of your gold +1% per favor level (favor 8 adds 3%: 20% in all)
 function endWave(){
   projectiles = []; effects = [];
   for (const pd of pedals) pd.firedAt = null; // the game clock stops between waves, so a trap's ground mark (timed on that clock) would otherwise freeze on screen
   const bonus = 4 + Math.floor(wave/2); gold += bonus;
+  const flawless = !wStat.leaks, fb = flawless ? Math.floor(gold*flawlessPct()/100) : 0; gold += fb; // nobody got through: a share of your gold on top
   const meterSnap = meterRows();
   const champ = awardAura();
   lastMeter = {wave, rows: meterSnap, glory: champ};
@@ -1585,7 +1593,7 @@ function endWave(){
   if (wave >= MAX_WAVE){ wave = MAX_WAVE; endGame(true); return; }
   adaptWaveSize();
   wave++; phase = 'place'; roundGems = []; sel = null;
-  toast(`Wave cleared · +${bonus} gold`); renderMeter();
+  toast(`Wave cleared · +${bonus} gold`); if (fb > 0) setTimeout(() => toast(`Flawless! Nobody got through · +${fb} gold (${flawlessPct()}%)`), 900); renderMeter();
   setTimeout(() => { if (phase === 'place') warnSpecialWave(); }, 2200); // after the round's other messages, so it stays on top
   if (sizeNote) setTimeout(() => toast(sizeNote), 1700);
   gridChanged(); save();
@@ -2477,6 +2485,7 @@ function renderRightPanel(force){
     $('#rpTitle').textContent = 'Royal favor';
     const top = el.scrollTop, cost = luck < 8 ? LUCK_COST[luck-1] : 0;
     el.innerHTML = `<p class="muted">More favor makes every new tower more likely to arrive at a higher rank. You are at favor ${luck}.</p>
+      <p class="muted">A <b style="color:var(--gold)">flawless wave</b> (no enemy gets through) pays a bonus of ${flawlessPct()}% of your gold: 10%, +1% per favor level, and favor 8 adds 3% for 20%.</p>
       <div class="fvleg">${QN.slice(0, 5).map((q, i) => `<span><i style="background:${QC[i]}"></i>${q}</span>`).join('')}</div>
       ${ODDS.map((o, i) => `<div class="fvrow ${i === luck-1 ? 'cur' : ''} ${i < luck ? 'done' : ''}"><span class="fvn">${i < luck ? '✓ ' : ''}Favor ${i+1}</span><div class="fvbar">${o.map((v, j) => v ? `<span style="width:${v}%;background:${QC[j]};color:${j >= 3 ? '#f3e8cc' : '#1d150b'}" data-tiptext="${esc(`${QN[j]} ${v}%`)}">${v >= 15 ? v : ''}</span>` : '').join('')}</div><span class="fvc">${i === 0 ? 'start' : LUCK_COST[i-1] + 'g'}</span></div>`).join('')}
       ${luck < 8 ? `<button class="btn primary fvbuy" data-act="luck" ${gold < cost ? 'disabled' : ''}>Upgrade to favor ${luck+1} · ${cost} gold</button>` : '<p class="muted" style="text-align:center;margin-top:8px">Favor is at its highest.</p>'}`;
@@ -2673,7 +2682,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.10 · October 27, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.11 · October 27, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
