@@ -1873,8 +1873,13 @@ function resetView(){ view.defeat = false; Object.assign(view, {yaw:0, pitch:PIT
 // 2.5D pixel look: the board renders at a pixel size locked to the world (about 34 art pixels per square, never finer
 // than half a screen point), then is scaled up with hard edges, so towers, crews and enemies read as pixel art in 3D
 const ART_PX_PER_TILE = 34, PIXELATE = false; // pixelation is switched off for now: full screen resolution
+let dprCap = 2, ftAvg = 16, ftN = 0; // the canvas renders at up to 2× the screen's points, and drops in steps (to 1×) when frames run long
+function adaptResolution(ms){
+  ftAvg += (Math.min(100, ms) - ftAvg)*.05; if (++ftN < 90) return; // judge over about a second and a half
+  if (ftAvg > 24 && dprCap > 1 && phase !== 'over'){ dprCap = Math.max(1, dprCap - .25); ftN = 0; ftAvg = 16; } // only steps down (stepping back up would stutter on and off)
+}
 function setPixelScale(){
-  const dpr = PIXELATE ? 1/Math.max(1/Math.min(2, window.devicePixelRatio || 1), Math.min(3, Math.round((view.s0*view.zoom/ART_PX_PER_TILE)*4)/4)) : Math.min(3, window.devicePixelRatio || 1);
+  const dpr = PIXELATE ? 1/Math.max(1/Math.min(2, window.devicePixelRatio || 1), Math.min(3, Math.round((view.s0*view.zoom/ART_PX_PER_TILE)*4)/4)) : Math.min(dprCap, window.devicePixelRatio || 1);
   const W = Math.max(60, Math.round(view.w*dpr)), H = Math.max(60, Math.round(view.h*dpr));
   if (cv.width !== W || cv.height !== H || view.dpr !== dpr){ view.dpr = dpr; cv.width = W; cv.height = H; }
 }
@@ -2662,7 +2667,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.8 · October 27, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.9 · October 27, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
@@ -2850,7 +2855,7 @@ const depthOf = (x, y, z) => { const dx = x - view.cx, dz = z - view.cz; return 
 const PXC = 32;
 const baseCan = document.createElement('canvas'), gCan = document.createElement('canvas');
 baseCan.width = gCan.width = COLS*PXC; baseCan.height = gCan.height = ROWS*PXC;
-let baseReady = false, groundKey = '', paintedBiomeR = null;
+let baseReady = false, groundKey = '', paintedBiomeR = null, staticRef = null, staticVK = '', lastVK = '', lastVMove = 0;
 // ===== developer mode: custom skins (uploaded images) that replace the drawn models =====
 // Slots: tower:<type> / tower:@<advanced>, bastion:tower / bastion:wall, waypoint:<0-6>, tile:<grass|road|farm|biome>, enemy:<name>.
 // Saved to the artifact (assets + db) when it runs on claude.ai and this viewer can edit; otherwise in this browser (IndexedDB).
@@ -3968,7 +3973,9 @@ function charLayers(name){ // the layer images, made once from the art (drawn at
   let c = charCache[name]; if (c) return c; c = charCache[name] = {imgs:{}, n:0, ready:false};
   const A = CHAR_ART[name]; const keys = Object.keys(A).filter(k => A[k] && typeof A[k] === 'object' && A[k].svg);
   for (const k of keys){ const L = A[k], im = new Image();
-    im.onload = () => { if (++c.n === keys.length){ c.ready = true; charsLoaded(); } };
+    im.onload = () => { // rasterised once to a bitmap: drawing the SVG itself re-renders the vector art on every rotated or scaled draw (very slow)
+      try { const cn = document.createElement('canvas'); cn.width = im.naturalWidth || Math.ceil(L.w*2); cn.height = im.naturalHeight || Math.ceil(L.h*2); cn.getContext('2d').drawImage(im, 0, 0, cn.width, cn.height); cn.naturalWidth = cn.width; cn.naturalHeight = cn.height; c.imgs[k] = cn; } catch (e) {}
+      if (++c.n === keys.length){ c.ready = true; charsLoaded(); } };
     im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${L.x} ${L.y} ${L.w} ${L.h}" width="${Math.ceil(L.w*2)}" height="${Math.ceil(L.h*2)}">${CHAR_DEFS2[L.dk]}${L.svg}</svg>`);
     c.imgs[k] = im; }
   return c;
@@ -4672,6 +4679,9 @@ function drawSkyDragon(x, y, u, col, since, face){ // roosting on the bastion; o
     ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(mx, my, u*.6, 0, Math.PI*2); ctx.fill();
   }
 }
+let miasmaCan = null;
+const miasmaSprite = () => { if (miasmaCan) return miasmaCan; const c = miasmaCan = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(6,4,10,1)'); gr.addColorStop(.55, 'rgba(14,18,20,.65)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return c; };
 function drawMiasma(t){ // black miasma creeping over the ground where the plague aura rots armor
   const R = t.st.decadent ? T(t.st.decadent[1]) : 3, o = [0,0,0];
   ctx.setTransform(view.dpr,0,0,view.dpr,0,0);
@@ -4680,10 +4690,10 @@ function drawMiasma(t){ // black miasma creeping over the ground where the plagu
     const a = (i*2.399 + anim*.05*(i % 2 ? 1 : -1)) % (Math.PI*2), rr = R*Math.sqrt(((i*.618) % 1)*.92 + .04), ph = (anim*.12 + i*.37) % 1;
     const mx = t.x + Math.cos(a)*rr, mz = t.y + Math.sin(a)*rr; if (mx < .1 || mz < .1 || mx > COLS - .1 || mz > ROWS - .1) continue;
     proj(mx, elevAt(mx, mz) + .05 + ph*.25, mz, o);
-    const sz = VW.s*(.6 + .3*Math.sin(i*1.7) + ph*.35), al = .5*Math.sin(ph*Math.PI);
-    const g = ctx.createRadialGradient(o[0], o[1], 0, o[0], o[1], sz); g.addColorStop(0, `rgba(6,4,10,${al})`); g.addColorStop(.55, `rgba(14,18,20,${al*.65})`); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(o[0], o[1], sz, sz*VW.sp*1.1 + sz*.15, 0, 0, Math.PI*2); ctx.fill();
+    const sz = VW.s*(.6 + .3*Math.sin(i*1.7) + ph*.35), al = .5*Math.sin(ph*Math.PI), hy = sz*VW.sp*1.1 + sz*.15;
+    ctx.globalAlpha = al; ctx.drawImage(miasmaSprite(), o[0] - sz, o[1] - hy, sz*2, hy*2);
   }
+  ctx.globalAlpha = 1;
 }
 function drawFloorFlames(t){ // licks of fire on the ground along the edge of a fire aura
   const R = t.st.burnR || t.st.rng, n = Math.max(10, Math.round(R*2*Math.PI/.75)), o = [0,0,0];
@@ -4741,9 +4751,7 @@ function drawCrew(o, g){
   // aura glow and stars sit behind / above the crew
   proj(o.x, o.top, o.z, o3);
   if (g.aura){
-    const R = u*1.3, gr = ctx.createRadialGradient(o3[0], o3[1] - u*.4, R*.2, o3[0], o3[1] - u*.4, R*1.6), a = .28 + .12*Math.sin(anim*3 + g.c);
-    gr.addColorStop(0, `rgba(255,214,110,${a})`); gr.addColorStop(1, 'rgba(255,214,110,0)');
-    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(o3[0], o3[1] - u*.4, R*1.6, 0, Math.PI*2); ctx.fill();
+    const R = u*1.3*1.6, a = .28 + .12*Math.sin(anim*3 + g.c); ctx.globalAlpha = a*1.6; ctx.drawImage(glowSprite('255,214,110'), o3[0] - R, o3[1] - u*.4 - R, R*2, R*2); ctx.globalAlpha = 1;
   }
   const list = [];
   for (const [cfg, n, fixed] of groups){
@@ -5518,7 +5526,9 @@ function updateHerd(dt){
 const ANIMAL_ART = `<g stroke="#2B2B2B" stroke-width="2" stroke-linejoin="round"> <path d="M228 205 q22 25 8 60" fill="none"/> <path d="M231 262 l10 8 l-8 4 z" fill="#2B2B2B"/> <rect x="96" y="240" width="16" height="58" fill="#FFFFFF"/> <rect x="122" y="240" width="16" height="58" fill="#FFFFFF"/> <rect x="170" y="240" width="16" height="58" fill="#FFFFFF"/> <rect x="196" y="240" width="16" height="58" fill="#FFFFFF"/> <rect x="96" y="288" width="16" height="10" fill="#2B2B2B"/> <rect x="122" y="288" width="16" height="10" fill="#2B2B2B"/> <rect x="170" y="288" width="16" height="10" fill="#2B2B2B"/> <rect x="196" y="288" width="16" height="10" fill="#2B2B2B"/> <ellipse cx="152" cy="218" rx="82" ry="48" fill="#FFFFFF"/> <ellipse cx="176" cy="264" rx="18" ry="10" fill="#F4B6C2"/> </g> <path d="M130 178 q20 -8 30 8 q8 18 -12 26 q-22 6 -26 -12 q-2 -14 8 -22 z" fill="#2B2B2B"/> <path d="M190 200 q18 -4 24 12 q4 16 -14 20 q-18 0 -16 -16 z" fill="#2B2B2B"/> <path d="M160 236 q12 -2 14 8 q0 10 -12 10 q-10 -2 -2 -18 z" fill="#2B2B2B"/> <g stroke="#2B2B2B" stroke-width="2" stroke-linejoin="round"> <path d="M52 152 q-8 -18 -2 -26 q4 10 12 18 z" fill="#F2E3C6"/> <path d="M92 152 q8 -18 2 -26 q-4 10 -12 18 z" fill="#F2E3C6"/> <ellipse cx="34" cy="168" rx="16" ry="8" fill="#FFFFFF"/> <ellipse cx="110" cy="168" rx="16" ry="8" fill="#FFFFFF"/> <ellipse cx="72" cy="182" rx="32" ry="38" fill="#FFFFFF"/> <ellipse cx="72" cy="208" rx="28" ry="18" fill="#F4B6C2"/> </g> <path d="M58 160 q10 -14 22 -6 q-4 14 -22 6 z" fill="#2B2B2B"/> <circle cx="60" cy="180" r="4" fill="#2B2B2B"/> <circle cx="84" cy="180" r="4" fill="#2B2B2B"/> <ellipse cx="63" cy="208" rx="4" ry="5" fill="#B5657A"/> <ellipse cx="81" cy="208" rx="4" ry="5" fill="#B5657A"/> <g fill="#3A322C"> <rect x="316" y="236" width="14" height="62" rx="4"/> <rect x="338" y="236" width="14" height="62" rx="4"/> <rect x="370" y="236" width="14" height="62" rx="4"/> <rect x="392" y="236" width="14" height="62" rx="4"/> </g> <g fill="#F6F2E9" stroke="#C9BFAC" stroke-width="2"> <circle cx="318" cy="218" r="30"/> <circle cx="336" cy="190" r="28"/> <circle cx="366" cy="182" r="28"/> <circle cx="396" cy="194" r="28"/> <circle cx="414" cy="220" r="28"/> <circle cx="396" cy="242" r="26"/> <circle cx="362" cy="248" r="26"/> <circle cx="330" cy="242" r="26"/> </g> <ellipse cx="364" cy="218" rx="62" ry="36" fill="#F6F2E9"/> <ellipse cx="270" cy="184" rx="14" ry="7" fill="#3A322C"/> <ellipse cx="320" cy="184" rx="14" ry="7" fill="#3A322C"/> <ellipse cx="295" cy="200" rx="24" ry="32" fill="#3A322C"/> <g fill="#F6F2E9" stroke="#C9BFAC" stroke-width="2"> <circle cx="282" cy="168" r="12"/> <circle cx="296" cy="162" r="13"/> <circle cx="310" cy="168" r="12"/> </g> <circle cx="286" cy="194" r="5" fill="#FFFFFF"/> <circle cx="304" cy="194" r="5" fill="#FFFFFF"/> <circle cx="287" cy="195" r="2.5" fill="#1E1A17"/> <circle cx="305" cy="195" r="2.5" fill="#1E1A17"/> <path d="M289 218 q6 5 12 0" fill="none" stroke="#9C8F84" stroke-width="2" stroke-linecap="round"/> <g stroke="#E58A1F" stroke-width="4" stroke-linecap="round" fill="none"> <path d="M548 262 L548 298 M548 298 l-12 0 M548 298 l-8 -6 M548 298 l6 -4"/> <path d="M574 262 L574 298 M574 298 l-12 0 M574 298 l-8 -6 M574 298 l6 -4"/> </g> <g stroke="#8A6A4A" stroke-width="2" stroke-linejoin="round"> <path d="M600 210 q34 -40 40 -14 q-4 14 -14 18 q28 -10 22 14 q-10 14 -40 12 z" fill="#C8875A"/> <path d="M500 186 q-6 50 30 76 q50 16 78 -18 q14 -30 -10 -50 q-30 -20 -60 -10 q-18 -12 -38 2 z" fill="#FFF8EE"/> <ellipse cx="572" cy="226" rx="32" ry="20" fill="#EDE1CF"/> </g> <path d="M552 222 q20 6 40 0 M556 232 q16 5 32 0" fill="none" stroke="#C9B79C" stroke-width="2" stroke-linecap="round"/> <g fill="#E23D3D"> <circle cx="508" cy="146" r="9"/> <circle cx="520" cy="140" r="10"/> <circle cx="532" cy="147" r="9"/> <ellipse cx="497" cy="192" rx="6" ry="9"/> </g> <circle cx="518" cy="172" r="26" fill="#FFF8EE" stroke="#8A6A4A" stroke-width="2"/> <path d="M494 166 L474 174 L494 182 Z" fill="#F5B82E" stroke="#C98A12" stroke-width="2" stroke-linejoin="round"/> <circle cx="510" cy="166" r="4" fill="#2B2B2B"/> <circle cx="511" cy="165" r="1.3" fill="#FFFFFF"/>`;
 const ANIMAL_BOX = {cow:[18, 124, 232, 180], sheep:[254, 150, 196, 152], hen:[470, 128, 182, 174]}; // [x, y, w, h] of each animal in the art, feet at the bottom
 const animalImg = {};
-for (const [k, [bx, by, bw, bh]] of Object.entries(ANIMAL_BOX)){ const im = new Image(); im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${bx} ${by} ${bw} ${bh}" width="${bw*2}" height="${bh*2}">${ANIMAL_ART}</svg>`); animalImg[k] = im; }
+for (const [k, [bx, by, bw, bh]] of Object.entries(ANIMAL_BOX)){ const im = new Image(); im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${bx} ${by} ${bw} ${bh}" width="${bw*2}" height="${bh*2}">${ANIMAL_ART}</svg>`);
+  im.onload = () => { try { const cn = document.createElement('canvas'); cn.width = im.naturalWidth; cn.height = im.naturalHeight; cn.getContext('2d').drawImage(im, 0, 0); cn.complete = true; cn.naturalWidth = cn.width; cn.naturalHeight = cn.height; animalImg[k] = cn; } catch (e) {} }; // as a bitmap (see charLayers)
+  animalImg[k] = im; }
 function drawAnimal(a){
   { const im = animalImg[a.k]; if (im && im.complete && im.naturalWidth){ // the vector art: bobs as it walks, dips its head to graze
       const o = [0,0,0]; proj(a.x, 0, a.z, o);
@@ -5829,10 +5839,9 @@ function drawElderLights(){ // fireflies and fairy lights drifting round the eld
     const a = k*2.39 + anim*(.15 + (k % 5)*.04)*(k % 2 ? 1 : -1), rr = .9 + (k % 7)*.5 + Math.sin(anim*.7 + k)*.3, y = E + .4 + (k % 5)*.55 + Math.sin(anim*1.3 + k*2.1)*.3;
     proj(X + Math.cos(a)*rr, y, Z + Math.sin(a)*rr*.85, o);
     const tw = .5 + .5*Math.sin(anim*4.2 + k*3.3); if (tw < .15) continue;
-    const R = Math.max(2, VW.s*.09), col = k % 3 ? '170,255,200' : '255,236,150', gr = ctx.createRadialGradient(o[0], o[1], 0, o[0], o[1], R*2.4);
-    gr.addColorStop(0, `rgba(${col},${.9*tw})`); gr.addColorStop(.3, `rgba(${col},${.35*tw})`); gr.addColorStop(1, `rgba(${col},0)`);
-    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(o[0], o[1], R*2.4, 0, Math.PI*2); ctx.fill();
+    const R = Math.max(2, VW.s*.09)*2.4; ctx.globalAlpha = tw*.95; ctx.drawImage(glowSprite(k % 3 ? '170,255,200' : '255,236,150'), o[0] - R, o[1] - R, R*2, R*2);
   }
+  ctx.globalAlpha = 1;
 }
 // ----- gardens and townsfolk round the wishing well and the castle: flower beds and hedges; people dance, drink and celebrate,
 // panic once the castle's health falls below half, and are gone (fled) at 20% or less -----
@@ -6124,12 +6133,16 @@ function drawPineFires(){ // flames licking up the burning pines, and embers dri
   }
 }
 function renderStatic(){
-  if (staticCan.width !== cv.width || staticCan.height !== cv.height){ staticCan.width = cv.width; staticCan.height = cv.height; }
+  // drawn with a margin all round, so while the camera pans or zooms the picture can just be shifted and scaled (see draw)
+  const d = view.dpr, M = Math.round(Math.min(view.w, view.h)*.25), SW = cv.width + Math.round(2*M*d), SH = cv.height + Math.round(2*M*d);
+  if (staticCan.width !== SW || staticCan.height !== SH){ staticCan.width = SW; staticCan.height = SH; }
+  const o0 = proj(0, 0, 0, [0,0,0]); staticRef = {x:o0[0], y:o0[1], s:VW.s, M};
+  const keepO = [VW.ox, VW.oy]; VW.ox += M; VW.oy += M;
   const main = ctx; ctx = staticCan.getContext('2d');
-  const d = view.dpr;
   ctx.setTransform(1,0,0,1,0,0);
-  const bg = ctx.createRadialGradient(cv.width/2, cv.height*.35, 0, cv.width/2, cv.height*.5, Math.max(cv.width, cv.height)*.75);
-  bg.addColorStop(0, '#2a2117'); bg.addColorStop(1, '#120e0a'); ctx.fillStyle = bg; ctx.fillRect(0, 0, cv.width, cv.height);
+  const bg = ctx.createRadialGradient(SW/2, SH*.35, 0, SW/2, SH*.5, Math.max(SW, SH)*.75);
+  bg.addColorStop(0, '#2a2117'); bg.addColorStop(1, '#120e0a'); ctx.fillStyle = bg; ctx.fillRect(0, 0, SW, SH);
+  try {
   ctx.setTransform(d,0,0,d,0,0);
   drawInst(slabInst);
   groundSpace();
@@ -6172,14 +6185,21 @@ function renderStatic(){
     list.sort((a,b) => objDepth(a) - objDepth(b));
     for (const it of list) drawObjParts(it);
   }
-  ctx = main;
+  } finally { ctx = main; VW.ox = keepO[0]; VW.oy = keepO[1]; }
 }
-function occlude(x, z, dep, strict, lvl = 0, H = 0){ // H: the mover's height; when given, only squares that overlap it on screen are redrawn
+function objTopY(o){ // the highest point of a tower or wall's own model (cached), for the occlusion test
+  if (o.hiY != null) return o.hiY; let m = (o.top || 0) + .2;
+  if (o.parts) for (const p of o.parts) if (p.W) for (const w of p.W) if (w[1] > m) m = w[1];
+  return o.hiY = m; }
+function occlude(x, z, dep, strict, lvl = 0, H = 0, feetY = null){ // H: the mover's height; when given, only squares that overlap it on screen are redrawn
+  // feetY: the mover's lowest point on screen; a tower, wall or tree in front is only redrawn when its top reaches up over that
   // (redraw static cell objects, and higher hill squares, just in front of a moving thing)
   // Once a square is redrawn over the mover, every higher square in front of it in the same column whose top reaches up over it
   // must be redrawn too, or the redrawn square pokes out over that hill and it looks cut down (the flicker on the hills).
   const c0 = Math.floor(x), r0 = Math.floor(z), wps = new Set(), bot = [-1e9, -1e9, -1e9], k = VW.cp/Math.max(.05, VW.sp);
-  const ge = elevAt(x, z), feetRow = z - ge*k + .15, headRow = z - (ge + H)*k;
+  const ge = elevAt(x, z), feetRow = z - ge*k + .15, headRow = z - (ge + H)*k, po = [0,0,0];
+  if (feetY == null){ proj(x, ge, z, po); feetY = po[1]; }
+  const reaches = (px, py, pz) => { proj(px, py, pz, po); return po[1] < feetY - 1; }; // does this point show above the mover's feet?
   for (let r = r0; r <= r0 + 8; r++){
     let any = false;
     for (let ci = 0; ci < 3; ci++){
@@ -6197,8 +6217,8 @@ function occlude(x, z, dep, strict, lvl = 0, H = 0){ // H: the mover's height; w
         for (let i=1;i<CPS.length-1;i++){ const [wc, wr] = CPS[i]; if (Math.abs(wc - c) <= 1 && Math.abs(wr - r) <= 1 && (strict ? wr > r0 : wr >= r0)) wps.add(i); } // a waypoint building overhangs its neighbours: redraw it over any of them
         const pd = pedalAt(c, r); if (pd){ groundSpace(tileElev(c, r)); drawPedal(pd); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); }
       }
-      if (r <= r0 + 2 || first || cover){ const o = cellIndex.get(r*COLS + c); if (o && (objDepth(o) > dep || (cover && !first))) drawObjParts(o); }
-      if (!first && r <= r0 + 2){ const tr = treeAt.get(r*COLS + c); if (tr && tr.z > z && tileLevel(c, r) <= lvl){ tr.draw(); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); } } // a pine in front of the mover
+      if (r <= r0 + 2 || first || cover){ const o = cellIndex.get(r*COLS + c); if (o && (objDepth(o) > dep || (cover && !first)) && (first || cover || reaches(o.x, objTopY(o), o.z - .5))) drawObjParts(o); }
+      if (!first && r <= r0 + 2){ const tr = treeAt.get(r*COLS + c); if (tr && tr.z > z && tileLevel(c, r) <= lvl && Math.abs(tr.x - x) < .9 && (proj(tr.x, tileElev(c, r), tr.z, po), po[1] - VW.s*tr.k*.95 < feetY - 1)){ tr.draw(); ctx.setTransform(view.dpr,0,0,view.dpr,0,0); } } // a pine in front of the mover
     }
     if (r > r0 + 2 && !any) break;
   }
@@ -6213,10 +6233,18 @@ function draw(){
   const gk = `${gridVer}|${showPath}|${phase === 'wave' && curWave && curWave.fly ? 1 : 0}|${bR}`;
   if (gk !== groundKey){ groundKey = gk; paintGround(); }
   if (cellVer !== gridVer){ cellVer = gridVer; buildCellObjs(); cellIndex = new Map(cellObjs.map(o => [o.r*COLS + o.c, o])); }
-  const sk = [groundKey, cellVer, view.pitch, view.zoom, view.cx, view.cz, cv.width, cv.height, pedals.length, hellR(), lakesOn, hellHealed].join('|');
-  if (sk !== staticKey){ staticKey = sk; renderStatic(); }
+  const sk = [groundKey, cellVer, view.pitch, view.yaw, cv.width, cv.height, pedals.length, hellR(), lakesOn, hellHealed].join('|'), vk = view.cx + '|' + view.cz + '|' + view.zoom, now = performance.now();
+  if (vk !== lastVK){ lastVK = vk; lastVMove = now; }
+  let blit = null;
+  if (sk === staticKey && staticRef && vk !== staticVK){ // the camera moved: shift and scale the last picture while it keeps moving, redraw once it settles
+    const o0 = proj(0, 0, 0, [0,0,0]), a = VW.s/staticRef.s, bx = o0[0] - a*staticRef.x, by = o0[1] - a*staticRef.y, M = staticRef.M;
+    const L = bx - a*M, T0 = by - a*M, R = bx + a*(view.w + M), B = by + a*(view.h + M);
+    if (now - lastVMove < 160 && a > .7 && a < 1.45 && L <= 0 && T0 <= 0 && R >= view.w && B >= view.h) blit = {a, x:L, y:T0};
+  }
+  if (!blit && (sk !== staticKey || vk !== staticVK)){ staticKey = sk; staticVK = vk; renderStatic(); }
   ctx.setTransform(1,0,0,1,0,0);
-  ctx.drawImage(staticCan, 0, 0);
+  if (blit) ctx.drawImage(staticCan, blit.x*d, blit.y*d, staticCan.width*blit.a, staticCan.height*blit.a);
+  else ctx.drawImage(staticCan, -staticRef.M*d, -staticRef.M*d);
   ctx.setTransform(d,0,0,d,0,0);
   groundSpace();
   if (lakesOn) drawLakeShimmer();
@@ -6294,9 +6322,11 @@ function draw(){
   const bars = [], names = [], flash = new Map();
   for (const t of towers) if (t.flash > 0) flash.set(t.g, 1 + t.flash*2);
   const o3 = [0,0,0];
+  const offM = VW.s*2.5, offW = cv.width/d, offH = cv.height/d, off = (x, y, z) => { proj(x, y, z, o3); return o3[0] < -offM || o3[0] > offW + offM || o3[1] < -offM*1.5 || o3[1] > offH + offM; };
   for (const it of items){
     if (it.o){
       const o = it.o, g = o.g;
+      if (off(o.x, o.top, o.z)) continue; // off screen: skip the crew and its occlusion work
       if (g.round){ // new this round: a pulsing ring on the scaffold deck, under the crew
         const pulse = .55 + .35*Math.sin(anim*5); proj(o.x, o.top + .03, o.z, o3);
         ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.ellipse(o3[0], o3[1], .4*VW.s, .4*VW.s*VW.sp, 0, 0, Math.PI*2); ctx.stroke();
@@ -6305,9 +6335,10 @@ function draw(){
       if (g.hold && !g.round){ const so = [0,0,0]; proj(o.x, o.top, o.z, so); drawStopSign(so[0], so[1], Math.max(11, VW.s*.95)); }
       proj(o.x, o.top, o.z, o3);
       if (marks.has(g)) drawInst(instance(MESH.mark, o.x + .32, o.top + .95 + Math.sin(anim*4)*.05, o.z - .2, 1, 1, 1, anim*2, '#f0c060', {emis:.5}));
-      occlude(o.x, o.z + 1, it.d, false, tileLevel(o.c, o.r));
+      proj(o.x, o.top, o.z + .3, o3); occlude(o.x, o.z + 1, it.d, false, tileLevel(o.c, o.r), 0, o3[1]);
     } else if (it.e){
-      const e = it.e, top = drawEnemy(e); proj(e.x, top, e.y, o3); bars.push([o3[0], o3[1], e]);
+      const e = it.e; if (off(e.x, elevAt(e.x, e.y), e.y)) continue;
+      const top = drawEnemy(e); proj(e.x, top, e.y, o3); bars.push([o3[0], o3[1], e]);
       if (!e.fly) occlude(e.x, e.y, it.d, true, tileLevel(Math.floor(e.x), Math.floor(e.y)), (e.K.r*2.9*(e.kind === 'boss' ? 1.15 : 1) + .15)/Math.max(.2, VW.cp)); // the sprite (and its health bar) in ground-height units
     } else if (it.p){
       drawMissile(it.p);
@@ -6384,6 +6415,7 @@ function postFX(){
 
 let last = performance.now(), liveTick = 0;
 function frame(now){
+  if (!document.hidden) adaptResolution(now - last);
   const dt = Math.min(.05, (now - last) / 1000); last = now; anim += dt; stepCamTween(dt); stepVictory(dt);
   if (phase === 'wave' && !paused){
     for (let i=0;i<speed && phase === 'wave';i++) step(dt);

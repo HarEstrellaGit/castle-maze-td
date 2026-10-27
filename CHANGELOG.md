@@ -2,6 +2,17 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.9 — October 27, 2026
+
+### Changed
+- **Smoother performance, especially on iPhone and iPad.**
+  - Panning and zooming are much smoother. While the camera moves, the game slides and scales the last picture of the board instead of redrawing it every frame, then redraws once you stop.
+  - If the game is struggling to keep up, it automatically lowers its drawing resolution in small steps (from 2× down to 1×) to keep frames smooth.
+  - The hand-drawn characters and farm animals are now prepared once as images instead of being redrawn from their vector art every frame.
+  - Glows, fireflies and the hell portal's dark mist are drawn much more cheaply.
+  - Towers, crews and enemies that are off screen are skipped.
+  - Towers, walls and trees in front of a moving enemy are only redrawn when they actually overlap it.
+
 ## 1.8 — October 27, 2026
 
 ### Changed
