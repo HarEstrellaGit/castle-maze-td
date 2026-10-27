@@ -2,6 +2,12 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.8 — October 27, 2026
+
+### Changed
+- **Traps can go on prop squares again.** Shops, stalls, training dummies and garden beds no longer block traps (this undoes the 1.7 restriction). A trap on one of those squares replaces the prop.
+- **Clearer messages when a trap can't be placed:** "A trap is already on that square", "Traps can't go on a waypoint", or "Traps can't go on your towers or walls".
+
 ## 1.7 — October 27, 2026
 
 ### Added

@@ -2034,7 +2034,7 @@ function propBlocks(c, r){ // squares with a building or prop on them (shops and
   return SHOPS.some(t => t.c === c && t.r === r) || BARRACKS_PROPS.some(t => t.c === c && t.r === r) || GARDENS.some(t => t.c === c && t.r === r);
 }
 function placeTap(c, r){
-  if (!inB(c,r) || grid[r][c] || pedalAt(c,r) || isCP(c,r) >= 0 || propBlocks(c, r)){ toast('Pick an open square (paths are fine, but not towers, walls or buildings)'); return; }
+  if (!inB(c,r) || grid[r][c] || pedalAt(c,r) || isCP(c,r) >= 0){ toast(pedalAt(c,r) ? 'A trap is already on that square' : isCP(c,r) >= 0 ? 'Traps can’t go on a waypoint' : 'Traps can’t go on your towers or walls'); return; }
   placing.spot = {c, r}; renderUI();
 }
 function confirmPedal(){
@@ -2662,7 +2662,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.7 · October 27, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.8 · October 27, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
@@ -6150,7 +6150,7 @@ function renderStatic(){
   for (const o of cellObjs) put(o.r, o);
   for (const f of graveFence()) put(Math.floor(f.z), f);
   for (const g of graveStones()) put(Math.floor(g.z), g);
-  { const road = new Set((initRoad || []).map(([c, r]) => r*COLS + c)), free = (c, r) => inB(c, r) && !grid[r][c] && isCP(c, r) < 0 && !road.has(r*COLS + c);
+  { const road = new Set((initRoad || []).map(([c, r]) => r*COLS + c)), free = (c, r) => inB(c, r) && !grid[r][c] && isCP(c, r) < 0 && !road.has(r*COLS + c) && !pedalAt(c, r);
     propAt.clear(); const add = (c, r, y, fn) => { put(r, {x:c + .5, y, z:r + .5, draw:fn}); const k = r*COLS + c; const prev = propAt.get(k); propAt.set(k, prev ? () => { prev(); fn(); } : fn); };
     for (const p of BARRACKS_PROPS) if (free(p.c, p.r)) add(p.c, p.r, tileElev(p.c, p.r), () => drawBarracksProp(p));
     for (const t of GARDENS) if (free(t.c, t.r)) add(t.c, t.r, tileElev(t.c, t.r) - .25, () => drawGardenTile(t));
