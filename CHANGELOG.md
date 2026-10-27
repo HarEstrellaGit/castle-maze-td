@@ -2,6 +2,35 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.7 — October 27, 2026
+
+### Added
+- **Lord rank.** A new sixth rank above Master, reached only by upgrading (two Masters, or four Elites). It's never rolled. Lord towers hit far harder; the Lord Archer Tower covers the whole board.
+- **Victory scene.** When you win, the camera flies to the hell portal. It shakes, blazes and crumbles to mossy rubble, and a burst of golden light turns its scorched land into a flowering wood full of fireflies.
+- **Hand-drawn characters.**
+  - The crews of the Archer, Crossbow, Mage, Alchemist and Militia towers are new hand-drawn figures that aim and animate as they attack.
+  - Villagers and the king now walk around the castle. They dance and cheer while it stands strong, and panic when it's in trouble.
+  - The War Drum Tower gets a band that grows with each rank: snare drummer, trumpeter, bass drummer, horn player and banner bearer.
+  - Cannon and Ballista towers are redrawn by rank, and Lords get battle-worn siege engines.
+  - Farm animals (cows, sheep and chickens) are redrawn; they bob as they walk and graze.
+- **Lakes and forests.**
+  - Two still lakes sit in the open grass, with reeds, lily pads and glinting water. They're scenery: you can build on them, and enemies wade across. A saved run whose maze already crosses the lakes keeps them switched off.
+  - Pine trees and leafy trees are scattered across open ground. Pines near the hell portal burn, and more catch fire as its scorched land spreads.
+- **Magic influence.** Pearl Tower, Coral War Hall and Emerald Watch now shield nearby towers from enemy debuffs.
+- **Slow and poison tints.** Slowed enemies turn light blue, poisoned ones turn green, and both turn purple. Poisoned enemies trail little green bubbles.
+- **Recipes in Towers built.** The list is grouped by kind of recipe and ordered by difficulty, and each tower shows its recipe as small portraits.
+
+### Changed
+- **Slows reworked.**
+  - Slows from different towers, traps and auras now stack by multiplying: two 50% slows leave 25% speed. The same source re-applying only refreshes its slow.
+  - Slows can't push an enemy below 2 squares a second (naturally slower enemies keep their own speed).
+  - To balance this, many slows are weaker: Frost Trebuchet 30% (was 35%), Ice Spire 75% (was 85%), Frostbite Watch 70% (was 85%), Star of Winter 60% slow with a 75% ice aura (was 75% and 90%), Grand Champion's Citadel and Dark Matter 35% (was 50%), Yaphet's Monolith 75% on flyers (was 90%).
+  - Flyer slows changed: Falconer's Roost 45% (was 50%), Healer's Abbey 35% (was 50%), Skyhunter Lodge 65% (was 60%), Robin's Woods 65% (was 80%).
+- **Cleave is now pure damage.** No armor, resistance or immunity reduces or blocks the Cannon Tower's splash.
+- **Grand Astronomer's Tower** now also lands critical strikes.
+- Traps can no longer be placed on squares with a building or prop (shops, stalls, training dummies, garden beds).
+- The trap you're about to place is always drawn on top, so hills and buildings never hide it.
+
 ## 1.6 — October 24, 2026
 
 ### Added

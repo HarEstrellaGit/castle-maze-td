@@ -27,6 +27,7 @@ After that it runs full screen and plays offline, even in airplane mode. Your ru
 - Towers block walking enemies, so use them to stretch the maze.
 - Keep one tower. The other four turn into walls that still block.
 - Two identical new towers upgrade the one you keep by a rank.
+- Ranks go Recruit, Trained, Veteran, Elite, Master. The top rank, **Lord**, can only be reached by upgrading (two Masters, or four Elites).
 
 **Advanced towers and traps.** The right sets of towers combine into advanced towers. Pairs build traps you can place on any open square. The **blueprint** button lists every recipe.
 
@@ -54,7 +55,7 @@ Your run saves automatically between waves.
 ## Updating the game (for the maintainer)
 
 1. Upload the new `index.html` (replacing the old one).
-2. Open `sw.js` and bump the version, for example `castle-maze-v7` → `castle-maze-v8`.
+2. Open `sw.js` and bump the version, for example `castle-maze-v8` → `castle-maze-v9`.
 3. Add the changes to `CHANGELOG.md`.
 
 Installed copies pick up the update the next time they're opened online. If an old version still shows, close the app and open it again.
