@@ -2,6 +2,18 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.10 — October 27, 2026
+
+### Added
+- **The Risen Poet replaces Plague Fortress** as the Carved Tourmaline tower. She's a glowing woman in a Greek toga and laurel wreath, floating over her old gravestone and sounding a long herald's trumpet. She fires musical notes, and more notes drift over the ground where her mournful song strips 30 armor from enemies. Her stats are unchanged.
+
+### Changed
+- **Recipes for a selected tower are sorted from easiest to hardest**, left to right. Recipes whose pieces must all be built in a single round (secret and ultimate towers, and traps) come last.
+- **Smarter resolution drop.** The game now only lowers its drawing resolution when it runs well under 30 frames a second, never goes below 1.5×, and steps back up once it runs smoothly again. Brief hitches, like switching apps or the board redrawing after a camera move, are ignored.
+
+### Fixed
+- **iPhone keyboard.** The game no longer stays scrolled out of place after the keyboard opens and closes (for example, when naming a tower).
+
 ## 1.9 — October 27, 2026
 
 ### Changed

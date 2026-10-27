@@ -39,7 +39,7 @@ if ('serviceWorker' in navigator) {
   --body:'Alegreya', 'Iowan Old Style', Palatino, Georgia, serif;
   color-scheme:dark;
 }
-html,body{height:100%}
+html,body{height:100%;position:fixed;inset:0;width:100%;overflow:hidden;overscroll-behavior:none}
 body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #241c13 0%, var(--bg) 60%);color:var(--ink);font-family:var(--body);overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 /* landscape layout: details on the left, the board in the middle, wave and controls on the right */
 :root{--u:clamp(8px,1.05vh + .2vw,13px)}
@@ -569,7 +569,7 @@ adv('egyptgold',   'Treasury Spire',       'Egypt Gold',           '#f0b429', '@
 adv('darkemerald', 'Warhammer Keep',       'Dark Emerald',         '#13955a', 'G5 B4 Y2',           {dmg:80, cd:.5, rng:700, stun:.1, stunDur:2, desc:'Fast hits that can stun'});
 adv('golem',       'Stone Golem Keep',     'Emerald Golem',        '#4f8f5a', '@gold @darkemerald D3', {dmg:170, cd:.5, rng:700, stun:.1, stunDur:2, pierce:32, gaze:.01, desc:'Stuns, armor shred, stone gaze'});
 adv('paraiba',     'Plague Tower',         'Paraiba Tourmaline',   '#3fd0c9', 'Q5 E4 G2',           {dmg:30, cd:.6, rng:600, decadent:[15, 800], desc:'Enemies nearby lose 15 armor'});
-adv('carved',      'Plague Fortress',      'Carved Tourmaline',    '#2aa8a2', '@paraiba @darkemerald G2', {dmg:130, cd:.6, rng:700, stun:.1, stunDur:2, decadent:[30, 1200], desc:'Stuns; enemies in a wide area lose 30 armor'});
+adv('carved',      'Risen Poet',           'Carved Tourmaline',    '#2aa8a2', '@paraiba @darkemerald G2', {dmg:130, cd:.6, rng:700, stun:.1, stunDur:2, decadent:[30, 1200], desc:'Stuns; her mournful song strips 30 armor from enemies in a wide area'});
 adv('sapstar',     'Winter’s Heart',       'Sapphire Star of Adam','#6fa8ff', 'G1 G2 G3 G4 G5',     {dmg:42, cd:1, rng:800, poison:128, poisonDur:5, pierce:64, decadent:[30, 1200], frost:300, desc:'Deadly poison, armor shred, freezing splash', ult:true});
 adv('pearl',       'Pearl Tower',          'Deep Sea Pearl',       '#e8f1f2', 'Q4 D4 E2',           {dmg:80, cd:.6, rng:500, ward:500, desc:'Steady heavy shots; magic influence shields nearby towers from enemy debuffs'});
 adv('cateye',      'Royal Banner Hall',    'Chrysoberyl Cat’s Eye','#7a66c4', 'E5 D4 Q3',           {dmg:6, cd:1, rng:500, spdAura:[60, 664], inspire:[.5, 500], sight:true, desc:'Nearby towers +60 speed, +50% damage; reveals invisible'});
@@ -1874,9 +1874,12 @@ function resetView(){ view.defeat = false; Object.assign(view, {yaw:0, pitch:PIT
 // than half a screen point), then is scaled up with hard edges, so towers, crews and enemies read as pixel art in 3D
 const ART_PX_PER_TILE = 34, PIXELATE = false; // pixelation is switched off for now: full screen resolution
 let dprCap = 2, ftAvg = 16, ftN = 0; // the canvas renders at up to 2× the screen's points, and drops in steps (to 1×) when frames run long
-function adaptResolution(ms){
-  ftAvg += (Math.min(100, ms) - ftAvg)*.05; if (++ftN < 90) return; // judge over about a second and a half
-  if (ftAvg > 24 && dprCap > 1 && phase !== 'over'){ dprCap = Math.max(1, dprCap - .25); ftN = 0; ftAvg = 16; } // only steps down (stepping back up would stutter on and off)
+function adaptResolution(ms){ // steps down only when the game runs well under 30 frames a second, never below 1.5×, and back up once it runs smoothly again
+  if (ms > 250 || performance.now() - lastVMove < 400) return; // ignore hitches (a tab switch, the board redrawing after a camera move)
+  ftAvg += (ms - ftAvg)*.05; ftN++;
+  const dev = Math.min(2, window.devicePixelRatio || 1);
+  if (ftN >= 120 && ftAvg > 34 && dprCap > 1.5 && phase !== 'over'){ dprCap = Math.max(1.5, dprCap - .25); ftN = 0; ftAvg = 20; }
+  else if (ftN >= 360 && ftAvg < 19 && dprCap < dev){ dprCap = Math.min(dev, dprCap + .25); ftN = 0; }
 }
 function setPixelScale(){
   const dpr = PIXELATE ? 1/Math.max(1/Math.min(2, window.devicePixelRatio || 1), Math.min(3, Math.round((view.s0*view.zoom/ART_PX_PER_TILE)*4)/4)) : Math.min(dprCap, window.devicePixelRatio || 1);
@@ -2402,7 +2405,9 @@ function blueprintsFor(g){
   return out;
 }
 function recipeTiles(g, self){
-  const list = blueprintsFor(g);
+  const list = blueprintsFor(g); // easiest to hardest, left to right; the ones built from a single round's new towers come last
+  const diff = bp => bp.four ? 64 : bp.icon.startsWith('sp:') ? recipeCost(bp.icon.slice(3)) : (bp.ings || []).reduce((a, ing) => a + (ing.special ? recipeCost(ing.special) : 2**ing.q), 0);
+  list.sort((a, b) => ((a.round || a.four) ? 1 : 0) - ((b.round || b.four) ? 1 : 0) || diff(a) - diff(b));
   if (!list.length) return '<p class="tc-none">Not part of any blueprint.</p>';
   return `<div class="rgrid">${list.map(bp => {
     let have, need, ingHtml;
@@ -2492,6 +2497,7 @@ function isBuilt(key){ // built at least once: remembered on this device, record
 function markBuilt(key){ if (builtSet.has(key)) return; builtSet.add(key); store.set(BUILT_KEY, JSON.stringify([...builtSet])); if (rView === 'board' && lbTab === 'towers') renderRightPanel(true); }
 let lbTab = 'runs', tshowIdx = 0;
 // the Towers built list, grouped by kind of recipe and ordered by how hard each recipe is to put together
+const recipeMemo = {}, recipeCost = k => recipeMemo[k] ?? (recipeMemo[k] = Math.min(...(SPECIALS[k].recipes.length ? SPECIALS[k].recipes : [[]]).map(alt => alt.reduce((a, g) => a + (g.special ? recipeCost(g.special) : 2**g.q), 0))) || 64);
 const SHOW_GROUPS = (() => {
   const memo = {}, cost = k => memo[k] ?? (memo[k] = Math.min(...(SPECIALS[k].recipes.length ? SPECIALS[k].recipes : [[]]).map(alt => alt.reduce((a, g) => a + (g.special ? cost(g.special) : 2**g.q), 0))) || 64);
   const kind = k => { const sp = SPECIALS[k], r = sp.recipes[0] || [];
@@ -2667,7 +2673,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.9 · October 27, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.10 · October 27, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
@@ -3414,7 +3420,7 @@ const UNIT = {
   darkemerald: {kind:'hero', hero:'knight', armor:'#26282e', trim:'#13955a', belt:'#18181c', cape:'#0e3a24', eyes:'rgba(80,255,150,.85)', weapon:'longhammer', scale:1.45, deploy:true, sfx:'hammer', n:1}, // a black knight with a long war hammer who charges out to fight
   golem: {kind:'hero', hero:'golem', eyes:'#7dffb0', scale:1.65, deploy:true, sfx:'hammer', n:1}, // a big stone golem with glowing eyes who lumbers out to smash
   paraiba: {kind:'hero', hero:'gravestone', scale:1.3, missile:'orb', sfx:'staff', n:1}, // a crooked RIP gravestone with a skeleton hand clawing out of the grave; black miasma marks its armor-rotting aura
-  carved: {kind:'fig', robe:'#16605c', hat:'hood', hatCol:'#0e3f3c', weapon:'staff', glow:'#6ff0e8', n:3},
+  carved: {kind:'hero', hero:'poet', scale:1.3, missile:'note', sfx:'drum', n:1}, // the Risen Poet: a glowing woman in a Greek toga floating over her old gravestone, sounding a herald's trumpet
   sapstar: {kind:'hero', hero:'wyvern', scale:1.55, missile:'none', sfx:'staff', n:1}, // a snow wyvern asleep; no missile: the enemies she strikes are encased in snow
   pearl: {kind:'fig', robe:'#c8d6da', hat:'cap', hatCol:'#8aa0a6', weapon:'crossbow', n:3},
   zumurud: {kind:'fig', robe:'#2c7a4a', hat:'cap', hatCol:'#1a5030', weapon:'crossbow', n:3},
@@ -3455,6 +3461,7 @@ function drawHero(x, y, u, cfg, face, act, champ, ang){
   const poly = (pts, c) => { ctx.fillStyle = c; ctx.beginPath(); pts.forEach(([px, py], i) => i ? ctx.lineTo(X(px), Y(py)) : ctx.moveTo(X(px), Y(py))); ctx.closePath(); ctx.fill(); };
   const glowAt = (gx, gy, r, inner, outer) => { const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, r); g.addColorStop(0, inner); g.addColorStop(1, outer); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(gx, gy, r, 0, Math.PI*2); ctx.fill(); };
   const k = cfg.hero;
+  if (k === 'poet') return drawPoet(x, y, u, cfg, face, act, champ);
   if (['golem','wyvern','icecrystals','stonehand','bookmage','monolith','gravestone','darkmatter'].includes(k)) return drawHero2(x, y, u, cfg, face, act, champ, ang);
   if (k === 'observatory') return drawObservatory(x, y, u, cfg, ang, act);
   // ---------- armoured knights: short, broad and heavy ----------
@@ -3668,6 +3675,74 @@ function drawObservatory(x, y, u, cfg, ang, act){ // a white domed observatory; 
   }
 }
 // ----- more heroes: a stone golem, a snow wyvern wrapped in her wings, floating ice crystals, a giant stone hand, a book mage and a monolith -----
+// ----- the Risen Poet: painted once to a bitmap (with her glowing outline), then floated over her gravestone -----
+let poetCan = null;
+function poetSprite(){
+  if (poetCan) return poetCan;
+  const W = 300, H = 420, fig = document.createElement('canvas'); fig.width = W; fig.height = H; const g = fig.getContext('2d');
+  g.lineJoin = 'round'; g.lineCap = 'round'; const ink = '#14100e';
+  const shape = (pts, fill, lw = 3.5, close = true) => { g.beginPath(); pts.forEach((p, i) => { if (p.length === 4) g.quadraticCurveTo(...p); else i ? g.lineTo(...p) : g.moveTo(...p); }); if (close) g.closePath(); if (fill){ g.fillStyle = fill; g.fill(); } g.strokeStyle = ink; g.lineWidth = lw; g.stroke(); };
+  // the toga, trailing away into mist below the waist
+  shape([[112, 112], [168, 112], [182, 170, 186, 230], [192, 290, 168, 340], [150, 372, 136, 404], [128, 372, 112, 344], [92, 300, 98, 230], [100, 170, 112, 112]], '#f1e9d6');
+  g.strokeStyle = 'rgba(150,135,110,.75)'; g.lineWidth = 2.2; for (const [a, b, c2, d2] of [[128, 180, 122, 330], [146, 176, 148, 340], [162, 186, 170, 300], [112, 200, 108, 290]]){ g.beginPath(); g.moveTo(a, b); g.quadraticCurveTo((a + c2)/2 + 6, (b + d2)/2, c2, d2); g.stroke(); } // folds
+  shape([[110, 116], [128, 112], [176, 200], [168, 214], [150, 196]], '#7fd6ce', 2.5); // a sea-green sash over one shoulder
+  shape([[106, 196], [182, 196], [183, 206], [105, 206]], '#d8b04a', 2.5); // gold girdle
+  // the back arm, steadying the trumpet
+  shape([[116, 120], [104, 150, 128, 160], [160, 122, 194, 80], [205, 86], [172, 132, 130, 176], [96, 168, 106, 124]], '#e9cfb2', 3);
+  // the trumpet: a long herald's trumpet from her lips, flaring to a bell
+  { // one smooth brass horn: mouthpiece cup, a slender pipe that slowly widens, then a flared bell, as a single outline
+    const ox = 151, oy = 91, L = 150, ang = Math.atan2(-50, 133), ux = Math.cos(ang), uy = Math.sin(ang), nx = -uy, ny = ux;
+    const wAt = t => t < 7 ? 5.2 - t*.25 : t < 14 ? 3.4 : 3.2 + Math.pow(Math.max(0, t - 14)/(L - 14), 3.2)*29; // half-width along the horn
+    const P = (t, side) => [ox + ux*t + nx*wAt(t)*side, oy + uy*t + ny*wAt(t)*side];
+    const pts = []; for (let t=0; t<=L; t+=2) pts.push(P(t, 1)); const low = []; for (let t=L; t>=0; t-=2) low.push(P(t, -1));
+    const tip = [ox + ux*(L + 7), oy + uy*(L + 7)];
+    g.beginPath(); g.moveTo(...pts[0]); for (const p of pts) g.lineTo(...p);
+    g.quadraticCurveTo(tip[0] + nx*14, tip[1] + ny*14, tip[0], tip[1]); g.quadraticCurveTo(tip[0] - nx*14, tip[1] - ny*14, ...low[0]); // the bell's rim, bulging forward
+    for (const p of low) g.lineTo(...p); g.closePath();
+    const gr = g.createLinearGradient(ox + nx*-20, oy + ny*-20, ox + nx*20, oy + ny*20); gr.addColorStop(0, '#9a6e1e'); gr.addColorStop(.45, '#f4d06a'); gr.addColorStop(.6, '#ffe9a6'); gr.addColorStop(1, '#b98a2c');
+    g.fillStyle = gr; g.fill();
+    g.save(); g.clip(); g.fillStyle = 'rgba(90,60,14,.55)'; g.beginPath(); g.ellipse(tip[0] - ux*6, tip[1] - uy*6, 5, wAt(L)*.85, ang, 0, Math.PI*2); g.fill(); g.restore(); // the dark mouth of the bell
+    g.strokeStyle = ink; g.lineWidth = 3; g.stroke();
+    g.strokeStyle = 'rgba(255,248,215,.8)'; g.lineWidth = 1.6; g.beginPath(); for (let t=10; t<=L - 8; t+=4){ const [hx, hy] = [ox + ux*t + nx*wAt(t)*.45, oy + uy*t + ny*wAt(t)*.45]; t === 10 ? g.moveTo(hx, hy) : g.lineTo(hx, hy); } g.stroke(); // shine along the top
+    const hx = ox + ux*53, hy = oy + uy*53; g.beginPath(); g.ellipse(hx + 1, hy + 3, 7.5, 9, ang, 0, Math.PI*2); g.fillStyle = '#e9cfb2'; g.fill(); g.strokeStyle = ink; g.lineWidth = 2.5; g.stroke(); // the hand that holds it
+  }
+  // neck and head
+  shape([[132, 96], [148, 96], [148, 114], [132, 114]], '#e9cfb2', 3);
+  g.beginPath(); g.arc(140, 76, 26, 0, Math.PI*2); g.fillStyle = '#e9cfb2'; g.fill(); g.strokeStyle = ink; g.lineWidth = 3.5; g.stroke();
+  shape([[114, 72], [116, 46, 140, 46], [160, 46, 164, 62], [146, 56, 128, 62], [120, 72, 122, 92], [112, 88, 114, 72]], '#3a2618', 3); // hair, swept back
+  g.beginPath(); g.arc(112, 60, 14, 0, Math.PI*2); g.fillStyle = '#3a2618'; g.fill(); g.strokeStyle = ink; g.lineWidth = 3; g.stroke(); // the bun
+  for (let i=0;i<7;i++){ const a = Math.PI*(1.05 + i*.12), lx = 140 + Math.cos(a)*28, ly = 72 + Math.sin(a)*28; g.fillStyle = i % 2 ? '#8fbf4a' : '#c9b04a'; g.beginPath(); g.ellipse(lx, ly, 6, 3, a + 1.2, 0, Math.PI*2); g.fill(); } // a laurel wreath
+  g.fillStyle = ink; g.beginPath(); g.arc(150, 74, 2.6, 0, Math.PI*2); g.fill(); // eye, closed in song
+  g.strokeStyle = '#b06a5a'; g.lineWidth = 2; g.beginPath(); g.arc(156, 88, 4, -.3, 1.2); g.stroke(); // cheek puffed to the mouthpiece
+  // the glowing outline: a crisp halo traced round her silhouette, then a soft glow
+  const out = poetCan = document.createElement('canvas'); out.width = W + 40; out.height = H + 40; const o = out.getContext('2d');
+  const sil = document.createElement('canvas'); sil.width = W; sil.height = H; const sg = sil.getContext('2d'); sg.drawImage(fig, 0, 0); sg.globalCompositeOperation = 'source-in'; sg.fillStyle = '#9ffff0'; sg.fillRect(0, 0, W, H);
+  o.save(); o.shadowColor = 'rgba(120,255,235,.95)'; o.shadowBlur = 22; o.drawImage(sil, 20, 20); o.drawImage(sil, 20, 20); o.restore();
+  for (let i=0;i<12;i++){ const a = i/12*Math.PI*2; o.drawImage(sil, 20 + Math.cos(a)*4, 20 + Math.sin(a)*4); }
+  o.drawImage(fig, 20, 20);
+  return out;
+}
+function drawPoet(x, y, u, cfg, face, act, champ){
+  const H = u*(cfg.scale || 1.3), f = face || 1;
+  drawHero2(x - f*H*.24, y + H*.04, u*.72, Object.assign({}, cfg, {hero:'gravestone', scale:cfg.scale}), face, 0, champ); // her old gravestone, at her feet
+  const S = poetSprite(), h = H*1.25, w = h*S.width/S.height, bob = Math.sin(anim*1.6 + x*.01)*H*.04, top = y - H*.22 - h - bob;
+  ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(x, y, H*.22, H*.07, 0, 0, Math.PI*2); ctx.fill();
+  ctx.save(); ctx.globalAlpha = .9 + .1*Math.sin(anim*2.3); ctx.translate(x, 0); ctx.scale(f, 1); ctx.drawImage(S, -w*.47, top, w, h); ctx.restore();
+  if (act > 0){ const bx = x + f*w*.46, by = top + h*.12, R = H*(.25 + .35*act); ctx.globalAlpha = act; ctx.drawImage(glowSprite('190,255,240'), bx - R, by - R, R*2, R*2); ctx.globalAlpha = 1; } // the trumpet's blast
+}
+function drawPoetNotes(t){ // her song: notes drifting up over the ground where her aura strips armor
+  const R = T(t.st.decadent ? t.st.decadent[1] : 1200), o = [0,0,0];
+  ctx.setTransform(view.dpr,0,0,view.dpr,0,0); ctx.textAlign = 'center';
+  const n = Math.max(12, Math.round(R*R*.9)), fs = Math.max(9, Math.round(VW.s*.34));
+  ctx.font = `${fs}px serif`;
+  for (let i=0;i<n;i++){
+    const a = i*2.399, rr = R*Math.sqrt(((i*.618) % 1)*.9 + .05), ph = (anim*.18 + i*.37) % 1;
+    const mx = t.x + Math.cos(a)*rr + Math.sin(anim*.8 + i)*.15, mz = t.y + Math.sin(a)*rr; if (mx < .1 || mz < .1 || mx > COLS - .1 || mz > ROWS - .1) continue;
+    proj(mx, elevAt(mx, mz) + .1 + ph*.9, mz, o);
+    ctx.globalAlpha = .75*Math.sin(ph*Math.PI); ctx.fillStyle = i % 3 ? '#9ffff0' : '#ffe9a0'; ctx.fillText(i % 2 ? '♪' : '♫', o[0], o[1]);
+  }
+  ctx.globalAlpha = 1;
+}
 function drawHero2(x, y, u, cfg, face, act, champ, ang){
   const H = u*(cfg.scale || 1.5), k = cfg.hero, f = k === 'wyvern' ? 1 : face || 1; // the sleeping wyvern always lies the same way, head at the front left, snout to the right
   const X = px => x + f*px*H, Y = py => y + py*H;
@@ -4050,7 +4125,7 @@ function drawFigSprite(name, x, y, u, cfg, face, act, champ, idx, aim){
   return true;
 }
 const VILLAGER_ART = ['man1', 'woman1', 'boy1', 'girl1', 'man2', 'woman2', 'boy2', 'girl2'];
-window.__art = {drawChar, figPose, charFlip, folkPose: (...a) => folkPose(...a), siege: (...a) => drawSiege(...a), setCtx: g => { const o = ctx; ctx = g; return o; }}; // dev hook: draw the art into another canvas
+window.__art = {drawChar, figPose, charFlip, folkPose: (...a) => folkPose(...a), siege: (...a) => drawSiege(...a), poet: () => poetSprite().toDataURL(), setCtx: g => { const o = ctx; ctx = g; return o; }}; // dev hook: draw the art into another canvas
 function folkPose(p, t, panic){ // celebrating (dancing, cheering, clapping) or panicking, all with their arms
   if (CHAR_ART[p.art] && CHAR_ART[p.art].asm) return {R: panic ? Math.sin(t*1.7)*16 : Math.sin(t*.8)*9}; // holding something in both hands: they sway with it
   if (panic) return {L: -140 + Math.sin(t*1.7)*40, R: -40 + Math.sin(t*1.9 + 1)*40};
@@ -6262,7 +6337,7 @@ function draw(){
   if (phase === 'wave') for (const t of towers) if (t.st.auraDps){
     ctx.strokeStyle = t.st.color; ctx.globalAlpha = .3 + .15*Math.sin(anim*6); rangePath(t.x, t.y, t.st.burnR || t.st.rng); ctx.stroke(); ctx.globalAlpha = 1;
   }
-  { let any = false; for (const t of towers) if ((t.g.special === 'volcano' || t.g.special === 'antiquebs') && t.st.rng){ drawFloorFlames(t); any = true; } for (const t of towers) if (t.g.special === 'paraiba'){ drawMiasma(t); any = true; } if (any) groundSpace(); }
+  { let any = false; for (const t of towers) if ((t.g.special === 'volcano' || t.g.special === 'antiquebs') && t.st.rng){ drawFloorFlames(t); any = true; } for (const t of towers) if (t.g.special === 'paraiba'){ drawMiasma(t); any = true; } for (const t of towers) if (t.g.special === 'carved'){ drawPoetNotes(t); any = true; } if (any) groundSpace(); }
   if (moving){
     const {c, r} = moving; groundSpace(tileElev(c, r)); ctx.strokeStyle = `rgba(127,214,255,${.6 + .4*Math.sin(anim*7)})`; ctx.lineWidth = .1; ctx.setLineDash([.2,.12]);
     ctx.strokeRect(c+.02, r+.02, .96, .96); ctx.setLineDash([]);
@@ -6434,6 +6509,13 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 
+// keep the app pinned to the top of the screen: iOS scrolls the page when the keyboard opens (naming a tower) and sometimes leaves it there
+{ const pin = () => { if (window.scrollX || window.scrollY || document.documentElement.scrollTop || document.body.scrollTop){ window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } };
+  window.addEventListener('scroll', pin, {passive:true});
+  document.addEventListener('focusout', () => { setTimeout(() => { pin(); resize(); }, 60); setTimeout(() => { pin(); resize(); }, 400); });
+  if (window.visualViewport){ window.visualViewport.addEventListener('resize', () => setTimeout(() => { pin(); resize(); }, 60)); window.visualViewport.addEventListener('scroll', pin); }
+  window.addEventListener('orientationchange', () => setTimeout(() => { pin(); resize(); }, 300));
+}
 // ---------- boot ----------
 function start(data){
   best = +(store.get(BEST_KEY) || 0) || 0;
