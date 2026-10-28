@@ -2,6 +2,21 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.15 — October 28, 2026
+
+### Added
+- **Haste levels.** Every attack-speed boost now uses one of 7 levels: 20%, 30%, 40%, 50%, 60%, 80% and 100% faster. Boosts of **different** levels now add up; two boosts of the same level don't. Before, a tower only got the single strongest boost. Tower details show each boost's level.
+
+### Changed
+- **Stronger speed auras:**
+  - War Drum Tower at Lord rank: 80% faster (was 70%).
+  - Royal Banner Hall and Coral War Hall: 80% faster (was 60%).
+  - Star of Winter: 80% faster (was 70%).
+- **Risen Poet's reach is smaller.** Her armor strip now covers the area around her (9×9 squares), and her Unveiling song only strips immunities from enemies closest to her (5×5 squares). Both used to reach about 9.5 squares.
+
+### Fixed
+- **The installed game keeps working if the website goes down.** Before, if the site was taken down while your device was online, the game showed an error page instead of the saved copy. It now falls back to the saved game whenever the site doesn't answer properly.
+
 ## 1.14 — October 28, 2026
 
 ### Added

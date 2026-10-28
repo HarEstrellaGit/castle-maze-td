@@ -533,7 +533,9 @@ const TYPES = {
 };
 // slow levels 1-10, from 20% to 90% (every slow in the game uses one of these)
 const SLOW_LV = [.2,.28,.36,.43,.51,.59,.67,.74,.82,.9], slowLevel = f => { const i = SLOW_LV.findIndex(v => Math.abs(v - f) < .005); return i < 0 ? null : i + 1; };
-const CLEAVE = [[.3,300],[.4,350],[.5,400],[.6,450],[.7,500],[1,700]], FROST = [.2,.28,.36,.43,.51,.59], VENOM = [2,4,8,16,32,128], PIERCE = [2,4,8,16,32,64], DRUM = [20,30,40,50,60,70];
+const CLEAVE = [[.3,300],[.4,350],[.5,400],[.6,450],[.7,500],[1,700]], FROST = [.2,.28,.36,.43,.51,.59], VENOM = [2,4,8,16,32,128], PIERCE = [2,4,8,16,32,64], DRUM = [20,30,40,50,60,80]; // War Drum ranks: haste levels 1-6
+// haste (attack speed) levels 1-7; different levels stack (added together), the same level doesn't
+const HASTE_LV = [20,30,40,50,60,80,100], hasteLevel = v => { const i = HASTE_LV.indexOf(Math.round(v*100)); return i < 0 ? null : i + 1; };
 const TYPE_KEYS = Object.keys(TYPES);
 // ----- advanced (blueprint) towers: combined + secret towers -----
 // Gem codes: B Sapphire/Mage, Y Topaz/Archer, D Diamond/Militia, E Opal/War Drum, G Emerald/Alchemist, P Amethyst/Ballista,
@@ -571,16 +573,16 @@ adv('egyptgold',   'Treasury Spire',       'Egypt Gold',           '#f0b429', '@
 adv('darkemerald', 'Warhammer Keep',       'Dark Emerald',         '#13955a', 'G5 B4 Y2',           {dmg:80, cd:.5, rng:700, stun:.1, stunDur:2, desc:'Fast hits that can stun'});
 adv('golem',       'Stone Golem Keep',     'Emerald Golem',        '#4f8f5a', '@gold @darkemerald D3', {dmg:170, cd:.5, rng:700, stun:.1, stunDur:2, pierce:32, gaze:.01, desc:'Stuns, armor shred, stone gaze'});
 adv('paraiba',     'Plague Tower',         'Paraiba Tourmaline',   '#3fd0c9', 'Q5 E4 G2',           {dmg:30, cd:.6, rng:600, decadent:[15, 800], desc:'Enemies nearby lose 15 armor'});
-adv('carved',      'Risen Poet',           'Carved Tourmaline',    '#2aa8a2', '@paraiba @darkemerald G2', {dmg:130, cd:.6, rng:700, stun:.1, stunDur:2, decadent:[30, 1200], unveil:1200, desc:'Stuns; her mournful song strips 30 armor and every immunity (magic and physical) from enemies in a wide area'});
+adv('carved',      'Risen Poet',           'Carved Tourmaline',    '#2aa8a2', '@paraiba @darkemerald G2', {dmg:130, cd:.6, rng:700, stun:.1, stunDur:2, decadent:[30, 512], unveil:256, desc:'Stuns; her mournful song strips 30 armor from enemies nearby (9×9) and every immunity (magic and physical) from those closest to her (5×5)'});
 adv('sapstar',     'Winter’s Heart',       'Sapphire Star of Adam','#6fa8ff', 'G1 G2 G3 G4 G5',     {dmg:42, cd:1, rng:800, poison:128, poisonDur:5, pierce:64, decadent:[30, 1200], frost:300, desc:'Deadly poison, armor shred, freezing splash', ult:true});
 adv('pearl',       'Pearl Tower',          'Deep Sea Pearl',       '#e8f1f2', 'Q4 D4 E2',           {dmg:80, cd:.6, rng:500, ward:500, desc:'Steady heavy shots; magic influence shields nearby towers from enemy debuffs'});
-adv('cateye',      'Royal Banner Hall',    'Chrysoberyl Cat’s Eye','#7a66c4', 'E5 D4 Q3',           {dmg:6, cd:1, rng:500, spdAura:[60, 664], inspire:[.5, 500], sight:true, desc:'Nearby towers +60 speed, +50% damage; reveals invisible'});
-adv('redcoral',    'Coral War Hall',       'Red Coral',            '#ff6f61', '@cateye @pearl E4',  {dmg:120, cd:.6, rng:500, spdAura:[60, 664], inspire:[.5, 500], sight:true, ward:664, desc:'Nearby towers +60 speed, +50% damage; reveals invisible'});
+adv('cateye',      'Royal Banner Hall',    'Chrysoberyl Cat’s Eye','#7a66c4', 'E5 D4 Q3',           {dmg:6, cd:1, rng:500, spdAura:[80, 664], inspire:[.5, 500], sight:true, desc:'Nearby towers +80% speed, +50% damage; reveals invisible'});
+adv('redcoral',    'Coral War Hall',       'Red Coral',            '#ff6f61', '@cateye @pearl E4',  {dmg:120, cd:.6, rng:500, spdAura:[80, 664], inspire:[.5, 500], sight:true, ward:664, desc:'Nearby towers +80% speed, +50% damage; reveals invisible'});
 adv('zumurud',     'Emerald Watch',        'Natural Zumurud',      '#2c9a52', '@pearl G5 D3',       {dmg:80, cd:1, rng:500, ward:800, desc:'Heavy shots; a wide magic influence shields towers from enemy debuffs'});
 adv('carmen',      'Bard’s Cathedral',     'Carmen-Lucia',         '#ff4fa3', 'E1 E2 E3 E4 E5',     {dmg:6, cd:1, rng:500, spdAura:[100, 664], inspire:[.5, 500], sight:true, desc:'Nearby towers attack 100% faster and deal 50% more damage', ult:true});
 adv('yellowsap',   'Ice Spire',            'Yellow Sapphire',      '#ffe36e', 'B5 Y4 R4',           {dmg:20, cd:1, rng:600, ice:[.74, 300], desc:'Enemies nearby move 74% slower'});
 adv('northern',    'Frostbite Watch',      'Northern Saber’s Eye', '#9fd8ff', '@yellowsap @bloodstone B5', {dmg:60, cd:1, rng:500, ice:[.82, 300], chainFrost:.25, desc:'Ice aura; frost balls bounce between enemies'});
-adv('starsap',     'Star of Winter',       'Star Sapphire',        '#bcd7ff', 'B1 B2 B3 B4 B5',     {dmg:20, cd:1, rng:600, slow:.67, ice:[.9, 556], spdAura:[70, 664], sight:true, desc:'Massive slow and ice aura; boosts nearby towers', ult:true});
+adv('starsap',     'Star of Winter',       'Star Sapphire',        '#bcd7ff', 'B1 B2 B3 B4 B5',     {dmg:20, cd:1, rng:600, slow:.67, ice:[.9, 556], spdAura:[80, 664], sight:true, desc:'Massive slow and ice aura; boosts nearby towers', ult:true});
 adv('obsidian',    'Dark Matter',          'Obsidian',             '#8a5cf0', 'B5 Y5 D5',           {dmg:820, cd:.8, rng:800, splash:500, splashPct:.7, slow:.82, desc:'Secret: a floating black planet that hurls huge dark-matter orbs; each blasts and slows everything around its target', secret:true});
 adv('agate',       'Agate Tower',          'Agate',                '#c8875a', 'Q5 E5 G5',           {dmg:430, cd:.3, rng:5000, targets:5, desc:'Secret: rapid shots at 5 enemies anywhere', secret:true});
 adv('shrimp',      'Mad Jester’s Keep',    'Fantastic Miss Shrimp','#ff8a65', 'R5 G5 B5',           {dmg:1225, cd:.5, rng:1000, chain:[.3, 150, 5, 1000], fork:[.25, 2500, 5], melancholy:.03, desc:'Secret: devastating, but sometimes sulks and stops', secret:true});
@@ -843,7 +845,7 @@ function statItems(s){ // [glyph, colour, short value, name, explanation]
   if (s.pierce) out.push(['pierce', '#ff9a8a', `−${s.pierce}`, 'Armor break', `Hits reduce enemy armor by ${s.pierce}`]);
   if (s.crit) out.push(['crit', '#fff', `${pct(s.crit)}`, 'Critical strike', `${pct(s.crit)} chance to deal ${s.critX}× damage`]);
   if (s.stun) out.push(['stun', '#e0c080', pct(s.stun), 'Stun', `${pct(s.stun)} chance to stun for ${s.stunDur || 1}s`]);
-  if (s.auraSpd) out.push(['haste', '#ffc9ec', `+${Math.round(s.auraSpd*100)}`, 'War drums', `Towers within ${+s.auraR.toFixed(1)} squares attack ${Math.round(s.auraSpd*100)}% faster`]);
+  if (s.auraSpd) out.push(['haste', '#ffc9ec', `+${Math.round(s.auraSpd*100)}`, 'War drums', `Haste level ${hasteLevel(s.auraSpd)}: towers within ${+s.auraR.toFixed(1)} squares attack ${Math.round(s.auraSpd*100)}% faster (boosts of different levels stack; the same level does not)`]);
   if (s.inspire) out.push(['inspire', '#ffb36e', `+${pct(s.inspire[0])}`, 'Inspire', `Towers within ${tiles(s.inspire[1])} squares deal +${pct(s.inspire[0])} damage`]);
   if (s.overlook) out.push(['reach', '#9fd0ff', `+${tiles(s.overlook[0])}`, 'Star chart', `Towers within ${tiles(s.overlook[1])} squares gain +${tiles(s.overlook[0])} squares of range`]);
   if (s.mkb) out.push(['aim', '#ffe36e', '100%', 'True strike', `Towers within ${tiles(s.mkb)} squares never miss evasive enemies`]);
@@ -958,8 +960,9 @@ function gridChanged(){
     if (g && g.special) markBuilt(g.special);
   }
   for (const t of towers){
-    let b = 0;
-    for (const o of towers) if (o !== t && o.st.auraSpd && tileD(o.x, o.y, t.x, t.y) <= o.st.auraR) b = Math.max(b, o.st.auraSpd);
+    const lv = new Map(); // one boost per haste level; different levels add up
+    for (const o of towers) if (o !== t && o.st.auraSpd && tileD(o.x, o.y, t.x, t.y) <= o.st.auraR){ const k = hasteLevel(o.st.auraSpd) || o.st.auraSpd; lv.set(k, Math.max(lv.get(k) || 0, o.st.auraSpd)); }
+    let b = 0; for (const v of lv.values()) b += v;
     t.bonus = b;
   }
   towerOf.clear(); for (const t of towers) towerOf.set(t.g, t);
@@ -2730,7 +2733,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.14 · October 28, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.15 · October 28, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
@@ -6630,7 +6633,7 @@ try { window.claude?.hot?.snapshot?.(() => ({state: serialize()})); } catch(e){}
 // test hooks
 window.__gem = {
   setLives: v => { lives = v; }, get clock(){ return simClock; }, screenOf: (c, r) => { camera(); const o = [0,0,0]; proj(c + .5, tileElev(c, r), r + .5, o); return [o[0], o[1], tileLevel(c, r), !!grid[r][c] || propBlocks(c, r) || isCP(c, r) >= 0]; }, placingNow: () => placing, pickCell, mapInfo: () => ({lv: Array.from({length:ROWS}, (_, r) => Array.from({length:COLS}, (_, c) => tileLevel(c, r))), road: initRoad, cps: CPS, br: CPS.map((_, i) => biomeR(i)), g: grid.map(row => row.map(x => x ? x.kind[0] : 0)), props: [...SHOPS, ...BARRACKS_PROPS, ...GARDENS].map(t => [t.c, t.r]), roots: ROOT_TILES.map(t => [t.c, t.r])}), leakMax, leakDmg, buildPedal, placeTap, combineKept, triggerPedal, endGame, get state(){ return {phase, wave, lives, gold, luck, roundGems:roundGems.length, path:pathCells.length, enemies:enemies.length, kills}; },
-  internals: () => ({projectiles, enemies, effects}), sfx: () => SFX.stats, waveSize: () => waveSize,
+  internals: () => ({projectiles, enemies, effects, towers}), sfx: () => SFX.stats, waveSize: () => waveSize,
   gallery(fly){ const names = Object.keys(ENEMY_LOOK), cols = 8, S = 120, cn = document.createElement('canvas'); cn.width = cols*S; cn.height = Math.ceil(names.length/cols)*S;
     const c2 = cn.getContext('2d'); c2.fillStyle = '#3c4b2e'; c2.fillRect(0, 0, cn.width, cn.height); const keep = ctx; ctx = c2;
     try { names.forEach((nm, i) => { const K = CREEPS.flat().find(k => k[0] === nm), e = {K:{label:nm, col:'#888'}, wob:i, fly: !!(K && K[5]) || !!fly}; const x = (i % cols)*S + S/2, y = Math.floor(i/cols)*S + S*.82;

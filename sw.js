@@ -1,6 +1,6 @@
 // Castle Maze TD — offline support.
 // When you upload a new version of the game, bump VERSION so devices refresh their saved copy.
-const VERSION = 'castle-maze-v15';
+const VERSION = 'castle-maze-v16';
 const FONTS_CSS = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&display=swap';
 const APP_FILES = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png'];
 
@@ -47,15 +47,17 @@ self.addEventListener('fetch', event => {
   const url = new URL(req.url);
 
   // The game page: try for the newest version online, fall back to the saved copy.
+  // The saved copy is also used when the site answers with an error (for example, if it's been taken down).
   if (req.mode === 'navigate') {
     event.respondWith((async () => {
       const cache = await caches.open(VERSION);
+      const saved = async () => (await cache.match('./index.html')) || (await cache.match('./'));
       try {
         const res = await withTimeout(fetch(req), 3000);
-        if (res.ok) cache.put('./index.html', res.clone());
-        return res;
+        if (res.ok) { cache.put('./index.html', res.clone()); return res; }
+        return (await saved()) || res;
       } catch (e) {
-        return (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
+        return (await saved()) || Response.error();
       }
     })());
     return;
