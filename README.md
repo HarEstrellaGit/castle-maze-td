@@ -2,7 +2,7 @@
 
 A medieval tower defense game where you build the maze. Enemies pour out of a hell portal, march past five landmarks across the kingdom, and storm your castle. Every tower you place blocks their path, so the longer you make the road, the longer your towers have to bring them down. Survive all 50 waves to win.
 
-**Play it here:** https://harestrellagit.github.io/castle-maze-td/
+**Play it here:** https://harleyestrella.github.io/castle-maze-td/
 
 Works best on an iPhone or iPad held sideways. It also runs in any modern desktop browser.
 
@@ -55,7 +55,7 @@ Your run saves automatically between waves.
 ## Updating the game (for the maintainer)
 
 1. Upload the new `index.html` (replacing the old one).
-2. Open `sw.js` and bump the version, for example `castle-maze-v12` → `castle-maze-v13`.
+2. Open `sw.js` and bump the version, for example `castle-maze-v13` → `castle-maze-v14`.
 3. Add the changes to `CHANGELOG.md`.
 
 Installed copies pick up the update the next time they're opened online. If an old version still shows, close the app and open it again.

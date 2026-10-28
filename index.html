@@ -694,7 +694,7 @@ const WAVE_STORY = [
   "Storm harpies fly, ignore magic, and dive in sudden bursts of speed.",
   "A bloated plague bearer that dodges, regenerates, and slows whoever attacks it. Patience and steady damage win.",
   "Bone-masked acolytes of the lich blink ahead and laugh at your spells.",
-  "A raven of living shadow, extremely fast. It slows nearby towers and silences the ones it passes close to.",
+  "A raven of living shadow, extremely fast. Its dread weighs on the whole horde, every raven slowing the others, and it silences towers it passes close to.",
   "The spirit of a giant troll, wearing 32 armor that no arrow or blade can touch. Only magic will do.",
   "Death knights and bone colossi that resist most magic, charge in bursts, and slow the towers that attack them.",
   "Demon imps and fell ravens fly in, ignore magic, dodge half your shots, and silence towers they pass close to.",
@@ -705,9 +705,9 @@ const ABIL_DESC = {inv:'Invisible: only towers near a War Drum can see and shoot
   refr:'Refraction: blocks the first 3 hits it takes', magimm:'Magic immune: spells and magic damage do nothing to it', physimm:'Physical immune: arrows, bolts and blades do nothing to it',
   untouch:'Untouchable: towers that attack it reload 50% slower', rush:'Rush: sprints at double speed for 1.5 seconds every 5 seconds', high:'High armor: +8 armor',
   reactive:'Reactive armor: gains armor each time it is hit (up to +20), fading when left alone', recharge:'Regenerates: heals 4% of its health per second after 2 seconds without being hit',
-  blink:'Blink: teleports a short way ahead along the road every 4 seconds', kraken:'Kraken shell: blocks 25% of the damage from every hit', slowaura:'Slow aura: towers within 2.5 squares attack 30% slower'};
+  blink:'Blink: teleports a short way ahead along the road every 4 seconds', kraken:'Kraken shell: blocks 25% of the damage from every hit', slowaura:'Dread aura: every other enemy on the map moves 6.25% slower for each one alive (they add up)'};
 const ABIL_NAMES = {inv:'invisible', eva:'50% evasion', disarm:'disarms nearby towers', refr:'refraction (blocks its first 3 hits)', magimm:'magic immune', physimm:'physical immune',
-  untouch:'untouchable (slows towers that attack it)', rush:'rushes', high:'high armor', reactive:'reactive armor', recharge:'regenerates', blink:'blinks ahead', kraken:'shell blocks 25% of hit damage', slowaura:'slows nearby towers'};
+  untouch:'untouchable (slows towers that attack it)', rush:'rushes', high:'high armor', reactive:'reactive armor', recharge:'regenerates', blink:'blinks ahead', kraken:'shell blocks 25% of hit damage', slowaura:'dread aura (slows the rest of the horde)'};
 const creepColor = name => {
   let h = 0; for (const ch of name) h = (h*31 + ch.charCodeAt(0)) >>> 0;
   const H = (h % 360)/60, S = .35 + (h % 25)/100, L = .55 + ((h >> 8) % 15)/100, C = (1 - Math.abs(2*L - 1))*S, X = C*(1 - Math.abs(H % 2 - 1)), m = L - C/2;
@@ -855,7 +855,7 @@ function statItems(s){ // [glyph, colour, short value, name, explanation]
   if (s.recover) out.push(['inspire', '#7fe0a0', pct(s.recover), 'Healing', `${pct(s.recover)} chance per hit to restore a life`]);
   if (s.greedy) out.push(['crit', '#ffd166', '10×', 'Treasure', 'Kills nearby sometimes pay 10× gold']);
   if (s.sight) out.push(['sight', '#ffffff', '✓', 'True sight', 'Reveals invisible enemies in range']);
-  if (s.ward) out.push(['sight', '#c9b8ff', tiles(s.ward), 'Magic influence', `Towers within ${tiles(s.ward)} squares (and this one) ignore enemy debuffs: disarm, slow auras and untouchable`]);
+  if (s.ward) out.push(['sight', '#c9b8ff', tiles(s.ward), 'Magic influence', `Towers within ${tiles(s.ward)} squares (and this one) ignore enemy debuffs: disarm and untouchable`]);
   return out;
 }
 function statLine(s){ return statItems(s).map(([, , v, k]) => `<span><em>${k}</em> ${v}</span>`).join(''); }
@@ -1115,9 +1115,11 @@ const slow = (e, f, d, key, frost) => { if (e.K.abil.has('magimm')) return; slow
 const isFrozen = e => e.auraIce > 0 || [...e.slows.values()].some(s => s.frost); // slowed by ice or frost
 const slowMul = e => { // what is left of the enemy's speed: each tower (or trap) counts once, with its strongest slow; different ones multiply
   let m = 1;
+  if (swarmN){ const n = swarmN - (e.K.abil.has('slowaura') ? 1 : 0); if (n > 0) m *= 1 - Math.min(.95, n*SWARM_SLOW); } // the ravens' dread, from the whole map
   if (e.auraSlows && e.auraSlows.size){ for (const [k, s] of e.slows) m *= 1 - Math.max(s.f, e.auraSlows.get(k) || 0); for (const [k, f] of e.auraSlows) if (!e.slows.has(k)) m *= 1 - f; }
   else for (const s of e.slows.values()) m *= 1 - s.f;
   return m; };
+let swarmN = 0; const SWARM_SLOW = .0625; // Shadow Ravens alive this step: each slows every other enemy by 6.25%, added together
 const MIN_SPD = 2; // slows can't push an enemy below 2 squares a second (one that is naturally slower keeps its own speed)
 const slowedSpd = e => Math.max(Math.min(e.spd, MIN_SPD), e.spd*slowMul(e));
 const isSlowed = e => e.slows.size > 0 || (e.auraSlows && e.auraSlows.size > 0);
@@ -1433,6 +1435,7 @@ function zap(from, dmg, jumps, radius, color, st, src, frost){ // a bolt that ju
 function step(dt){
   simClock += dt;
   // enemy-facing auras from advanced towers: armor loss, crippled flyers, ice
+  swarmN = 0; for (const e of enemies) if (!e.dead && e.K.abil.has('slowaura')) swarmN++;
   const auraT = towers.filter(t => t.st.decadent || t.st.antifly || t.st.ice);
   for (const e of enemies){
     let arm = 0, mr = 0, ice = 0; const mi = e.K.abil.has('magimm'); if (!e.auraSlows) e.auraSlows = new Map(); e.auraSlows.clear(); // each aura tower in range, with its slow
@@ -1503,7 +1506,6 @@ function step(dt){
       if (e.dead) continue;
       const d = Math.hypot(e.x-t.x, e.y-t.y);
       if (e.K.abil.has('disarm') && d <= 1.5) disarmed = true;
-      if (e.K.abil.has('slowaura') && d <= 2.5) slowed = .7;
     }
     t.cd -= dt * (1 + t.bonus) * slowed;
     if (t.cd > 0 || disarmed || t.sulkT > 0) continue;
@@ -1572,9 +1574,9 @@ const displayName = g => g.name ? g.name : gemName(g);
 function adaptWaveSize(){ // decide the next wave's size from how this wave went
   if (wave < ADAPT_FROM){ recentLeak = 0; sizeNote = ''; return; } // the first ten waves are always the standard size
   recentLeak = recentLeak*.5 + wStat.leak; // leaks fade over a couple of waves
-  const before = waveSize, avg = wStat.kills ? wStat.ratio/wStat.kills : 1;
+  const before = waveSize, avg = wStat.kills ? wStat.ratio/wStat.kills : 1, leakedNow = (wStat.leaks || 0) > 0;
   let d = 0, why = '';
-  if (recentLeak >= .5){ d = recentLeak >= 5 ? -3 : recentLeak >= 2.5 ? -2 : -1; why = 'enemies got through'; }
+  if (leakedNow && recentLeak >= .5){ d = recentLeak >= 5 ? -3 : recentLeak >= 2.5 ? -2 : -1; why = 'enemies got through'; } // only a wave where someone actually got through shrinks the next one
   else if (!curWave.boss && wStat.kills){ d = avg < .3 ? 2 : avg < .5 ? 1 : 0; why = 'quick kills'; } // killed within the first 30% / 50% of their walk
   waveSize = Math.max(WAVE_MIN, Math.min(WAVE_MAX, waveSize + d));
   const ch = waveSize - before;
@@ -2682,7 +2684,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.11 · October 27, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.12 · October 28, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>

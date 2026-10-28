@@ -2,6 +2,13 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.12 — October 28, 2026
+
+### Changed
+- **Shadow Raven's aura reworked into a Dread aura.** Ravens no longer make nearby towers attack 30% slower. Instead, each living raven slows every *other* enemy on the map by 6.25%, adding up with each raven (capped at 95%).
+- **Wave size only shrinks after a wave where an enemy actually got through.** Before, a clean wave could still shrink the next one if enemies had leaked in recent waves.
+- Magic influence (Pearl Tower, Coral War Hall, Emerald Watch) now lists disarm and untouchable as the debuffs it blocks, since ravens no longer slow towers.
+
 ## 1.11 — October 27, 2026
 
 ### Added
