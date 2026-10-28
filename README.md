@@ -55,7 +55,7 @@ Your run saves automatically between waves.
 ## Updating the game (for the maintainer)
 
 1. Upload the new `index.html` (replacing the old one).
-2. Open `sw.js` and bump the version, for example `castle-maze-v14` → `castle-maze-v15`.
+2. Open `sw.js` and bump the version, for example `castle-maze-v15` → `castle-maze-v16`.
 3. Add the changes to `CHANGELOG.md`.
 
 Installed copies pick up the update the next time they're opened online. If an old version still shows, close the app and open it again.

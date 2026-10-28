@@ -557,7 +557,7 @@ adv('starruby',    'Dragon Brazier',       'Asteriated Ruby',      '#ff2f55', 'R
 adv('volcano',     'Dragon’s Perch',       'Volcano',              '#ff6a1c', '@starruby R4 P3',    {burn:[320, 500], desc:'Burns everything in a wide ring (magic)'});
 adv('bloodstone',  'Thunder Bombard',      'Bloodstone',           '#c2183a', 'R5 Q4 P3',           {dmg:35, cd:1, rng:700, chain:[.3, 150, 5, 1000], desc:'Chain lightning jumps between enemies'});
 adv('antiquebs',   'Kaminari-Homura',        'Antique Bloodstone',   '#e0345a', '@bloodstone @volcano R2', {dmg:50, cd:1, rng:800, fork:[.25, 2500, 5], burn:[320, 500], attacks:true, desc:'Strikes once a second (25% chance to fork lightning) inside a burning aura'});
-adv('crownprince', 'Crown Prince’s Keep',  'The Crown Prince',     '#ffd23f', 'R1 R2 R3 R4 R5',     {dmg:70, cd:1, rng:800, fork:[.25, 2500, 5], burn:[2500, 800], poison:128, poisonDur:5, attacks:true, desc:'Strikes once a second (25% chance to fork lightning, poisons) inside a huge burning aura', ult:true});
+adv('crownprince', 'Crown Prince’s Keep',  'The Crown Prince',     '#ffd23f', '@antiquebs R6 G6 | R1 R2 R3 R4 R5',     {dmg:70, cd:1, rng:800, fork:[.25, 2500, 5], burn:[2500, 800], poison:128, poisonDur:5, attacks:true, desc:'Strikes once a second (25% chance to fork lightning, poisons) inside a huge burning aura', ult:true});
 adv('jade',        'Apothecary Guild',     'Jade',                 '#7be0a2', 'G3 E3 B2',           {dmg:10, cd:.5, rng:800, poison:16, poisonDur:5, desc:'Fast poisoned shots'});
 adv('quartz',      'Falconer’s Roost',     'Quartz',               '#bfe3ff', 'G4 R3 P2',           {dmg:15, cd:.6, rng:500, antifly:[10, .51, 0, 600], desc:'Grounds flyers: −10 armor, 51% slower nearby'});
 adv('greyjade',    'Astronomer’s Guild',    'Grey Jade',            '#a9c9b5', '@jade B4 Q3',        {dmg:30, cd:.5, rng:800, poison:32, poisonDur:5, overlook:[300, 290], desc:'Poison; nearby towers gain +2.5 squares of range'});
@@ -577,7 +577,7 @@ adv('pearl',       'Pearl Tower',          'Deep Sea Pearl',       '#e8f1f2', 'Q
 adv('cateye',      'Royal Banner Hall',    'Chrysoberyl Cat’s Eye','#7a66c4', 'E5 D4 Q3',           {dmg:6, cd:1, rng:500, spdAura:[60, 664], inspire:[.5, 500], sight:true, desc:'Nearby towers +60 speed, +50% damage; reveals invisible'});
 adv('redcoral',    'Coral War Hall',       'Red Coral',            '#ff6f61', '@cateye @pearl E4',  {dmg:120, cd:.6, rng:500, spdAura:[60, 664], inspire:[.5, 500], sight:true, ward:664, desc:'Nearby towers +60 speed, +50% damage; reveals invisible'});
 adv('zumurud',     'Emerald Watch',        'Natural Zumurud',      '#2c9a52', '@pearl G5 D3',       {dmg:80, cd:1, rng:500, ward:800, desc:'Heavy shots; a wide magic influence shields towers from enemy debuffs'});
-adv('carmen',      'Bard’s Cathedral',     'Carmen-Lucia',         '#ff4fa3', 'E1 E2 E3 E4 E5',     {dmg:6, cd:1, rng:500, spdAura:[70, 664], spdAura2:[200, 200], inspire:[.5, 500], sight:true, desc:'Huge speed and damage boost to nearby towers', ult:true});
+adv('carmen',      'Bard’s Cathedral',     'Carmen-Lucia',         '#ff4fa3', 'E1 E2 E3 E4 E5',     {dmg:6, cd:1, rng:500, spdAura:[100, 664], inspire:[.5, 500], sight:true, desc:'Nearby towers attack 100% faster and deal 50% more damage', ult:true});
 adv('yellowsap',   'Ice Spire',            'Yellow Sapphire',      '#ffe36e', 'B5 Y4 R4',           {dmg:20, cd:1, rng:600, ice:[.74, 300], desc:'Enemies nearby move 74% slower'});
 adv('northern',    'Frostbite Watch',      'Northern Saber’s Eye', '#9fd8ff', '@yellowsap @bloodstone B5', {dmg:60, cd:1, rng:500, ice:[.82, 300], chainFrost:.25, desc:'Ice aura; frost balls bounce between enemies'});
 adv('starsap',     'Star of Winter',       'Star Sapphire',        '#bcd7ff', 'B1 B2 B3 B4 B5',     {dmg:20, cd:1, rng:600, slow:.67, ice:[.9, 556], spdAura:[70, 664], sight:true, desc:'Massive slow and ice aura; boosts nearby towers', ult:true});
@@ -594,7 +594,7 @@ SPECIALS.greatstone = {name:'Great Stone Colossus', gem:'The Great Stone', c:'#d
 // ----- pedals: traps built from towers and placed on any open square (pedals.html) -----
 const PEDAL_TIERS = ['', 'Sparkling ', 'Blingbling '];
 const PEDALS = {
-  ensnare:   {name:'Snare Trap',   gem:'Ensnare',   c:'#c9a46a', recipe:'Y3 D2', r:1.2, desc:t => `Roots enemies for ${[2,3,4][t]}s`},
+  ensnare:   {name:'Snare Trap',   gem:'Ensnare',   c:'#c9a46a', recipe:'Y3 D2', r:1.2, desc:t => `Roots enemies for ${[2,3,4][t]}s, whatever their immunities`},
   gale:      {name:'Gale Rune',    gem:'Gale',      c:'#9fe0c0', recipe:'G3 E2', r:1.0, desc:t => `Slows enemies ${[65,85,95][t]}% for ${[5,7,11][t]}s`},
   torrent:   {name:'Flood Rune',   gem:'Torrent',   c:'#4fa3ff', recipe:'B3 Q2', r:2.0, desc:t => `Stuns ${[2,4,8][t]}s, then slows ${[55,75,95][t]}%`},
   howl:      {name:'Battle Horn',  gem:'Howl',      c:'#ff9a3c', recipe:'P3 R2', r:2.0, desc:t => `Towers within ${[2,3,4][t]} squares deal +${[20,40,80][t]}% damage for 10s`},
@@ -925,8 +925,9 @@ function options(g){
   } else if (!g.round && phase !== 'wave'){
     const pool = keptGems();
     for (const [key,sp] of Object.entries(SPECIALS)){
-      if (sp.secret || sp.ult) continue; // secret towers and the five-rank towers can only be built from one round's new towers
-      const used = matchRecipe(sp, pool, g);
+      if (sp.secret) continue; // secret towers, and the five-rank recipes, can only be built from one round's new towers
+      const alts = sp.ult ? sp.recipes.filter(r => r.some(i => i.special)) : sp.recipes; if (!alts.length) continue; // a five-rank tower's other recipe (e.g. Homura + Lords) builds from kept towers
+      let used = null; for (const ings of alts){ used = matchIngs(ings, pool, g); if (used) break; }
       if (used) out.push({label:'Construct', sub:sp.name, color:sp.c, combo:true, run:() => combineKept(g, key, used)});
     }
     out.push({label:'Swap', sub:`${SWAP_COST} gold`, disabled: gold < SWAP_COST, run:() => startMove(g)});
@@ -1058,6 +1059,31 @@ function waveInfo(w){
 // (radius R + half a square from the centre). Auras reach towers whose squares come within R squares (centres within R + 1).
 const edgeD = (tx, ty, x, y) => Math.max(0, Math.hypot(x - tx, y - ty) - .5); // from a square's edge to a point, along a circle
 const tileD = (ax, ay, bx, by) => Math.max(0, Math.hypot(bx - ax, by - ay) - 1); // edge to edge between two squares
+function auraRings(st){ // each aura ability's reach (squares from the tower's edge) and colour; abilities with the same reach share a ring
+  const T2 = v => T(v), out = [], add = (R, col, name) => { const o = out.find(q => Math.abs(q.R - R) < .05); if (o) o.names.push(name); else out.push({R, col, names:[name]}); };
+  if (st.auraSpd) add(st.auraR, '255,201,236', 'War drums');
+  if (st.inspire) add(T2(st.inspire[1]), '255,179,110', 'Inspire');
+  if (st.overlook) add(T2(st.overlook[1]), '159,208,255', 'Star chart');
+  if (st.mkb) add(T2(st.mkb), '255,227,110', 'True strike');
+  if (st.decadent) add(T2(st.decadent[1]), '63,208,201', 'Plague aura');
+  if (st.unveil) add(T2(st.unveil), '159,255,240', 'Unveiling song');
+  if (st.ice) add(T2(st.ice[1]), '207,232,255', 'Ice aura');
+  if (st.antifly) add(T2(st.antifly[3]), '191,227,255', 'Grounding');
+  if (st.ward) add(T2(st.ward), '201,184,255', 'Magic influence');
+  if (st.greedy) add(T2(st.greedy), '255,209,102', 'Treasure');
+  if (st.burnR && st.attacks) add(st.burnR, '255,122,58', 'Fire aura');
+  return out;
+}
+function drawAuraRings(cx, cz, st){ // first aura: a broken line; second: broken line with circles between the dashes; any more: dotted
+  auraRings(st).forEach((a, i) => {
+    const Rr = a.R + .5; ctx.strokeStyle = `rgba(${a.col},.85)`; ctx.lineWidth = .06;
+    if (i === 0){ ctx.setLineDash([.32,.2]); ctx.beginPath(); ctx.arc(cx, cz, Rr, 0, Math.PI*2); ctx.stroke(); }
+    else if (i === 1){ ctx.setLineDash([.32,.34]); ctx.beginPath(); ctx.arc(cx, cz, Rr, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = `rgba(${a.col},.95)`; const n = Math.floor(2*Math.PI*Rr/.66); for (let k=0;k<n;k++){ const an = (k*.66 + .49)/Rr; ctx.beginPath(); ctx.arc(cx + Math.cos(an)*Rr, cz + Math.sin(an)*Rr, .06, 0, Math.PI*2); ctx.fill(); } }
+    else { ctx.setLineDash([.04,.16]); ctx.lineWidth = .08; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(cx, cz, Rr, 0, Math.PI*2); ctx.stroke(); ctx.lineCap = 'butt'; }
+    ctx.setLineDash([]);
+  });
+}
 function rangePath(cx, cz, R){ ctx.beginPath(); ctx.arc(cx, cz, R + .5, 0, Math.PI*2); } // the reach drawn as a circle, R squares beyond the square's edge
 const leakMax = (K, w = wave) => K.boss ? w*w/10 : w/2; // health an unhurt leaker costs: half the wave number, bosses wave x (wave/10)
 const leakDmg = (K, frac, w = wave) => Math.max(1, K.boss ? leakMax(K, w)*frac : Math.round(leakMax(K, w)*frac)); // normal leakers round to whole health; every leaker costs at least 1
@@ -1389,7 +1415,7 @@ const SFX = (() => {
 function hit(e, st, color, src){
   const A = e.K.abil;
   if (src && src.g && (src.g.special === 'pinkdiamond' || src.g.special === 'hugepink')) effects.push({x:e.x, y:e.y, r0:.1, r1:T(300), t:0, dur:.3, color:TYPES.ruby.c}); // the blow lands with the same burst as a cannonball
-  if (src && src.g && src.g.special === 'sapstar'){ e.snowT = 1.2; effects.push({x:e.x, y:e.y, r0:.1, r1:.55, t:0, dur:.35, color:'#e8f6ff'}); } // Winter's Heart: her targets are wrapped in snow
+  if (src && src.g && src.g.special === 'northern'){ e.snowT = 1.2; effects.push({x:e.x, y:e.y, r0:.1, r1:.55, t:0, dur:.35, color:'#e8f6ff'}); } // Winter's Heart: her targets are wrapped in snow
   if (e.refr > 0){ e.refr--; effects.push({x:e.x, y:e.y, r0:.15, r1:.5, t:0, dur:.2, color:'#bfe6ff'}); return; }
   if (A.has('eva') && !(src && src.mkb) && Math.random() < .5) return;
   let dmg = st.dmg;
@@ -1416,13 +1442,17 @@ function hit(e, st, color, src){
   if (st.recover && Math.random() < st.recover && lives < START_LIVES){ lives++; effects.push({x:e.x, y:e.y, r0:.2, r1:1, t:0, dur:.5, color:'#7fe0a0'}); }
   if (st.gaze && Math.random() < st.gaze){ e.stunT = Math.max(e.stunT, 2); e.gazeT = 3; effects.push({x:e.x, y:e.y, r0:.6, r1:.2, t:0, dur:.5, color:'#9a9a9a'}); }
   if (st.frost){ for (const o of enemies){ if (!o.dead && Math.hypot(o.x-e.x, o.y-e.y) <= T(st.frost)){ slowPct(o, SLOW_LV[5], 3, src || 'frost', true); o.noRegenT = 3; } } effects.push({x:e.x, y:e.y, r0:.2, r1:T(st.frost), t:0, dur:.35, color:'#cfe8ff'}); }
-  if (st.chain && Math.random() < st.chain[0]) zap(e, st.chain[1], st.chain[2], T(st.chain[3]), '#fff36e', st, src);
+  if (st.chain && Math.random() < st.chain[0]) chainBolt(e, st.chain[1], st.chain[2], T(st.chain[3]), '#fff36e', st, src);
   if (st.chainFrost && Math.random() < st.chainFrost) zap(e, 0, 10, 4, '#bfe6ff', st, src, true);
   if (st.fork && Math.random() < st.fork[0]){
-    const near = enemies.filter(o => !o.dead && Math.hypot(o.x-e.x, o.y-e.y) <= T(3000)).sort((a,b) => Math.hypot(a.x-e.x, a.y-e.y) - Math.hypot(b.x-e.x, b.y-e.y)).slice(0, st.fork[2]);
-    for (const o of near){ effects.push({line:true, x:e.x, y:e.y, x2:o.x, y2:o.y, t:0, dur:.3, color:'#c9a8ff'}); damage(o, st.fork[1], false, st, src); }
+    chainBolt(e, st.fork[1], st.fork[2], T(3000), '#c9a8ff', st, src);
   }
 }
+function chainBolt(from, dmg, jumps, radius, color, st, src){ // chain lightning as a travelling bolt: it leaps from enemy to enemy like the hex bolt, one hop every 0.75s
+  const hit = new Set([from]), nx = chainNext(from, hit, radius); if (!nx) return;
+  projectiles.push({x:from.x, y:from.y, tg:nx, from, kind:'chainbolt', color, wait:0, chain:{left:jumps, dmg, radius, hit, st, src}, eta:HEX_HOP, hopDur:HEX_HOP, trav:0, dx:nx.x - from.x, dy:nx.y - from.y});
+}
+function chainNext(from, hit, radius){ let best = null, bd = radius; for (const o of enemies){ if (o.dead || hit.has(o)) continue; const d = Math.hypot(o.x - from.x, o.y - from.y); if (d <= bd){ bd = d; best = o; } } return best; }
 function zap(from, dmg, jumps, radius, color, st, src, frost){ // a bolt that jumps to the nearest enemy not yet hit
   const hitSet = new Set([from]); let cur = from;
   for (let j=0;j<jumps;j++){
@@ -1451,11 +1481,12 @@ function step(dt){
     }
     e.auraArmor = arm; e.auraMr = mr; e.auraIce = mi ? 0 : ice;
   }
-  // pedals (traps) trigger when an enemy steps near them
+  // pedals (traps) trigger when an enemy steps near them (no immunity protects against them)
+  const segDist = (px, pz, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, L = dx*dx + dz*dz, t = L ? Math.max(0, Math.min(1, ((px - ax)*dx + (pz - az)*dz)/L)) : 0; return Math.hypot(px - ax - dx*t, pz - az - dz*t); };
   for (const pd of pedals){
     pd.cd -= dt;
     if (pd.cd > 0) continue;
-    const trig = enemies.find(e => !e.dead && Math.hypot(e.x-(pd.c+.5), e.y-(pd.r+.5)) <= .7);
+    const trig = enemies.find(e => !e.dead && segDist(pd.c + .5, pd.r + .5, e.lx ?? e.x, e.ly ?? e.y, e.x, e.y) <= .7); // anything that passed over it since the last step (a blink can't hop over a trap)
     if (trig){ triggerPedal(pd, trig); pd.cd = PEDAL_CD; pd.firedAt = simClock; }
   }
   for (const t of towers){ if (t.howlT > 0) t.howlT -= dt; if (t.sulkT > 0) t.sulkT -= dt; }
@@ -1477,6 +1508,7 @@ function step(dt){
     if (e.snowT > 0) e.snowT -= dt;
     if (e.stunT > 0){ e.stunT -= dt; continue; }
     if (e.rootT > 0) continue;
+    e.lx = e.x; e.ly = e.y; // where it was, so a trap it passes over still catches it
     let move = slowedSpd(e) * (e.rushT > 0 ? 2 : 1) * dt + (e.blink || 0); e.blink = 0;
     while (move > 0 && e.i < e.pts.length){
       const [tx,ty] = e.pts[e.i], dx = tx-e.x, dy = ty-e.y, d = Math.hypot(dx,dy);
@@ -1527,6 +1559,17 @@ function step(dt){
     if (st.melancholy && Math.random() < st.melancholy){ t.sulkT = 5; effects.push({x:t.x, y:t.y, r0:.2, r1:.8, t:0, dur:.6, color:'#7a7a9a'}); } t.fireAt = simClock; t.aim = [cands[0].x, cands[0].y];
   }
   for (const p of projectiles){
+    if (p.chain){ // chain lightning: lands on time each hop, strikes, then leaps to the nearest enemy it hasn't struck
+      if (p.tg.dead){ const nx = chainNext(p, p.chain.hit, p.chain.radius); if (!nx){ p.done = true; continue; } p.tg = nx; p.trav = 0; }
+      p.eta -= dt; const e = p.tg, dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy), mv = d*dt/Math.max(dt, p.eta + dt);
+      if (p.eta <= 0){
+        p.x = e.x; p.y = e.y; damage(e, p.chain.dmg, false, p.chain.st, p.chain.src); p.chain.hit.add(e);
+        effects.push({x:e.x, y:e.y, r0:.15, r1:.6, t:0, dur:.3, color:p.color}); SFX.hit(e, 'orb');
+        const nx = --p.chain.left > 0 ? chainNext(e, p.chain.hit, p.chain.radius) : null; if (!nx){ p.done = true; continue; }
+        p.from = e; p.tg = nx; p.trav = 0; p.eta = p.hopDur = HEX_HOP; p.dx = nx.x - e.x; p.dy = nx.y - e.y;
+      } else if (d > 1e-6){ p.x += dx/d*mv; p.y += dy/d*mv; p.trav += mv; p.dx = dx; p.dy = dy; }
+      continue;
+    }
     if (p.hex){ // the hex bolt: on each arrival it stuns, then leaps to another random enemy until its bounces run out
       if (p.wait > 0){ p.wait -= dt; continue; }
       if (p.tg.dead){ const nx = hexNext(p, null); if (!nx){ p.done = true; continue; } p.tg = nx; p.trav = 0; }
@@ -1544,7 +1587,7 @@ function step(dt){
     const e = p.tg;
     if (e.dead){ p.done = true; continue; }
     const dx = e.x-p.x, dy = e.y-p.y, d = Math.hypot(dx,dy), mv = PROJ_SPEED*dt;
-    if (d <= mv){ p.done = true; SFX.hit(e, p.kind); hit(e, p.st, p.color, p.t);
+    if (d <= mv){ p.done = true; SFX.hit(e, p.kind); hit(e, p.st, p.color, p.t); if (p.kind === 'iceheart') effects.push({shards:true, x:e.x, y:e.y, t:0, dur:.5, color:'#bfe6ff'});
       if (p.kind === 'icespike') effects.push({x:e.x, y:e.y, r0:.15, r1:1.1, t:0, dur:.45, color:'#cfeeff'}, {x:e.x, y:e.y, r0:.1, r1:.6, t:0, dur:.3, color:'#ffffff'}); // the spike shatters in a burst of frost
       else if (p.kind === 'firerock') effects.push({x:e.x, y:e.y, r0:.15, r1:.9, t:0, dur:.4, color:'#ff8a3a'}); }
     else { p.x += dx/d*mv; p.y += dy/d*mv; p.trav += mv; p.dx = dx; p.dy = dy; }
@@ -2023,7 +2066,7 @@ function hexNext(from, exclude){ // a random living enemy within reach of the bo
 }
 function triggerPedal(pd, trig){
   const t = pd.tier, cx = pd.c + .5, cz = pd.r + .5, P = PEDALS[pd.key];
-  const near = rad => enemies.filter(e => !e.dead && Math.hypot(e.x-cx, e.y-cz) <= rad);
+  const near = rad => enemies.filter(e => !e.dead && (e === trig || Math.hypot(e.x-cx, e.y-cz) <= rad)); // the one that sprang it is always caught, even if it blinked past
   const mi = e => immune(e, 'magimm');
   effects.push({x:cx, y:cz, r0:.2, r1:Math.min(5, P.r), t:0, dur:.5, color:P.c});
   switch (pd.key){
@@ -2412,7 +2455,7 @@ function haveIngs(ings, self, roundOnly){ // which ingredients are already on th
 }
 function blueprintsFor(g){
   const out = [];
-  for (const [key, sp] of Object.entries(SPECIALS)){ const alt = sp.recipes.find(ings => ings.some(ing => ingMatches(ing, g))); if (alt) out.push({icon:'sp:' + key, name:sp.name, gem:sp.gem, c:sp.c, desc:sp.desc, ings:alt, round:!!(sp.secret || sp.ult)}); }
+  for (const [key, sp] of Object.entries(SPECIALS)){ const alt = sp.recipes.find(ings => ings.some(ing => ingMatches(ing, g))); if (alt) out.push({icon:'sp:' + key, name:sp.name, gem:sp.gem, c:sp.c, desc:sp.desc, ings:alt, round:!!(sp.secret || (sp.ult && !alt.some(i => i.special)))}); }
   if (!g.special && g.q === 4){ const sp = SPECIALS.greatstone; out.push({icon:'sp:greatstone', name:sp.name, gem:sp.gem, c:sp.c, desc:sp.desc, four:true}); }
   for (const [key, pd] of Object.entries(PEDALS)) if (pd.ings.some(ing => ingMatches(ing, g))) out.push({icon:'pd:' + key, name:pd.name, gem:pd.gem + ' Pedal', c:pd.c, desc:pd.desc(0) + ' · trap', ings:pd.ings, round:true});
   return out;
@@ -2687,7 +2730,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.13 · October 28, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.14 · October 28, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
@@ -3435,17 +3478,17 @@ const UNIT = {
   golem: {kind:'hero', hero:'golem', eyes:'#7dffb0', scale:1.65, deploy:true, sfx:'hammer', n:1}, // a big stone golem with glowing eyes who lumbers out to smash
   paraiba: {kind:'hero', hero:'gravestone', scale:1.3, missile:'orb', sfx:'staff', n:1}, // a crooked RIP gravestone with a skeleton hand clawing out of the grave; black miasma marks its armor-rotting aura
   carved: {kind:'hero', hero:'poet', scale:1.3, missile:'note', sfx:'drum', n:1}, // the Risen Poet: a glowing woman in a Greek toga floating over her old gravestone, sounding a herald's trumpet
-  sapstar: {kind:'hero', hero:'wyvern', scale:1.55, missile:'none', sfx:'staff', n:1}, // a snow wyvern asleep; no missile: the enemies she strikes are encased in snow
+  sapstar: {kind:'fig', art:'mageIce', weapon:'staff', glow:'#bfe6ff', size:1.3, heart:true, missile:'iceheart', n:1}, // Winter's Heart: an ice mage under a floating heart of ice; she hurls hearts of ice that shatter on impact
   pearl: {kind:'fig', robe:'#c8d6da', hat:'cap', hatCol:'#8aa0a6', weapon:'crossbow', n:3},
   zumurud: {kind:'fig', robe:'#2c7a4a', hat:'cap', hatCol:'#1a5030', weapon:'crossbow', n:3},
   cateye: {kind:'fig', robe:'#4a3a7a', hat:'cap', hatCol:'#2c2250', weapon:'drum', n:3, banner:'#7a66c4', extra:{kind:'fig', robe:'#4a3a7a', hat:'helmet', hatCol:'#9aa3ad', weapon:'bigbanner', flag:'#7a66c4'}}, // drummers, plus a soldier with a great banner
   redcoral: {kind:'fig', robe:'#a83a30', hat:'cap', hatCol:'#702018', weapon:'drum', n:4, banner:'#ff6f61'},
   carmen: {kind:'fig', robe:'#c83a80', hat:'cap', hatCol:'#801f50', weapon:'lute', band:['bard', 'flute', 'trumpet'], n:3, sfx:'drum'}, // a bard on the lute with a flutist and a trumpeter
   yellowsap: {kind:'hero', hero:'icecrystals', scale:1.4, missile:'orb', sfx:'staff', n:1}, // a pedestal with ice crystals circling above it
-  northern: {kind:'fig', robe:'#6aa8d8', hat:'wizard', hatCol:'#3a6a98', weapon:'staff', glow:'#bfe6ff', n:3},
+  northern: {kind:'hero', hero:'wyvern', scale:1.55, missile:'none', sfx:'staff', n:1}, // Frostbite Watch: a snow wyvern asleep; no missile: the enemies she strikes are encased in snow
   starsap: {kind:'fig', robe:'#8aa8e8', hat:'wizard', hatCol:'#4a6ab8', weapon:'staff', glow:'#ffffff', n:4},
   obsidian: {kind:'hero', hero:'darkmatter', scale:1.35, missile:'ballDark', n:1}, // Dark Matter: a floating black planet hurling dark-matter orbs (they blast like cannonballs)
-  agate: {kind:'fig', robe:'#8a5a3a', hat:'cap', hatCol:'#5a3a22', weapon:'crossbow', n:5},
+  agate: {kind:'ballista', col:'#c8875a', rank:4, n:1, missile:'bolt', crewSlots:[[-.4,.12],[.4,.12]], crew:{kind:'fig', robe:'#8a5a3a', hat:'cap', hatCol:'#5a3a22', weapon:'crossbow', n:2}}, // a master ballista with a crossbowman either side
   shrimp: {kind:'fig', robe:'#e05a3a', hat:'wizard', hatCol:'#3a8ae0', weapon:'lance', glow:'#ffd23f', n:3},
   yaphets: {kind:'hero', hero:'bookmage', robe:'#3a2c5a', hat:'#241a3a', sash:'#c9a227', hair:'#c8b8e8', scale:1.35, missile:'orb', sfx:'staff', n:1}, // a mage floating among circling spell books
 };
@@ -4057,6 +4100,7 @@ Object.assign(CHAR_DEFS2, {"trumpet":"<defs><pattern id=\"hatch\" width=\"4\" he
 { // the Dragon's Brazier fire mage: the same mage in red robes, with fire in his hand and at his staff's tip
   const swap = str => str.replace(/#2C3040/gi, '#8A1E16').replace(/#6FE0C8/gi, '#FF9A3C').replace(/#7FF0D8/gi, '#FFC060').replace(/#E8FFF8/gi, '#FFF0C0');
   CHAR_ART.mageRed = JSON.parse(swap(JSON.stringify(CHAR_ART.mage)));
+  CHAR_ART.mageIce = JSON.parse(JSON.stringify(CHAR_ART.mage).replace(/#2C3040/gi, '#BFD8F0').replace(/#6FE0C8/gi, '#BFE6FF').replace(/#7FF0D8/gi, '#E0F4FF')); // Winter's Heart: robes of frost
   CHAR_ART.archerW = JSON.parse(JSON.stringify(CHAR_ART.archer).replace(/#3E4636/gi, '#E6E0D0').replace(/#33302C/gi, '#B8B0A0')); // the basic archers, in off-white
 }
 const charCache = {};
@@ -4118,7 +4162,7 @@ function figPose(name, act, aim, fl, t){ // arm angles for a tower crew member: 
       return {L: act > 0 ? 180 - ch(Math.max(0, p - .2)) : rl + 15 + sw, R: act > 0 ? ch(p) : rr - 15 - sw}; } // the two axes chop one after the other
     case 'archer': return {R: aimTilt(180, 35) + (act > 0 ? -4*act : sw*.3)}; // the bow and the drawn arrow swing toward the foe
     case 'crossbow': return {R: aimTilt(180, 35) - act*10 + (al == null ? sw*.3 : 0)}; // the crossbow swings toward the target and kicks
-    case 'mage': case 'mageRed': return al != null ? {L: al, R: rr - 18*act} : {L: rl + sw, R: rr - sw}; // the fire hand casts at the foe, the staff lifts
+    case 'mage': case 'mageRed': case 'mageIce': return al != null ? {L: al, R: rr - 18*act} : {L: rl + sw, R: rr - sw}; // the fire hand casts at the foe, the staff lifts
     case 'poison': return act > 0 ? {L: rl + sw, R: p < .25 ? lerp(-125, 15, p/.25) : lerp(15, rr, (p - .25)/.75), bareR: p > .12 && p < .8} : {L: rl + sw, R: rr - sw*1.3}; // a hurl: the flask leaves the hand, a new one is drawn
     case 'snare': { const b = Math.sin(t*9), k = 10 + 10*act; return {L: rl + b*k, R: rr - b*k}; } // sticks rattling on the snare in turn
     case 'bass': { const b = Math.max(0, Math.sin(t*3.2)), k = 14 + 10*act; return {L: rl - b*k*.6, R: rr - b*k}; } // a slow, booming beat
@@ -4130,6 +4174,20 @@ function figPose(name, act, aim, fl, t){ // arm angles for a tower crew member: 
   return {L: rl + sw, R: rr - sw};
 }
 const NOTE_AT = {tuba:[54, 200], horn:[80, 216], trumpet:[78, 201], flute:[86, 186], bard:[6, 96]}; // where each musician's notes come from (art units from the feet)
+let heartCan = null;
+function iceHeart(){ // a heart of ice with a heart-shaped hole through its middle, painted once with its glow
+  if (heartCan) return heartCan;
+  const S = 160, c = heartCan = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
+  const heart = (cx, cy, k) => { g.moveTo(cx, cy + 30*k); g.bezierCurveTo(cx - 52*k, cy - 4*k, cx - 34*k, cy - 46*k, cx, cy - 22*k); g.bezierCurveTo(cx + 34*k, cy - 46*k, cx + 52*k, cy - 4*k, cx, cy + 30*k); g.closePath(); };
+  g.beginPath(); heart(80, 86, 1.25); heart(80, 82, .5); // the hole cut through it (even-odd)
+  const gr = g.createLinearGradient(30, 30, 130, 130); gr.addColorStop(0, '#f2fbff'); gr.addColorStop(.45, '#9fd8f6'); gr.addColorStop(1, '#4a8ac8');
+  g.save(); g.shadowColor = 'rgba(170,230,255,.95)'; g.shadowBlur = 18; g.fillStyle = gr; g.fill('evenodd'); g.restore();
+  g.lineJoin = 'round'; g.strokeStyle = '#1a3a5a'; g.lineWidth = 3.5; g.stroke();
+  g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 2.2; g.beginPath(); g.moveTo(44, 60); g.quadraticCurveTo(52, 44, 66, 46); g.moveTo(96, 92); g.lineTo(110, 78); g.stroke(); // glints and a facet
+  g.strokeStyle = 'rgba(40,90,140,.5)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(80, 100); g.lineTo(62, 118); g.moveTo(80, 100); g.lineTo(100, 116); g.moveTo(58, 72); g.lineTo(42, 80); g.stroke(); // cracks in the ice
+  return c;
+}
+const NOTE_NONE = 0;
 function drawFigSprite(name, x, y, u, cfg, face, act, champ, idx, aim){
   const H = u*.92, fl = charFlip(name, face), t = anim*2.2 + idx*1.7, pose = figPose(name, act, aim, fl, anim + idx);
   pose.dy = Math.abs(Math.sin(t))*u*.012 + (name === 'axes' || name === 'sword' || name === 'club' ? act*u*.03 : 0);
@@ -4138,7 +4196,10 @@ function drawFigSprite(name, x, y, u, cfg, face, act, champ, idx, aim){
   if (NOTE_AT[name] && Math.sin(anim*1.6 + idx*2.3) > .55){ // notes float up from the bell of the horn (or the lute, or the flute)
     const fl2 = charFlip(name, face), k = H/240, bx = x + fl2*NOTE_AT[name][0]*k, by = y - pose.dy - NOTE_AT[name][1]*k, rise = ((anim*.8 + idx*.37) % 1)*u*.3;
     ctx.fillStyle = 'rgba(255,230,150,.9)'; ctx.font = `${Math.round(u*.22)}px serif`; ctx.textAlign = 'center'; ctx.fillText('♪', bx + fl2*rise*.4, by - rise); }
-  if ((name === 'mage' || name === 'mageRed') && aim != null){ // a spell gathers in the casting hand
+  if (cfg.heart){ // the heart of ice floats over her, turning slowly
+    const H2 = u*.95, bob = Math.sin(anim*1.4 + idx)*u*.05, hy = y - pose.dy - u*1.5 - bob, sq = .75 + .25*Math.cos(anim*.9 + idx);
+    ctx.save(); ctx.translate(x, hy); ctx.scale(sq, 1); ctx.rotate(Math.sin(anim*.7)*.08); ctx.globalAlpha = .95; ctx.drawImage(iceHeart(), -H2/2, -H2/2, H2, H2); ctx.restore(); }
+  if ((name === 'mage' || name === 'mageRed' || name === 'mageIce') && aim != null){ // a spell gathers in the casting hand
     const [hx, hy] = charHand(name, 'L', x, y - pose.dy, H, face, pose.L), R = u*(.12 + .1*act), g = ctx.createRadialGradient(hx, hy, 0, hx, hy, R);
     g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(.4, cfg.glow || '#8fc0ff'); g.addColorStop(1, 'rgba(120,180,255,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(hx, hy, R, 0, Math.PI*2); ctx.fill(); }
   return true;
@@ -4289,6 +4350,7 @@ function drawFig(x, y, u, cfg, face, act, champ, idx, aim){
 // ----- missiles: each tower fires something that matches its crew -----
 function missileOf(g){
   const cfg = UNIT[g.special || g.type]; if (!cfg) return 'orb';
+  if (cfg.missile) return cfg.missile;
   if (cfg.kind === 'hero') return cfg.deploy ? 'none' : cfg.missile || 'orb';
   if (cfg.kind === 'cannon') return g.special ? (cfg.big ? 'ballL' : 'ball1') : ['ball1','ball2','ball3','ballL','ballXL','ballXL'][g.q];
   if (cfg.kind === 'ballista'){ const k = cfg.rank != null ? cfg.rank : g.q; return ['bolt1','bolt2','bolt3','boltL1','boltL2','boltL2'][k]; }
@@ -4297,6 +4359,15 @@ function missileOf(g){
   return {bow:'arrow', crossbow:'bolt', staff:'orb', lance:'spark', flask:'flask', drum:'note', hammer:'hammer', spear:'none'}[cfg.weapon] || 'orb';
 }
 const MISSILE_ARC = {ballDark:.9, bolt1:.15, bolt2:.15, bolt3:.15, boltL1:.15, boltL2:.15, ball1:.9, ball2:.9, ball3:.9, ballL:1, ballXL:1.1, stone:1.3, firerock:1.2, icespike:.25, flask:.8, arrow:.35, hammer:.5, bigbolt:.15, bolt:.1};
+function drawChainBolt(p){ // a crackling ball of lightning hopping in a low arc, a jagged bolt flickering back to where it leapt from
+  const e = p.tg, rem = Math.hypot(e.x - p.x, e.y - p.y), tot = Math.max(.01, p.trav + rem), k = Math.max(0, Math.min(1, 1 - p.eta/p.hopDur));
+  const hop = Math.min(1.2, .45 + tot*.18)*4*k*(1 - k), a = proj(p.x, elevAt(p.x, p.y) + (e.fly ? 1.05 : .45) + hop, p.y, [0,0,0]), S = Math.max(14, VW.s*1.1), x = a[0], y = a[1];
+  ctx.globalAlpha = .9; ctx.drawImage(glowSprite(p.color === '#c9a8ff' ? '205,170,255' : '255,240,140'), x - S*.35, y - S*.35, S*.7, S*.7); ctx.globalAlpha = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = Math.max(1, S*.03); ctx.beginPath();
+  for (let i=0;i<5;i++){ const an = i*1.26 + anim*9, r1 = S*.05, r2 = S*(.14 + .05*Math.sin(anim*30 + i)); ctx.moveTo(x + Math.cos(an)*r1, y + Math.sin(an)*r1); ctx.lineTo(x + Math.cos(an + .3)*r2, y + Math.sin(an + .3)*r2); } ctx.stroke();
+  if (p.from && !p.from.dead && k < .6){ const b = proj(p.from.x, elevAt(p.from.x, p.from.y) + .45, p.from.y, [0,0,0]); ctx.strokeStyle = p.color; ctx.globalAlpha = .7*(1 - k/.6); ctx.lineWidth = Math.max(1, S*.035); ctx.beginPath(); ctx.moveTo(b[0], b[1]);
+    for (let i=1;i<6;i++){ const t = i/6; ctx.lineTo(b[0] + (x - b[0])*t + Math.sin(anim*47 + i*3)*S*.12, b[1] + (y - b[1])*t + Math.cos(anim*41 + i*2)*S*.12); } ctx.lineTo(x, y); ctx.stroke(); ctx.globalAlpha = 1; }
+}
 function drawHexBolt(p){ // a violet hex orb hopping in a low arc from enemy to enemy, trailing sparks
   const e = p.tg, rem = Math.hypot(e.x - p.x, e.y - p.y), tot = Math.max(.01, p.trav + rem), k = Math.max(0, Math.min(1, 1 - p.eta/p.hopDur));
   const hop = Math.min(1.2, .45 + tot*.18)*4*k*(1 - k); // the arc follows the hop's clock, so even a rebound onto the same enemy leaps
@@ -4310,6 +4381,7 @@ function drawHexBolt(p){ // a violet hex orb hopping in a low arc from enemy to 
 function drawMissile(p){
   if (p.kind === 'none') return; // militia charge out on foot instead of shooting
   if (p.hex){ drawHexBolt(p); return; }
+  if (p.chain){ drawChainBolt(p); return; }
   const e = p.tg, rem = Math.hypot(e.x - p.x, e.y - p.y), tot = Math.max(.01, p.trav + rem), k = Math.min(1, p.trav/tot);
   const A = (MISSILE_ARC[p.kind] || 0)*Math.min(1, tot/3);
   const base = elevAt(p.x, p.y), hAt = kk => base + .95 + (.35 - .95)*kk + A*4*kk*(1-kk);
@@ -4376,6 +4448,7 @@ function drawMissile(p){
       ctx.globalAlpha = 1; const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, r*2.4); gr.addColorStop(0, 'rgba(170,255,90,.9)'); gr.addColorStop(.4, 'rgba(90,160,30,.5)'); gr.addColorStop(1, 'rgba(30,60,10,0)');
       ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, r*2.4, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#1a2a10'; ctx.beginPath(); ctx.arc(0, 0, r*.8, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#9cff4a'; ctx.beginPath(); ctx.arc(-r*.2, -r*.2, r*.35, 0, Math.PI*2); ctx.fill();
       break; }
+    case 'iceheart': { const r = S*.32; ctx.rotate(sp*.5); ctx.drawImage(iceHeart(), -r/2, -r/2, r, r); break; } // a small heart of ice
     case 'orb': { const r = S*.08;
       for (let i=3;i>=1;i--){ ctx.globalAlpha = .18*(4-i); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(-vx*r*1.6*i, -vy*r*1.6*i, r*(1 - i*.18), 0, Math.PI*2); ctx.fill(); }
       ctx.globalAlpha = 1; const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, r*2.2); gr.addColorStop(0, '#fff'); gr.addColorStop(.35, p.color); gr.addColorStop(1, 'rgba(0,0,0,0)');
@@ -4839,7 +4912,7 @@ function drawCrew(o, g){
   const act = sinceFire < .45 ? 1 - sinceFire/.45 : 0, recoil = sinceFire < .5 ? 1 - sinceFire/.5 : 0;
   const u = Math.max(11, VW.s*.95), o3 = [0,0,0], ao = [0,0,0];
   if (tw && tw.aim) proj(tw.aim[0], .3, tw.aim[1], ao);
-  const groups = cfg0.crew ? [[cfg0, cfg0.n || 1, [[0, -.1]]], [cfg0.crew, cfg0.crew.n, [[-.27,.2],[.27,.2]]]] : [[cfg0, cfg0.n || (g.special ? 3 : g.q + 1), null]];
+  const groups = cfg0.crew ? [[cfg0, cfg0.n || 1, [[0, -.1]]], [cfg0.crew, cfg0.crew.n, cfg0.crewSlots || [[-.27,.2],[.27,.2]]]] : [[cfg0, cfg0.n || (g.special ? 3 : g.q + 1), null]];
   if (cfg0.extra) groups.push([cfg0.extra, 1, [[0, .26]]]); // e.g. the banner bearer
   let idx = 0;
   // aura glow and stars sit behind / above the crew
@@ -6368,7 +6441,7 @@ function draw(){
       ctx.fillStyle = 'rgba(242,193,78,.1)'; ctx.strokeStyle = 'rgba(255,214,110,.85)'; ctx.lineWidth = .06;
       rangePath(c+.5, r+.5, st.rng); ctx.fill(); ctx.stroke();
       if (g.aura){ ctx.setLineDash([.25,.15]); ctx.strokeStyle = 'rgba(255,214,110,.75)'; ctx.lineWidth = .07; rangePath(c+.5, r+.5, AURA_R); ctx.stroke(); ctx.setLineDash([]); }
-      if (st.auraSpd){ ctx.setLineDash([.18,.16]); ctx.strokeStyle = 'rgba(255,201,236,.7)'; rangePath(c+.5, r+.5, st.auraR); ctx.stroke(); ctx.setLineDash([]); }
+      drawAuraRings(c + .5, r + .5, st);
     }
     if (g && (g.kind === 'gem' || g.kind === 'rock')){ // outline the tower's / wall's own shape (not the crew on top)
       const H = g.kind === 'gem' && g.round ? .54 : WALL_H + .17, h = BW/2 + .01, o = [0,0,0], pts = [];
@@ -6393,6 +6466,12 @@ function draw(){
   let fxE = 0; // effects sit on the ground they happen on, so on the hill they are raised to that terrace
   for (const f of effects){
     const k = f.t / f.dur; ctx.globalAlpha = Math.max(0, 1-k);
+    if (f.shards){ // a heart of ice shattering: shards fly out over a frosty ring
+      const e = elevAt(f.x, f.y); if (e !== fxE){ groundSpace(e); fxE = e; }
+      ctx.strokeStyle = 'rgba(220,245,255,.9)'; ctx.lineWidth = .05; ctx.beginPath(); ctx.arc(f.x, f.y, .15 + k*.7, 0, Math.PI*2); ctx.stroke();
+      ctx.fillStyle = '#d8f2ff'; for (let i=0;i<9;i++){ const a = i/9*Math.PI*2 + 0.3, r0 = .1 + k*.9, sx = f.x + Math.cos(a)*r0, sz = f.y + Math.sin(a)*r0, w = .06*(1 - k*.5);
+        ctx.beginPath(); ctx.moveTo(sx + Math.cos(a)*w*2.2, sz + Math.sin(a)*w*2.2); ctx.lineTo(sx + Math.cos(a + 1.9)*w, sz + Math.sin(a + 1.9)*w); ctx.lineTo(sx + Math.cos(a - 1.9)*w, sz + Math.sin(a - 1.9)*w); ctx.closePath(); ctx.fill(); }
+      continue; }
     ctx.strokeStyle = f.color;
     if (f.line){ // drawn on screen between the two points, each at its own ground height
       ctx.setTransform(d,0,0,d,0,0); fxE = null;

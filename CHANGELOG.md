@@ -2,6 +2,21 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.14 — October 28, 2026
+
+### Added
+- **A second recipe for Crown Prince's Keep:** Kaminari-Homura + a Lord Cannon Tower + a Lord Alchemist Tower. This recipe builds from towers you've kept, so it doesn't need a single round. The original recipe (Cannon Towers of ranks 1 through 5) still has to be built from one round's new towers.
+- **Traveling chain lightning.** Chain and forked lightning now leap visibly from enemy to enemy as a crackling ball, one hop every 0.75 seconds, instead of striking everything at once.
+- **Aura rings.** Selecting a tower with auras shows each aura's reach as its own ring: a dashed line for the first, dashes with dots for the second, and dotted for any more.
+- **New crews and art.**
+  - **Winter's Heart:** an ice mage in frost robes under a slowly turning heart of ice, which shatters into shards on its freezing splash.
+  - **Agate Tower:** a master ballista with a crossbowman on each side.
+
+### Changed
+- **Bard's Cathedral** now makes nearby towers attack 100% faster (was 70%) and deal 50% more damage. Its second, short-range speed boost is removed.
+- **Traps ignore immunities.** The Snare Trap roots enemies whatever their immunities, and no immunity protects against a trap.
+- **Traps can't be skipped.** A trap now catches an enemy that passes over it between steps, including one that blinks past.
+
 ## 1.13 — October 28, 2026
 
 ### Added
