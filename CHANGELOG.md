@@ -2,6 +2,15 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.13 — October 28, 2026
+
+### Added
+- **Risen Poet's Unveiling song.** Enemies within 9.5 squares of the Risen Poet lose their magic and physical immunity while they're in range, so every tower can hurt, slow and stun them. This is on top of her existing 30 armor strip.
+- **New hand-drawn crews.**
+  - **Bard's Cathedral** now has a trio: a bard on the lute, a flutist and a trumpeter, with notes drifting up from their instruments.
+  - **Demon Hunter's Spire** now has an archer in black who levels a hand crossbow in each fist.
+- The basic Archer Tower crew is now dressed in off-white.
+
 ## 1.12 — October 28, 2026
 
 ### Changed
