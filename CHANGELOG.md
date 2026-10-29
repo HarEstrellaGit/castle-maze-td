@@ -2,6 +2,22 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.16 — October 28, 2026
+
+### Added
+- **Armor break levels.** Every armor reduction now uses one of 9 levels: −2, −4, −8, −12, −16, −24, −32, −48 and −64 armor. Armor loss from **different** levels adds up; two effects of the same level don't. This covers hits, auras and traps alike, and tower details show each one's level.
+
+### Changed
+- **The tower showcase moved to Blueprints.** The Blueprints panel now has **Towers** and **Traps** tabs. Tap a tower in the list, or swipe the big tower shown on the board, to see its recipe and what it does. Parts you already own are outlined in gold.
+- **The Book of Records** now has **Game runs** and **Game modes** tabs (game modes are coming later). The Towers built tab is gone from here.
+- **Armor values adjusted to fit the new levels:**
+  - Plague Tower: −16 armor (was −15).
+  - Risen Poet: −32 armor over a larger area (13×13 squares, was 9×9), and her Unveiling song now covers 9×9 squares (was 5×5).
+  - Winter's Heart and Yaphet's Monolith auras: −32 armor (was −30).
+  - Falconer's Roost, Healer's Abbey, Skyhunter Lodge and Robin's Woods: −12 armor on flyers (was −10).
+  - Lord Ballista Tower: −48 armor per hit (was −64).
+- The Acid trap's armor loss now follows the armor break level rules.
+
 ## 1.15 — October 28, 2026
 
 ### Added

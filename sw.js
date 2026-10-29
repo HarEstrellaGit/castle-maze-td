@@ -1,6 +1,6 @@
 // Castle Maze TD — offline support.
 // When you upload a new version of the game, bump VERSION so devices refresh their saved copy.
-const VERSION = 'castle-maze-v16';
+const VERSION = 'castle-maze-v19';
 const FONTS_CSS = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&display=swap';
 const APP_FILES = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png'];
 

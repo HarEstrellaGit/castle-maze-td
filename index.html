@@ -202,6 +202,7 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 .tsRow{display:flex;align-items:flex-start;justify-content:center;flex-wrap:wrap;gap:2px}
 .tsIng{display:flex;flex-direction:column;align-items:center;width:calc(var(--u)*4.6)}
 .tsIng img{width:calc(var(--u)*3.4);height:calc(var(--u)*3.4);border-radius:6px;border:1px solid var(--line-hi);background:radial-gradient(circle at 50% 40%,#3a2f22,#16110b 75%)}
+.tsIng.have img{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
 .tsIng i{font-style:normal;font-size:calc(var(--u)*.78);color:#d8cfbc;line-height:1.1;text-align:center;margin-top:2px;text-shadow:0 1px 2px #000}
 .tsOp{color:var(--gold);font-family:var(--display);font-weight:700;font-size:calc(var(--u)*1.5);line-height:calc(var(--u)*3.4)}
 .tsNote{font-size:calc(var(--u)*.85);color:var(--muted)}
@@ -533,7 +534,11 @@ const TYPES = {
 };
 // slow levels 1-10, from 20% to 90% (every slow in the game uses one of these)
 const SLOW_LV = [.2,.28,.36,.43,.51,.59,.67,.74,.82,.9], slowLevel = f => { const i = SLOW_LV.findIndex(v => Math.abs(v - f) < .005); return i < 0 ? null : i + 1; };
-const CLEAVE = [[.3,300],[.4,350],[.5,400],[.6,450],[.7,500],[1,700]], FROST = [.2,.28,.36,.43,.51,.59], VENOM = [2,4,8,16,32,128], PIERCE = [2,4,8,16,32,64], DRUM = [20,30,40,50,60,80]; // War Drum ranks: haste levels 1-6
+// armor break levels 1-9; armor loss from different levels adds up, the same level doesn't
+const ARMOR_LV = [2,4,8,12,16,24,32,48,64], armorLevel = v => { const i = ARMOR_LV.indexOf(v); return i < 0 ? 'x' + v : i + 1; };
+const armorBreak = (e, v, d) => { if (!e.armFx) e.armFx = new Map(); const k = armorLevel(v), o = e.armFx.get(k); if (!o) e.armFx.set(k, {v, t:d}); else { o.v = Math.max(o.v, v); o.t = Math.max(o.t, d); } }; // timed armor loss (hits, traps)
+const armorDown = e => { let n = 0; const seen = new Set(); if (e.armFx) for (const [k, o] of e.armFx){ seen.add(k); n += Math.max(o.v, e.auraArm && e.auraArm.get(k) || 0); } if (e.auraArm) for (const [k, v] of e.auraArm) if (!seen.has(k)) n += v; return n; };
+const CLEAVE = [[.3,300],[.4,350],[.5,400],[.6,450],[.7,500],[1,700]], FROST = [.2,.28,.36,.43,.51,.59], VENOM = [2,4,8,16,32,128], PIERCE = [2,4,8,16,32,48], DRUM = [20,30,40,50,60,80]; // War Drum ranks: haste levels 1-6
 // haste (attack speed) levels 1-7; different levels stack (added together), the same level doesn't
 const HASTE_LV = [20,30,40,50,60,80,100], hasteLevel = v => { const i = HASTE_LV.indexOf(Math.round(v*100)); return i < 0 ? null : i + 1; };
 const TYPE_KEYS = Object.keys(TYPES);
@@ -561,20 +566,20 @@ adv('bloodstone',  'Thunder Bombard',      'Bloodstone',           '#c2183a', 'R
 adv('antiquebs',   'Kaminari-Homura',        'Antique Bloodstone',   '#e0345a', '@bloodstone @volcano R2', {dmg:50, cd:1, rng:800, fork:[.25, 2500, 5], burn:[320, 500], attacks:true, desc:'Strikes once a second (25% chance to fork lightning) inside a burning aura'});
 adv('crownprince', 'Crown Prince’s Keep',  'The Crown Prince',     '#ffd23f', '@antiquebs R6 G6 | R1 R2 R3 R4 R5',     {dmg:70, cd:1, rng:800, fork:[.25, 2500, 5], burn:[2500, 800], poison:128, poisonDur:5, attacks:true, desc:'Strikes once a second (25% chance to fork lightning, poisons) inside a huge burning aura', ult:true});
 adv('jade',        'Apothecary Guild',     'Jade',                 '#7be0a2', 'G3 E3 B2',           {dmg:10, cd:.5, rng:800, poison:16, poisonDur:5, desc:'Fast poisoned shots'});
-adv('quartz',      'Falconer’s Roost',     'Quartz',               '#bfe3ff', 'G4 R3 P2',           {dmg:15, cd:.6, rng:500, antifly:[10, .51, 0, 600], desc:'Grounds flyers: −10 armor, 51% slower nearby'});
+adv('quartz',      'Falconer’s Roost',     'Quartz',               '#bfe3ff', 'G4 R3 P2',           {dmg:15, cd:.6, rng:500, antifly:[12, .51, 0, 600], desc:'Grounds flyers: −12 armor, 51% slower nearby'});
 adv('greyjade',    'Astronomer’s Guild',    'Grey Jade',            '#a9c9b5', '@jade B4 Q3',        {dmg:30, cd:.5, rng:800, poison:32, poisonDur:5, overlook:[300, 290], desc:'Poison; nearby towers gain +2.5 squares of range'});
 adv('mkjade',      'Grand Astronomer’s Tower',  'Monkey King Jade',     '#e8d36a', '@greyjade G4 P2',    {dmg:80, cd:.5, rng:1000, poison:32, poisonDur:5, crit:.1, critX:5, overlook:[300, 290], mkb:300, desc:'Poison with critical strikes; nearby towers gain range and never miss'});
 adv('cullinan',    'Plato’s Scope',         'Diamond Cullinan',     '#f4f8ff', 'D1 D2 D3 D4 D5',     {dmg:3154, cd:.8, rng:1200, crit:.1, critX:5, overlook:[300, 290], mkb:300, desc:'Colossal hits; nearby towers gain range and never miss', ult:true});
-adv('luckyjade',   'Healer’s Abbey',       'Lucky Chinese Jade',   '#9be8b0', '@jade @quartz G3',   {dmg:30, cd:.5, rng:900, poison:32, poisonDur:5, recover:.01, antifly:[10, .43, 0, 600], desc:'Poison, grounds flyers, sometimes restores a life'});
-adv('lazurite',    'Skyhunter Lodge',      'Charming Lazurite',    '#4b6fd8', '@quartz P4 Y2',      {dmg:30, cd:.6, rng:800, antifly:[10, .67, .5, 600], piercesi:true, desc:'Cripples flyers: armor, 67% speed and magic resist'});
-adv('jubilee',     'Robin’s Woods',        'Golden Jubilee',       '#ffcf3f', 'Y1 Y2 Y3 Y4 Y5',     {dmg:300, cd:.7, rng:800, antifly:[10, .74, .5, 600], burned:true, desc:'Shots also burn for the same magic damage; cripples flyers', ult:true});
+adv('luckyjade',   'Healer’s Abbey',       'Lucky Chinese Jade',   '#9be8b0', '@jade @quartz G3',   {dmg:30, cd:.5, rng:900, poison:32, poisonDur:5, recover:.01, antifly:[12, .43, 0, 600], desc:'Poison, grounds flyers, sometimes restores a life'});
+adv('lazurite',    'Skyhunter Lodge',      'Charming Lazurite',    '#4b6fd8', '@quartz P4 Y2',      {dmg:30, cd:.6, rng:800, antifly:[12, .67, .5, 600], piercesi:true, desc:'Cripples flyers: armor, 67% speed and magic resist'});
+adv('jubilee',     'Robin’s Woods',        'Golden Jubilee',       '#ffcf3f', 'Y1 Y2 Y3 Y4 Y5',     {dmg:300, cd:.7, rng:800, antifly:[12, .74, .5, 600], burned:true, desc:'Shots also burn for the same magic damage; cripples flyers', ult:true});
 adv('gold',        'Sunlance Spire',       'Gold',                 '#ffd166', 'P5 P4 D2',           {dmg:60, cd:.8, rng:600, pierce:32, desc:'Corrupting bolts: −32 armor'});
 adv('egyptgold',   'Treasury Spire',       'Egypt Gold',           '#f0b429', '@gold P5 Q2',        {dmg:100, cd:.8, rng:700, pierce:48, greedy:800, desc:'−48 armor; kills nearby sometimes pay 10× gold'});
 adv('darkemerald', 'Warhammer Keep',       'Dark Emerald',         '#13955a', 'G5 B4 Y2',           {dmg:80, cd:.5, rng:700, stun:.1, stunDur:2, desc:'Fast hits that can stun'});
 adv('golem',       'Stone Golem Keep',     'Emerald Golem',        '#4f8f5a', '@gold @darkemerald D3', {dmg:170, cd:.5, rng:700, stun:.1, stunDur:2, pierce:32, gaze:.01, desc:'Stuns, armor shred, stone gaze'});
-adv('paraiba',     'Plague Tower',         'Paraiba Tourmaline',   '#3fd0c9', 'Q5 E4 G2',           {dmg:30, cd:.6, rng:600, decadent:[15, 800], desc:'Enemies nearby lose 15 armor'});
-adv('carved',      'Risen Poet',           'Carved Tourmaline',    '#2aa8a2', '@paraiba @darkemerald G2', {dmg:130, cd:.6, rng:700, stun:.1, stunDur:2, decadent:[30, 512], unveil:256, desc:'Stuns; her mournful song strips 30 armor from enemies nearby (9×9) and every immunity (magic and physical) from those closest to her (5×5)'});
-adv('sapstar',     'Winter’s Heart',       'Sapphire Star of Adam','#6fa8ff', 'G1 G2 G3 G4 G5',     {dmg:42, cd:1, rng:800, poison:128, poisonDur:5, pierce:64, decadent:[30, 1200], frost:300, desc:'Deadly poison, armor shred, freezing splash', ult:true});
+adv('paraiba',     'Plague Tower',         'Paraiba Tourmaline',   '#3fd0c9', 'Q5 E4 G2',           {dmg:30, cd:.6, rng:600, decadent:[16, 800], desc:'Enemies nearby lose 16 armor'});
+adv('carved',      'Risen Poet',           'Carved Tourmaline',    '#2aa8a2', '@paraiba @darkemerald G2', {dmg:130, cd:.6, rng:700, stun:.1, stunDur:2, decadent:[32, 768], unveil:512, desc:'Stuns; her mournful song strips 32 armor from enemies nearby (13×13) and every immunity (magic and physical) from those closest to her (9×9)'});
+adv('sapstar',     'Winter’s Heart',       'Sapphire Star of Adam','#6fa8ff', 'G1 G2 G3 G4 G5',     {dmg:42, cd:1, rng:800, poison:128, poisonDur:5, pierce:64, decadent:[32, 1200], frost:300, desc:'Deadly poison, armor shred, freezing splash', ult:true});
 adv('pearl',       'Pearl Tower',          'Deep Sea Pearl',       '#e8f1f2', 'Q4 D4 E2',           {dmg:80, cd:.6, rng:500, ward:500, desc:'Steady heavy shots; magic influence shields nearby towers from enemy debuffs'});
 adv('cateye',      'Royal Banner Hall',    'Chrysoberyl Cat’s Eye','#7a66c4', 'E5 D4 Q3',           {dmg:6, cd:1, rng:500, spdAura:[80, 664], inspire:[.5, 500], sight:true, desc:'Nearby towers +80% speed, +50% damage; reveals invisible'});
 adv('redcoral',    'Coral War Hall',       'Red Coral',            '#ff6f61', '@cateye @pearl E4',  {dmg:120, cd:.6, rng:500, spdAura:[80, 664], inspire:[.5, 500], sight:true, ward:664, desc:'Nearby towers +80% speed, +50% damage; reveals invisible'});
@@ -586,7 +591,7 @@ adv('starsap',     'Star of Winter',       'Star Sapphire',        '#bcd7ff', 'B
 adv('obsidian',    'Dark Matter',          'Obsidian',             '#8a5cf0', 'B5 Y5 D5',           {dmg:820, cd:.8, rng:800, splash:500, splashPct:.7, slow:.82, desc:'Secret: a floating black planet that hurls huge dark-matter orbs; each blasts and slows everything around its target', secret:true});
 adv('agate',       'Agate Tower',          'Agate',                '#c8875a', 'Q5 E5 G5',           {dmg:430, cd:.3, rng:5000, targets:5, desc:'Secret: rapid shots at 5 enemies anywhere', secret:true});
 adv('shrimp',      'Mad Jester’s Keep',    'Fantastic Miss Shrimp','#ff8a65', 'R5 G5 B5',           {dmg:1225, cd:.5, rng:1000, chain:[.3, 150, 5, 1000], fork:[.25, 2500, 5], melancholy:.03, desc:'Secret: devastating, but sometimes sulks and stops', secret:true});
-adv('yaphets',     'Yaphet’s Monolith',    'Yaphets Stone',        '#5a4b8a', 'B5 G5 B4 G4',        {dmg:140, cd:1, rng:800, pierce:64, decadent:[30, 1200], antifly:[64, .9, 1, 600], piercesi:true, desc:'Secret: shreds armor; destroys flyers', secret:true});
+adv('yaphets',     'Yaphet’s Monolith',    'Yaphets Stone',        '#5a4b8a', 'B5 G5 B4 G4',        {dmg:140, cd:1, rng:800, pierce:64, decadent:[32, 1200], antifly:[64, .9, 1, 600], piercesi:true, desc:'Secret: shreds armor; destroys flyers', secret:true});
 adv('burning',     'Burning Monolith',     'Burning Stone',        '#ff3d00', 'R5 P5 R4 P4',        {burn:[2500, 800], desc:'Secret: an inferno around it', secret:true});
 
 // The Great Stone: any 4 Master towers built in the same round (no fixed recipe)
@@ -842,14 +847,14 @@ function statItems(s){ // [glyph, colour, short value, name, explanation]
   if (s.fork) out.push(['fork', '#c9a8ff', pct(s.fork[0]), 'Forked lightning', `${pct(s.fork[0])} chance: ${s.fork[1]} damage to ${s.fork[2]} nearby enemies`]);
   if (s.poison) out.push(['poison', '#7be07b', `${Math.round(s.poison)}/s`, 'Poison', `${Math.round(s.poison)} damage per second for ${s.poisonDur || 3}s`]);
   if (s.targets) out.push(['targets', '#ffe0a0', `×${s.targets}`, 'Multishot', `Attacks ${s.targets} enemies at once`]);
-  if (s.pierce) out.push(['pierce', '#ff9a8a', `−${s.pierce}`, 'Armor break', `Hits reduce enemy armor by ${s.pierce}`]);
+  if (s.pierce) out.push(['pierce', '#ff9a8a', `−${s.pierce}`, 'Armor break', `Armor break level ${armorLevel(s.pierce)}: hits reduce enemy armor by ${s.pierce} for 5s (armor loss from different levels stacks; the same level does not)`]);
   if (s.crit) out.push(['crit', '#fff', `${pct(s.crit)}`, 'Critical strike', `${pct(s.crit)} chance to deal ${s.critX}× damage`]);
   if (s.stun) out.push(['stun', '#e0c080', pct(s.stun), 'Stun', `${pct(s.stun)} chance to stun for ${s.stunDur || 1}s`]);
   if (s.auraSpd) out.push(['haste', '#ffc9ec', `+${Math.round(s.auraSpd*100)}`, 'War drums', `Haste level ${hasteLevel(s.auraSpd)}: towers within ${+s.auraR.toFixed(1)} squares attack ${Math.round(s.auraSpd*100)}% faster (boosts of different levels stack; the same level does not)`]);
   if (s.inspire) out.push(['inspire', '#ffb36e', `+${pct(s.inspire[0])}`, 'Inspire', `Towers within ${tiles(s.inspire[1])} squares deal +${pct(s.inspire[0])} damage`]);
   if (s.overlook) out.push(['reach', '#9fd0ff', `+${tiles(s.overlook[0])}`, 'Star chart', `Towers within ${tiles(s.overlook[1])} squares gain +${tiles(s.overlook[0])} squares of range`]);
   if (s.mkb) out.push(['aim', '#ffe36e', '100%', 'True strike', `Towers within ${tiles(s.mkb)} squares never miss evasive enemies`]);
-  if (s.decadent) out.push(['armor', '#3fd0c9', `−${s.decadent[0]}`, 'Plague aura', `Enemies within ${tiles(s.decadent[1])} squares lose ${s.decadent[0]} armor`]);
+  if (s.decadent) out.push(['armor', '#3fd0c9', `−${s.decadent[0]}`, 'Plague aura', `Armor break level ${armorLevel(s.decadent[0])}: enemies within ${tiles(s.decadent[1])} squares lose ${s.decadent[0]} armor`]);
   if (s.ice) out.push(['ice', '#cfe8ff', `−${pct(s.ice[0])}`, 'Ice aura', `Slow level ${slowLevel(s.ice[0])}: enemies within ${tiles(s.ice[1])} squares move ${pct(s.ice[0])} slower`]);
   if (s.frost) out.push(['ice', '#cfe8ff', '3s', 'Freezing splash', 'Slow level 6: hits freeze enemies around the target (59% slower for 3s, no regeneration)']);
   if (s.antifly) out.push(['fly', '#bfe3ff', `−${s.antifly[0]}`, 'Grounding', `Slow level ${slowLevel(s.antifly[1])}: flyers within ${tiles(s.antifly[3])} squares lose ${s.antifly[0]} armor and move ${Math.round(s.antifly[1]*100)}% slower`]);
@@ -1118,7 +1123,7 @@ function damage(e, amt, phys, st, src){
   if (st && st.pure){ /* a share of current health: no armor or resistance applies */ }
   else if (phys){
     if (immune(e, 'physimm')) return;
-    amt *= armorMult(e.K.armor - e.shred + e.react - e.auraArmor - (e.acidT > 0 ? e.acid : 0));
+    amt *= armorMult(e.K.armor - armorDown(e) + e.react);
     if (e.gazeT > 0) amt *= 2;
   } else {
     if (immune(e, 'magimm') && !(st && st.piercesi)) return;
@@ -1425,7 +1430,7 @@ function hit(e, st, color, src){
   if (src && src.howlT > 0) dmg *= 1 + src.howlAmp;
   if (A.has('kraken')) dmg *= .75;
   if (A.has('reactive')) e.react = Math.min(20, e.react + 1);
-  if (st.pierce){ e.shred = Math.max(e.shred, st.pierce); e.shredT = 5; }
+  if (st.pierce) armorBreak(e, st.pierce, 5);
   if (st.crit && Math.random() < st.crit){ dmg *= st.critX; effects.push({x:e.x, y:e.y, r0:.2, r1:.8, t:0, dur:.25, color:'#ffffff'}); }
   damage(e, dmg, true, st, src);
   if (st.splash){
@@ -1474,15 +1479,15 @@ function step(dt){
   { const poets = towers.filter(t => t.st.unveil); for (const e of enemies) e.unveiled = poets.some(t => edgeD(t.x, t.y, e.x, e.y) <= T(t.st.unveil)); } // the Risen Poet's song
   const auraT = towers.filter(t => t.st.decadent || t.st.antifly || t.st.ice);
   for (const e of enemies){
-    let arm = 0, mr = 0, ice = 0; const mi = immune(e, 'magimm'); if (!e.auraSlows) e.auraSlows = new Map(); e.auraSlows.clear(); // each aura tower in range, with its slow
+    let mr = 0, ice = 0; const mi = immune(e, 'magimm'); if (!e.auraArm) e.auraArm = new Map(); e.auraArm.clear(); const armAt = v => { const k = armorLevel(v); e.auraArm.set(k, Math.max(e.auraArm.get(k) || 0, v)); }; if (!e.auraSlows) e.auraSlows = new Map(); e.auraSlows.clear(); // each aura tower in range, with its slow
     for (const t of auraT){ let sl = 0;
       const d = edgeD(t.x, t.y, e.x, e.y), S = t.st;
-      if (S.decadent && d <= T(S.decadent[1])) arm = Math.max(arm, S.decadent[0]);
+      if (S.decadent && d <= T(S.decadent[1])) armAt(S.decadent[0]);
       if (S.ice && d <= T(S.ice[1])){ sl = Math.max(sl, S.ice[0]); ice = 1; }
-      if (S.antifly && e.fly && d <= T(S.antifly[3])){ arm = Math.max(arm, S.antifly[0]); mr = Math.max(mr, S.antifly[2]); sl = Math.max(sl, Math.min(.95, S.antifly[1])); }
+      if (S.antifly && e.fly && d <= T(S.antifly[3])){ armAt(S.antifly[0]); mr = Math.max(mr, S.antifly[2]); sl = Math.max(sl, Math.min(.95, S.antifly[1])); }
       if (sl > 0 && !mi) e.auraSlows.set(t, sl);
     }
-    e.auraArmor = arm; e.auraMr = mr; e.auraIce = mi ? 0 : ice;
+    e.auraMr = mr; e.auraIce = mi ? 0 : ice;
   }
   // pedals (traps) trigger when an enemy steps near them (no immunity protects against them)
   const segDist = (px, pz, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, L = dx*dx + dz*dz, t = L ? Math.max(0, Math.min(1, ((px - ax)*dx + (pz - az)*dz)/L)) : 0; return Math.hypot(px - ax - dx*t, pz - az - dz*t); };
@@ -1499,7 +1504,7 @@ function step(dt){
     if (e.poisonT > 0){ e.poisonT -= dt; damage(e, e.poisonD*dt, false, null, e.poisonSrc); if (e.dead) continue; }
     for (const [k, sl] of e.slows){ sl.t -= dt; if (sl.t <= 0) e.slows.delete(k); }
     if (e.vulnT > 0) e.vulnT -= dt;
-    if (e.shredT > 0){ e.shredT -= dt; if (e.shredT <= 0) e.shred = 0; }
+    if (e.armFx) for (const [k, o] of e.armFx){ o.t -= dt; if (o.t <= 0) e.armFx.delete(k); }
     for (const k of ['rootT','acidT','terrT','decT','noRegenT','gazeT']) if (e[k] > 0) e[k] -= dt;
     if (e.react > 0) e.react = Math.max(0, e.react - 2*dt);
     const A = e.K.abil;
@@ -1747,7 +1752,7 @@ let camTween = null, victory = null, hellHealed = false; const DEFEAT_TILES = 5.
   const go = dlt => { tshowIdx += dlt; syncTowerShow(true); SFX.click && SFX.click(); };
   $('#tsPrev').addEventListener('click', e => { e.stopPropagation(); go(-1); });
   $('#tsNext').addEventListener('click', e => { e.stopPropagation(); go(1); });
-  $('#tsClose').addEventListener('click', e => { e.stopPropagation(); lbTab = 'runs'; renderRightPanel(true); syncTowerShow(); });
+  $('#tsClose').addEventListener('click', e => { e.stopPropagation(); tshowOff = true; syncTowerShow(); }); // hide the showcase; tapping a tower in the list brings it back
   ov.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; sx = e.clientX; ov.setPointerCapture && ov.setPointerCapture(e.pointerId); });
   ov.addEventListener('pointerup', e => { if (sx == null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 35) go(dx < 0 ? 1 : -1); });
   ov.addEventListener('pointercancel', () => { sx = null; });
@@ -2077,7 +2082,7 @@ function triggerPedal(pd, trig){
     case 'gale':      for (const e of near(P.r)) if (!mi(e)) slowPct(e, [.65,.85,.95][t], [5,7,11][t], pd); break;
     case 'torrent':   for (const e of near(P.r)) if (!mi(e)){ e.stunT = Math.max(e.stunT, [2,4,8][t]); slowPct(e, [.55,.75,.95][t], [2,4,8][t] + [8,8,12][t], pd); } break;
     case 'howl':      for (const tw of towers) if (tileD(tw.x, tw.y, cx, cz) <= T([256,384,512][t])){ tw.howlT = 10; tw.howlAmp = [.2,.4,.8][t]; } break;
-    case 'acid':      for (const e of near(P.r)){ e.acid = Math.max(e.acid, [8,16,32][t]); e.acidT = [10,15,20][t]; } break;
+    case 'acid':      for (const e of near(P.r)) armorBreak(e, [8,16,32][t], [10,15,20][t]); break;
     case 'paralysis': { // stun the one that stepped on it, then loose a hex bolt that hops between random enemies a fixed number of times
       if (!trig) break;
       if (!mi(trig)) trig.stunT = Math.max(trig.stunT, [1,2,3][t]);
@@ -2335,14 +2340,14 @@ $('#skinFile').addEventListener('change', async e => { const fi = e.target, f = 
 $('#rpBody').addEventListener('click', e => {
   const dt = e.target.closest('[data-devtab]'); if (dt){ devTab = dt.dataset.devtab; renderRightPanel(true); return; }
   const lt = e.target.closest('[data-lbtab]'); if (lt){ lbTab = lt.dataset.lbtab; renderRightPanel(true); return; }
-  const tb = e.target.closest('[data-tshow]'); if (tb){ tshowIdx = +tb.dataset.tshow; syncTowerShow(true); return; }
+  const tb = e.target.closest('[data-tshow]'); if (tb){ tshowIdx = +tb.dataset.tshow; tshowOff = false; syncTowerShow(true); return; }
   const sb = e.target.closest('[data-sk]'); if (sb && (sb.dataset.sk === 'up' || sb.dataset.sk === 'rm')){
     const k = sb.closest('.skrow').dataset.key;
     if (sb.dataset.sk === 'up'){ const fi = $('#skinFile'); fi.dataset.key = k; fi.value = ''; fi.click(); }
     else removeSkin(k).then(() => renderRightPanel(true)).catch(err => { $('#devStatus').textContent = 'Could not remove: ' + (err && err.message || err); });
     return;
   }
-  const a = e.target.closest('[data-act="tab"]'); if (a){ setBpTab($('#rpBody'), a.dataset.tab); bpTab = a.dataset.tab; return; }
+  const a = e.target.closest('[data-act="tab"]'); if (a){ setBpTab($('#rpBody'), a.dataset.tab); bpTab = a.dataset.tab; syncTowerShow(); return; }
   if (e.target.closest('[data-act="luck"]')){ buyLuck(); return; }
   const el = e.target.closest('[data-tiptext]'); if (el){ if (tipEl === el) hideTip(); else showTip(el); }
 });
@@ -2500,9 +2505,9 @@ function recipeHTML(inPanel){
     <div class="bpd">${sp.fourMasters ? 'Any 4 Master towers built in the same round · ' : (sp.secret || sp.ult) ? 'All parts built in the same round · ' : ''}${sp.desc}</div></div>`;
   const all = Object.entries(SPECIALS);
   const traps = Object.entries(PEDALS).map(([key, pd]) => `<div class="bp"><div class="bpn" style="color:${pd.c}">${pd.name}</div><div class="bpr">${ingIcons(pd.ings)}<span class="bpop">=</span>${ico('pd:' + key, pd.name, 'out')}</div><div class="bpd">${pd.desc(0)}</div></div>`).join('');
-  return `${inPanel ? '' : '<h2>Blueprints</h2>'}<p class="muted" style="margin-top:2px">Two identical new towers upgrade a kept tower one rank (four identical jump two). Advanced towers take one tower per part, all from this round's five new towers or all from towers you kept earlier. Secret towers and the five-rank towers need all their parts in the same round, and traps need both parts in the same round. Parts you own now are outlined green; tap or hover an icon for its name.</p>
-    <div class="tabs" role="tablist"><button class="tab" role="tab" data-act="tab" data-tab="adv" aria-selected="true">Advanced towers</button><button class="tab" role="tab" data-act="tab" data-tab="trap" aria-selected="false">Traps</button></div>
-    <div data-pane="adv"><h3 class="bph">Advanced</h3>${all.filter(([, sp]) => !sp.secret).map(row).join('')}<h3 class="bph">Secret</h3>${all.filter(([, sp]) => sp.secret).map(row).join('')}</div>
+  return `${inPanel ? '' : '<h2>Blueprints</h2>'}<p class="muted" style="margin-top:2px">Two identical new towers upgrade one rank (four jump two). Advanced towers use one tower per part, all from this round's new towers or all from towers you kept. Secret, five-rank and trap recipes need every part in the same round.</p>
+    <div class="tabs" role="tablist"><button class="tab" role="tab" data-act="tab" data-tab="adv" aria-selected="true">Towers</button><button class="tab" role="tab" data-act="tab" data-tab="trap" aria-selected="false">Traps</button></div>
+    <div data-pane="adv">${towersBuiltHTML()}</div>
     <div data-pane="trap" hidden><p class="muted">Placed on any open square, including the path. Three identical traps combine into a Sparkling trap, and three Sparkling into a Blingbling trap.</p>${traps}</div>`;
 }
 function recipeSheet(){ showSheet(recipeHTML() + `<div class="sheetActs"><button class="btn" data-act="close">Close</button></div>`); }
@@ -2518,7 +2523,7 @@ function renderRightPanel(force){
   if (rView === 'bp'){
     $('#rpTitle').textContent = 'Blueprints';
     const key = [...ownedSet()].sort().join(','); if (!force && key === bpKey) return; bpKey = key;
-    const top = el.scrollTop; el.innerHTML = recipeHTML(true); if (bpTab !== 'adv') setBpTab(el, bpTab); el.scrollTop = force ? 0 : top;
+    const top = el.scrollTop; el.innerHTML = recipeHTML(true); if (bpTab !== 'adv') setBpTab(el, bpTab); el.scrollTop = force ? 0 : top; setTimeout(() => syncTowerShow(true), 0);
   } else if (rView === 'dev'){
     $('#rpTitle').textContent = 'Developer mode';
     if (force || !el.querySelector('.devwrap')) { el.innerHTML = devHTML(); el.scrollTop = 0; }
@@ -2527,7 +2532,7 @@ function renderRightPanel(force){
     if (force) { el.innerHTML = HELP_HTML; el.scrollTop = 0; }
   } else if (rView === 'board'){
     $('#rpTitle').textContent = 'Book of Records';
-    if (force) { setTimeout(() => syncTowerShow(), 0); el.innerHTML = `<div class="tabs" role="tablist"><button class="tab" role="tab" data-lbtab="runs" aria-selected="${lbTab === 'runs'}"><svg class="tabico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21h11v-2.2c0-1-.6-1.6-1.4-2.1 0-3 .6-5.3 1.9-7.4-1.2-3-3.8-5.3-7.4-5.8l-.6 1.9-1.6-1.3-.6 2.3C6 7.5 5 9.3 5 11.2l1.2 1.3 2.3-1.1 1.6.4c-.7 1.6-2 2.8-3.1 4.4z" fill="#c9b48a" stroke="#f1e2bc" stroke-width="1" stroke-linejoin="round"/><circle cx="9.6" cy="8.6" r=".9" fill="#2a1d10"/><rect x="5.5" y="19.8" width="14" height="2.2" rx=".7" fill="#8a7650"/></svg>Runs</button><button class="tab" role="tab" data-lbtab="towers" aria-selected="${lbTab === 'towers'}"><svg class="tabico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.2C9.6 4.6 6.4 4.2 2.6 4.6v13.6c3.8-.4 7 .1 9.4 1.6 2.4-1.5 5.6-2 9.4-1.6V4.6c-3.8-.4-7 0-9.4 1.6z" fill="#7a2e22" stroke="#f1e2bc" stroke-width=".8" stroke-linejoin="round"/><path d="M12 6.8C9.8 5.4 7 5.1 3.8 5.4v11.9c3.2-.2 6 .2 8.2 1.4 2.2-1.2 5-1.6 8.2-1.4V5.4c-3.2-.3-6 0-8.2 1.4z" fill="#efe2c2"/><path d="M12 6.8v11.9" stroke="#b8a47a" stroke-width=".7"/><path d="M5.4 8.4c1.9-.2 3.6 0 5 .6M5.4 10.6c1.9-.2 3.6 0 5 .6M5.4 12.8c1.9-.2 3.6 0 5 .6M13.6 9c1.4-.6 3.1-.8 5-.6M13.6 11.2c1.4-.6 3.1-.8 5-.6M13.6 13.4c1.4-.6 3.1-.8 5-.6" stroke="#9a8660" stroke-width=".55" fill="none"/></svg>Towers built</button></div>` + (lbTab === 'towers' ? towersBuiltHTML() : leaderboardHTML()); el.scrollTop = 0; }
+    if (force) { el.innerHTML = `<div class="tabs" role="tablist"><button class="tab" role="tab" data-lbtab="runs" aria-selected="${lbTab === 'runs'}"><svg class="tabico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.2C9.6 4.6 6.4 4.2 2.6 4.6v13.6c3.8-.4 7 .1 9.4 1.6 2.4-1.5 5.6-2 9.4-1.6V4.6c-3.8-.4-7 0-9.4 1.6z" fill="#7a2e22" stroke="#f1e2bc" stroke-width=".8" stroke-linejoin="round"/><path d="M12 6.8C9.8 5.4 7 5.1 3.8 5.4v11.9c3.2-.2 6 .2 8.2 1.4 2.2-1.2 5-1.6 8.2-1.4V5.4c-3.2-.3-6 0-8.2 1.4z" fill="#efe2c2"/><path d="M12 6.8v11.9" stroke="#b8a47a" stroke-width=".7"/><path d="M5.4 8.4c1.9-.2 3.6 0 5 .6M5.4 10.6c1.9-.2 3.6 0 5 .6M5.4 12.8c1.9-.2 3.6 0 5 .6M13.6 9c1.4-.6 3.1-.8 5-.6M13.6 11.2c1.4-.6 3.1-.8 5-.6M13.6 13.4c1.4-.6 3.1-.8 5-.6" stroke="#9a8660" stroke-width=".55" fill="none"/></svg>Game runs</button><button class="tab" role="tab" data-lbtab="modes" aria-selected="${lbTab === 'modes'}"><svg class="tabico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21h11v-2.2c0-1-.6-1.6-1.4-2.1 0-3 .6-5.3 1.9-7.4-1.2-3-3.8-5.3-7.4-5.8l-.6 1.9-1.6-1.3-.6 2.3C6 7.5 5 9.3 5 11.2l1.2 1.3 2.3-1.1 1.6.4c-.7 1.6-2 2.8-3.1 4.4z" fill="#c9b48a" stroke="#f1e2bc" stroke-width="1" stroke-linejoin="round"/><circle cx="9.6" cy="8.6" r=".9" fill="#2a1d10"/><rect x="5.5" y="19.8" width="14" height="2.2" rx=".7" fill="#8a7650"/></svg>Game modes</button></div>` + (lbTab === 'modes' ? '<p class="muted" style="margin:10px 0">Game modes will come later.</p>' : leaderboardHTML()); el.scrollTop = 0; }
   } else if (rView === 'leaks'){
     $('#rpTitle').textContent = 'Breaches';
     const key = leakLog.length + '|' + lives; if (!force && key === leakKey) return; leakKey = key;
@@ -2554,8 +2559,8 @@ function isBuilt(key){ // built at least once: remembered on this device, record
   if (loadRuns().some(rn => Array.isArray(rn.built) && rn.built.includes(key))){ markBuilt(key); return true; }
   return false;
 }
-function markBuilt(key){ if (builtSet.has(key)) return; builtSet.add(key); store.set(BUILT_KEY, JSON.stringify([...builtSet])); if (rView === 'board' && lbTab === 'towers') renderRightPanel(true); }
-let lbTab = 'runs', tshowIdx = 0;
+function markBuilt(key){ if (builtSet.has(key)) return; builtSet.add(key); store.set(BUILT_KEY, JSON.stringify([...builtSet])); if (rView === 'bp'){ bpKey = null; renderRightPanel(false); } }
+let lbTab = 'runs', tshowIdx = 0, tshowOff = false;
 // the Towers built list, grouped by kind of recipe and ordered by how hard each recipe is to put together
 const recipeMemo = {}, recipeCost = k => recipeMemo[k] ?? (recipeMemo[k] = Math.min(...(SPECIALS[k].recipes.length ? SPECIALS[k].recipes : [[]]).map(alt => alt.reduce((a, g) => a + (g.special ? recipeCost(g.special) : 2**g.q), 0))) || 64);
 const SHOW_GROUPS = (() => {
@@ -2572,25 +2577,25 @@ const SHOW_GROUPS = (() => {
 const SHOW_KEYS = SHOW_GROUPS.flatMap(g => g.keys), showGroupOf = k => SHOW_GROUPS.find(g => g.keys.includes(k));
 function towersBuiltHTML(){
   const n = SHOW_KEYS.filter(isBuilt).length;
-  return `<p class="muted" style="margin:6px 0">${n} of ${SHOW_KEYS.length} advanced towers built. Swipe the tower in the middle of the board (or tap one here) to look through them all.</p>
-    <div class="tbgrid">${SHOW_KEYS.map((k, i) => `${SHOW_GROUPS.find(g => g.keys[0] === k) ? `<div class="tbhead">${esc(showGroupOf(k).name)}<i>${esc(showGroupOf(k).sub)} · ${showGroupOf(k).keys.filter(isBuilt).length}/${showGroupOf(k).keys.length}</i></div>` : ''}<button type="button" class="tbcell${isBuilt(k) ? '' : ' locked'}${i === tshowIdx ? ' cur' : ''}" data-tshow="${i}" aria-label="${esc(SPECIALS[k].name)}${isBuilt(k) ? '' : ' (not built yet)'}"><img src="${iconFor('sp:' + k)}" alt=""></button>`).join('')}</div>`;
+  return `<p class="muted" style="margin:6px 0">Tap a tower here, or swipe the one shown on the board, to see its recipe and what it does. Parts you already have are outlined in gold.</p>
+    <div class="tbgrid">${SHOW_KEYS.map((k, i) => `${SHOW_GROUPS.find(g => g.keys[0] === k) ? `<div class="tbhead">${esc(showGroupOf(k).name)}<i>${esc(showGroupOf(k).sub)}</i></div>` : ''}<button type="button" class="tbcell${isBuilt(k) ? '' : ' locked'}${i === tshowIdx ? ' cur' : ''}" data-tshow="${i}" aria-label="${esc(SPECIALS[k].name)}${isBuilt(k) ? '' : ' (not built yet)'}"><img src="${iconFor('sp:' + k)}" alt=""></button>`).join('')}</div>`;
 }
 function syncTowerShow(rerenderList){
   const ov = document.getElementById('tshow'); if (!ov) return;
-  const on = rView === 'board' && lbTab === 'towers';
+  const on = rView === 'bp' && bpTab === 'adv' && !tshowOff;
   if (ov.hidden === on) ov.hidden = !on;
   if (!on) return;
   tshowIdx = ((tshowIdx % SHOW_KEYS.length) + SHOW_KEYS.length) % SHOW_KEYS.length;
   const k = SHOW_KEYS[tshowIdx], sp = SPECIALS[k], built = isBuilt(k);
   ov.classList.toggle('locked', !built);
   $('#tsName').textContent = sp.name; $('#tsName').style.color = built ? sp.c : '';
-  $('#tsSub').textContent = showGroupOf(k).name + (built ? ' · built' : ' · not built yet');
+  $('#tsSub').textContent = showGroupOf(k).name;
   $('#tsDesc').textContent = sp.desc || '';
   { const st = stats({kind:'gem', special:k, type:null, q:null, c:0, r:0, aura:0, round:false}); $('#tsStats').innerHTML = statIcons(st, st); }
   { // the recipe, as small portraits of the towers that combine into it (every alternative recipe on its own line)
-    const pic = (key, title) => `<span class="tsIng" title="${esc(title)}"><img src="${iconFor(key)}" alt=""><i>${esc(title)}</i></span>`, plus = '<span class="tsOp">+</span>';
+    const own = ownedSet(), pic = (key, title, ing) => `<span class="tsIng${ing && own.has(ingKey(ing)) ? ' have' : ''}" title="${esc(title)}"><img src="${iconFor(key)}" alt=""><i>${esc(title)}</i></span>`, plus = '<span class="tsOp">+</span>';
     const alts = sp.fourMasters ? [null] : (sp.recipes || []);
-    $('#tsRecipe').innerHTML = alts.map(ings => `<div class="tsRow">${ings ? ings.map(ing => pic(ingIconKey(ing), ingName(ing))).join(plus) : ['ruby','topaz','sapphire','diamond'].map(t => pic(`b:${t}:4`, 'Any Master')).join(plus)}</div>`).join('') + (sp.fourMasters ? '<div class="tsNote">all built in the same round</div>' : sp.secret || sp.ult ? '<div class="tsNote">all pieces built in the same round</div>' : '');
+    $('#tsRecipe').innerHTML = alts.map(ings => `<div class="tsRow">${ings ? ings.map(ing => pic(ingIconKey(ing), ingName(ing), ing)).join(plus) : ['ruby','topaz','sapphire','diamond'].map(t => pic(`b:${t}:4`, 'Any Master')).join(plus)}</div>`).join('') + (sp.fourMasters ? '<div class="tsNote">all built in the same round</div>' : sp.secret || sp.ult ? '<div class="tsNote">all pieces built in the same round</div>' : '');
   }
   $('#tsCount').textContent = `${tshowIdx + 1} / ${SHOW_KEYS.length}`;
   if (rerenderList) document.querySelectorAll('#rpBody .tbcell').forEach((b, i) => b.classList.toggle('cur', i === tshowIdx));
@@ -2707,7 +2712,7 @@ function drawWaveAvatar(){
 function enemyNow(e){
   const slow = 1 - slowMul(e);
   return {spd: slowedSpd(e)*(e.rushT > 0 ? 2 : 1)*(e.stunT > 0 || e.rootT > 0 ? 0 : 1),
-    armor: e.K.armor - e.shred + e.react - (e.auraArmor || 0) - (e.acidT > 0 ? e.acid : 0),
+    armor: e.K.armor - armorDown(e) + e.react,
     mr: Math.max(0, e.K.mr - (e.decT > 0 ? e.mrDown : 0) - (e.auraMr || 0)), slow};
 }
 function enemyMeta(e){
@@ -2733,7 +2738,7 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.15 · October 28, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.16 · October 28, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
@@ -5646,7 +5651,7 @@ function drawEnemy(e){
       ctx.strokeStyle = 'rgba(30,90,20,.8)'; ctx.lineWidth = Math.max(.6, r*.3); ctx.stroke();
       ctx.fillStyle = 'rgba(230,255,220,.9)'; ctx.beginPath(); ctx.arc(bx - r*.35, by - r*.35, r*.3, 0, Math.PI*2); ctx.fill(); }
     ctx.globalAlpha = 1; }
-  if (e.shred > 0 || e.auraArmor > 0 || (e.acidT > 0 && e.acid > 0)){ // armor broken: a cracked kite shield beside its head
+  if (armorDown(e) > 0){ // armor broken: a cracked kite shield beside its head
     const w = Math.max(8, s*.24), h = w*1.35, cx = o[0] - s*.42, cy = o[1] - s*(e.fly ? .62 : .8), gap = w*.1;
     const half = side => { ctx.beginPath(); ctx.moveTo(cx + side*gap, cy - h*.5); ctx.lineTo(cx + side*(w*.5 + gap), cy - h*.42); ctx.quadraticCurveTo(cx + side*(w*.55 + gap), cy + h*.05, cx + side*gap, cy + h*.5);
       ctx.lineTo(cx + side*(gap + w*.08), cy + h*.18); ctx.lineTo(cx + side*(gap - w*.05), cy - h*.05); ctx.lineTo(cx + side*(gap + w*.06), cy - h*.28); ctx.closePath(); };
