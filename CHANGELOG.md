@@ -2,6 +2,26 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.17 — November 4, 2026
+
+### Changed
+- **Favor is now earned by kills instead of bought with gold.**
+  - Every kill counts toward favor, and a boss counts as a whole wave of kills.
+  - There are now 5 favor levels (was 8), reached at 50, 100, 145 and 210 kills.
+  - Rank odds by level: favor 1 is all Recruits; favor 2 is 60% Recruit, 32% Trained, 8% Veteran; favor 3 is 40/35/20/5 up to Elite; favor 4 is 22/32/28/15/3 with a chance of Master; favor 5 is 5/20/35/30/10.
+  - The crown button is now a ring showing your favor level and progress to the next one. The Royal favor panel shows a progress bar and kills needed.
+- **Rerolls reworked.**
+  - **Reroll** now rerolls the type and rank of all of this round's new towers at once, for 50 gold (was one tower for 10 gold).
+  - Changing one tower's type or rank now costs 30 gold plus 10% of your current gold (was 20 gold).
+- **Flawless wave bonus** is now a flat 10% of your gold, capped at 50 gold. It no longer grows with favor.
+- **Wave sizes start adapting after wave 5** (was wave 10).
+- **Emerald Watch now steals abilities.** It copies 3 different abilities from towers within 4 squares, such as cleave, slow, poison, chain lightning or auras. It keeps each one until the tower it came from is gone. Glory and champion bonuses can't be stolen. Its details show what it's using.
+- **Lightning reworked.**
+  - **Thunder Bombard:** 30% chance of chain lightning dealing 600 damage, bouncing 6 times (was 150 damage, 5 times).
+  - **Forked lightning** (Kaminari-Homura and Crown Prince's Keep) now strikes from the tower itself, hitting up to 5 enemies at once for 10,000 damage each (was 2,500), shown as crackling bolts.
+- **Crown Prince's Keep** now has only one recipe: Kaminari-Homura + a Lord Cannon Tower + a Lord Alchemist Tower. The old ranks 1–5 Cannon recipe is removed.
+- **Grave Wraiths are now magic immune** instead of physically immune. Phantoms stay physically immune, so their waves need both kinds of damage.
+
 ## 1.16 — October 28, 2026
 
 ### Added

@@ -31,11 +31,13 @@ After that it runs full screen and plays offline, even in airplane mode. Your ru
 
 **Advanced towers and traps.** The right sets of towers combine into advanced towers. Pairs build traps you can place on any open square. The **blueprint** button lists every recipe.
 
-**Gold.** Spend gold on **favor** (the crown button) to get higher-ranked towers. Walls can be torn down for free between waves. A **flawless wave** (no enemy gets through) pays a bonus of 10% of your gold, plus 1% per favor level, up to 20% at favor 8.
+**Favor.** Every kill earns royal **favor** (a boss counts as a whole wave of kills). There are 5 favor levels, reached at 50, 100, 145 and 210 kills, and each one makes new towers more likely to arrive at a higher rank. The ring button shows your progress to the next level.
+
+**Gold.** Spend gold to reroll all 5 of a round's new towers, or to change one tower's type or rank. Walls can be torn down for free between waves. A **flawless wave** (no enemy gets through) pays a bonus of 10% of your gold, up to 50 gold.
 
 **Waves.**
 - Waves have 10 enemies.
-- After wave 10, killing them quickly makes later waves bigger (up to 15). Letting them through makes waves smaller (down to 5).
+- After wave 5, killing them quickly makes later waves bigger (up to 15). Letting them through makes waves smaller (down to 5).
 - Boss waves are a single boss. A bigger wave size gives the boss more health (15 enemies means 50% more). Bosses never get weaker.
 
 ## Controls
@@ -56,7 +58,7 @@ Your run saves automatically between waves.
 ## Updating the game (for the maintainer)
 
 1. Upload the new `index.html` (replacing the old one).
-2. Open `sw.js` and bump the version, for example `castle-maze-v19` → `castle-maze-v20`.
+2. Open `sw.js` and bump the version, for example `castle-maze-v20` → `castle-maze-v21`.
 3. Add the changes to `CHANGELOG.md`.
 
 Installed copies pick up the update the next time they're opened online. If an old version still shows, close the app and open it again.

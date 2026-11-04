@@ -98,6 +98,9 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 .fvbar span{display:grid;place-items:center;font-size:calc(var(--u)*.75);font-weight:700;overflow:hidden}
 #rpBody ol.help{margin:2px 0 6px;padding-left:1.3em;display:flex;flex-direction:column;gap:5px;line-height:1.35;font-size:calc(var(--u)*1.05)}
 #rpBody ol.help b{color:var(--gold)}
+#rpBody .lvprog{position:relative;height:calc(var(--u)*1.9);margin:6px 0 8px;border-radius:5px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+#rpBody .lvprog div{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#b8862a,#e8b84a)}
+#rpBody .lvprog span{position:relative;display:block;text-align:center;line-height:calc(var(--u)*1.9);font-size:calc(var(--u)*.95);color:#fff4d6;text-shadow:0 1px 2px #000}
 #rpBody .fvbuy{width:100%;margin-top:8px;min-height:calc(var(--u)*3);font-size:calc(var(--u)*1.1);white-space:normal;line-height:1.15;padding:4px 6px}
 #rpBody .bph{font-size:calc(var(--u)*1.3);margin:8px 0 3px}
 #sheet .helpbtn{padding:0;width:44px;min-width:44px;flex:0 0 44px}
@@ -276,6 +279,13 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 #bar .btn small{font-size:calc(var(--u)*.85)}
 .ibtn .bico{width:calc(var(--u)*2.3);height:calc(var(--u)*2.3);display:block}
 #btnLuck .bico{width:calc(var(--u)*1.6);height:calc(var(--u)*1.6)}
+#btnLuck .lvring{width:calc(var(--u)*2.7);height:calc(var(--u)*2.7);overflow:visible}
+#btnLuck .lvring .trk{fill:rgba(0,0,0,.35);stroke:rgba(232,184,74,.22);stroke-width:2.4}
+#btnLuck .lvring .fil{fill:none;stroke:#d9c9a0;stroke-width:2.4;stroke-linecap:round;transition:stroke-dasharray .4s}
+#btnLuck .lvring text{font-family:var(--display);font-weight:700;font-size:11px;fill:#f3e8cc}
+#btnLuck .lvring.max .fil{stroke:#e8b84a;filter:drop-shadow(0 0 1.5px #ffd76a)}
+#btnLuck .lvring.max .trk{fill:rgba(120,80,10,.45)}
+#btnLuck .lvring.max text{fill:#ffd76a}
 #btnLuck .fv{display:flex;align-items:center;gap:3px} #btnLuck .fv b{font-family:var(--display);font-size:calc(var(--u)*1.2)}
 #bar{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:3px}
 #bar > .btn{padding:0;min-width:0;width:auto;overflow:hidden}
@@ -470,7 +480,7 @@ table.odds tr.cur td{color:var(--gold);font-weight:700}
     </section>
     <div id="bar">
       <button class="btn ibtn" id="btnRecipes" aria-pressed="false" aria-label="Blueprints" title="Blueprints"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5h11.5a2.5 2.5 0 0 1 2.5 2.5v12.5H7.5A2.5 2.5 0 0 1 5 16z" fill="#3d6fa8" stroke="#cfe2ff" stroke-width="1.2"/><path d="M5 16a2.5 2.5 0 0 0 2.5 2.5H19V21H7.5A2.5 2.5 0 0 1 5 18.5z" fill="#2a5182" stroke="#cfe2ff" stroke-width="1.2"/><path d="M8 7h8M8 10h8M8 13h8M10 5v10M14 5v10" stroke="#9fc3ef" stroke-width=".7" opacity=".8"/><path d="M9 14l2.5-5.5 2.5 5.5M10 12h3" stroke="#fff" stroke-width="1.1" fill="none"/></svg></button>
-      <button class="btn stack ibtn" id="btnLuck" aria-pressed="false" aria-label="Favor" title="Royal favor">Favor 1</button>
+      <button class="btn stack ibtn" id="btnLuck" aria-pressed="false" aria-label="Favor" title="Royal favor">1</button>
       <button class="btn" id="btnSpeed" aria-label="Game speed">1×</button>
       <button class="btn ibtn" id="btnPath" aria-pressed="true" aria-label="Show enemy path" title="Enemy path"><svg class="bico orc" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 12l-4-3 4 7zM27 12l4-3-4 7z" fill="#4e6a34"/><path d="M6 11c0-5 4-8 10-8s10 3 10 8v6c0 6-4 11-10 11S6 23 6 17z" fill="#5f7a3c" stroke="#2a3a1a" stroke-width="1"/><path d="M7 12l8 2.4M25 12l-8 2.4" stroke="#1c2410" stroke-width="2.4" stroke-linecap="round"/><ellipse class="eye" cx="11.8" cy="16" rx="2.1" ry="1.5"/><ellipse class="eye" cx="20.2" cy="16" rx="2.1" ry="1.5"/><path d="M15 18.5l1 2.2 1-2.2z" fill="#3e5226"/><path d="M10 23c2 1.6 10 1.6 12 0" stroke="#1c2410" stroke-width="1.4" fill="none"/><path d="M11 23.5l1-4 1.4 4.2zM21 23.5l-1-4-1.4 4.2z" fill="#f0e8d0"/></svg></button>
       <button class="btn primary" id="btnGo">Start wave</button>
@@ -486,7 +496,7 @@ table.odds tr.cur td{color:var(--gold);font-weight:700}
 'use strict';
 // ---------- constants ----------
 const COLS = 31, ROWS = 35, MAX_WAVE = 50, START_LIVES = 100, START_GOLD = 10;
-const REROLL_COST = 10, REROLL_TYPE_BASE = 20, REROLL_GRADE_BASE = 20, SWAP_COST = 20, BASE_SPEED = 2.2, PROJ_SPEED = 14;
+const REROLL_COST = 50, REROLL_TYPE_BASE = 30, REROLL_GRADE_BASE = 30, SWAP_COST = 20, BASE_SPEED = 2.2, PROJ_SPEED = 14;
 // Start, checkpoints 1-5, Exit (col,row)
 const CPS = [[2,2],[2,17],[28,17],[28,4],[15,4],[15,30],[28,30]];
 // Starter walls (ordinary walls, can be torn down) to help single-player games: waypoints I and II get 2 walls out to the board edge and 4 toward the middle;
@@ -517,8 +527,9 @@ function randomName1(){
   return `The ${p(NAME_ADJ)} ${p(NAME_N)}`;
 }
 const QMULT = [1, 2.1, 4.4, 9, 19];
-const ODDS = [[100,0,0,0,0],[70,30,0,0,0],[55,35,10,0,0],[40,35,20,5,0],[30,35,25,10,0],[20,30,30,17,3],[10,30,32,22,6],[5,20,35,30,10]];
-const LUCK_COST = [20,40,60,85,110,140,175];
+const ODDS = [[100,0,0,0,0],[60,32,8,0,0],[40,35,20,5,0],[22,32,28,15,3],[5,20,35,30,10]];
+const LV_KILLS = [0,50,100,145,210], LV_MAX = ODDS.length; // total kills needed for each level (a boss counts as a whole wave)
+const levelFor = k => { let l = 1; while (l < LV_MAX && k >= LV_KILLS[l]) l++; return l; };
 // Base tower stats (Recruit..Master). Distances are stored in units of 128 per square.
 const U = 1/128;
 const T = v => Math.round(v/64)/2; // units -> squares, rounded to the nearest half square (ranges, radii, speeds, slows)
@@ -562,9 +573,9 @@ adv('u235',        'Lich Sanctum',         'Uranium-235',          '#d4ff7a', '@
 adv('kyparium',    'Demon Hunter’s Spire', 'Depleted-Kyparium',    '#eaffb0', 'Q1 Q2 Q3 Q4 Q5',     {dmg:410, cd:.4, rng:5000, targets:10, desc:'Hits 10 enemies anywhere on the board', ult:true});
 adv('starruby',    'Dragon Brazier',       'Asteriated Ruby',      '#ff2f55', 'R2 R1 P1',           {burn:[60, 400], desc:'Burns everything nearby (magic)'});
 adv('volcano',     'Dragon’s Perch',       'Volcano',              '#ff6a1c', '@starruby R4 P3',    {burn:[320, 500], desc:'Burns everything in a wide ring (magic)'});
-adv('bloodstone',  'Thunder Bombard',      'Bloodstone',           '#c2183a', 'R5 Q4 P3',           {dmg:35, cd:1, rng:700, chain:[.3, 150, 5, 1000], desc:'Chain lightning jumps between enemies'});
-adv('antiquebs',   'Kaminari-Homura',        'Antique Bloodstone',   '#e0345a', '@bloodstone @volcano R2', {dmg:50, cd:1, rng:800, fork:[.25, 2500, 5], burn:[320, 500], attacks:true, desc:'Strikes once a second (25% chance to fork lightning) inside a burning aura'});
-adv('crownprince', 'Crown Prince’s Keep',  'The Crown Prince',     '#ffd23f', '@antiquebs R6 G6 | R1 R2 R3 R4 R5',     {dmg:70, cd:1, rng:800, fork:[.25, 2500, 5], burn:[2500, 800], poison:128, poisonDur:5, attacks:true, desc:'Strikes once a second (25% chance to fork lightning, poisons) inside a huge burning aura', ult:true});
+adv('bloodstone',  'Thunder Bombard',      'Bloodstone',           '#c2183a', 'R5 Q4 P3',           {dmg:35, cd:1, rng:700, chain:[.3, 600, 6, 1000], desc:'30% chance of chain lightning: 600 damage bouncing across 6 enemies'});
+adv('antiquebs',   'Kaminari-Homura',        'Antique Bloodstone',   '#e0345a', '@bloodstone @volcano R2', {dmg:50, cd:1, rng:800, fork:[.25, 10000, 5], burn:[320, 500], attacks:true, desc:'Strikes once a second (25% chance of forked lightning: 10,000 damage to 5 enemies at once) inside a burning aura'});
+adv('crownprince', 'Crown Prince’s Keep',  'The Crown Prince',     '#ffd23f', '@antiquebs R6 G6',     {dmg:70, cd:1, rng:800, fork:[.25, 10000, 5], burn:[2500, 800], poison:128, poisonDur:5, attacks:true, desc:'Strikes once a second (25% chance to fork lightning, poisons) inside a huge burning aura', ult:true});
 adv('jade',        'Apothecary Guild',     'Jade',                 '#7be0a2', 'G3 E3 B2',           {dmg:10, cd:.5, rng:800, poison:16, poisonDur:5, desc:'Fast poisoned shots'});
 adv('quartz',      'Falconer’s Roost',     'Quartz',               '#bfe3ff', 'G4 R3 P2',           {dmg:15, cd:.6, rng:500, antifly:[12, .51, 0, 600], desc:'Grounds flyers: −12 armor, 51% slower nearby'});
 adv('greyjade',    'Astronomer’s Guild',    'Grey Jade',            '#a9c9b5', '@jade B4 Q3',        {dmg:30, cd:.5, rng:800, poison:32, poisonDur:5, overlook:[300, 290], desc:'Poison; nearby towers gain +2.5 squares of range'});
@@ -583,7 +594,7 @@ adv('sapstar',     'Winter’s Heart',       'Sapphire Star of Adam','#6fa8ff', 
 adv('pearl',       'Pearl Tower',          'Deep Sea Pearl',       '#e8f1f2', 'Q4 D4 E2',           {dmg:80, cd:.6, rng:500, ward:500, desc:'Steady heavy shots; magic influence shields nearby towers from enemy debuffs'});
 adv('cateye',      'Royal Banner Hall',    'Chrysoberyl Cat’s Eye','#7a66c4', 'E5 D4 Q3',           {dmg:6, cd:1, rng:500, spdAura:[80, 664], inspire:[.5, 500], sight:true, desc:'Nearby towers +80% speed, +50% damage; reveals invisible'});
 adv('redcoral',    'Coral War Hall',       'Red Coral',            '#ff6f61', '@cateye @pearl E4',  {dmg:120, cd:.6, rng:500, spdAura:[80, 664], inspire:[.5, 500], sight:true, ward:664, desc:'Nearby towers +80% speed, +50% damage; reveals invisible'});
-adv('zumurud',     'Emerald Watch',        'Natural Zumurud',      '#2c9a52', '@pearl G5 D3',       {dmg:80, cd:1, rng:500, ward:800, desc:'Heavy shots; a wide magic influence shields towers from enemy debuffs'});
+adv('zumurud',     'Emerald Watch',        'Natural Zumurud',      '#2c9a52', '@pearl G5 D3',       {dmg:80, cd:1, rng:500, ward:800, steal:500, desc:'Steals 3 different abilities from the towers around it; a wide magic influence shields towers from enemy debuffs'});
 adv('carmen',      'Bard’s Cathedral',     'Carmen-Lucia',         '#ff4fa3', 'E1 E2 E3 E4 E5',     {dmg:6, cd:1, rng:500, spdAura:[100, 664], inspire:[.5, 500], sight:true, desc:'Nearby towers attack 100% faster and deal 50% more damage', ult:true});
 adv('yellowsap',   'Ice Spire',            'Yellow Sapphire',      '#ffe36e', 'B5 Y4 R4',           {dmg:20, cd:1, rng:600, ice:[.74, 300], desc:'Enemies nearby move 74% slower'});
 adv('northern',    'Frostbite Watch',      'Northern Saber’s Eye', '#9fd8ff', '@yellowsap @bloodstone B5', {dmg:60, cd:1, rng:500, ice:[.82, 300], chainFrost:.25, desc:'Ice aura; frost balls bounce between enemies'});
@@ -632,7 +643,7 @@ function matchIngs(ings, pool, target){ // one pool tower per ingredient; the ta
 }
 // Creep levels: [name, base HP, move speed, armor, magic resist %, flying, boss, abilities].
 // HP uses a single-player multiplier. Two creeps on one level split the wave between them.
-const HP_MULT = .6, WAVE_COUNT = 10, WAVE_MIN = 5, WAVE_MAX = 15, ADAPT_FROM = 10; // wave size adapts between these (10 to start)
+const HP_MULT = .6, WAVE_COUNT = 10, WAVE_MIN = 5, WAVE_MAX = 15, ADAPT_FROM = 5; // wave size adapts between these (10 to start); adding enemies begins after wave 5
 const CREEPS = [
   [['Goblin Scavenger',5,525,0,10]], [['Goblin Runner',10,600,0,10]], [['Orc Grunt',20,525,0,10]], [['Warg Pup',20,1000,0,10]],
   [['Carrion Crow',24,500,0,10,1],['Cave Bat',22,500,0,10,1]], [['Rotting Zombie',100,450,0,10]], [['Skeleton Warrior',100,600,0,10]],
@@ -646,7 +657,7 @@ const CREEPS = [
   [['Fire Drake',3800,750,8,10,1,0,'reactive'],['Bone Vulture',4900,600,24,10,1,0,'reactive']], [['Dusk Harpy',6000,775,8,10,1,0,'eva refr'],['Night Bat',4500,1000,8,10,1,0,'eva refr']],
   [['Wyvern Rider',80000,750,0,10,1,1]],
   [['Cursed Knight',14000,900,12,10,0,0,'magimm refr'],['Shade',21000,800,12,10,0,0,'physimm refr']], [['Swamp Troll',85000,600,12,10,0,0,'recharge']],
-  [['Phantom',80000,700,12,10,0,0,'physimm blink'],['Grave Wraith',55000,1000,12,10,0,0,'physimm blink']], [['Blood Bat',13000,925,12,10,1,0,'eva'],['Harpy Matron',20000,725,12,10,1,0,'eva']],
+  [['Phantom',80000,700,12,10,0,0,'physimm blink'],['Grave Wraith',55000,1000,12,10,0,0,'magimm blink']], [['Blood Bat',13000,925,12,10,1,0,'eva'],['Harpy Matron',20000,725,12,10,1,0,'eva']],
   [['Obsidian Gargoyle',8800,700,12,10,1,0,'magimm']], [['Minotaur',55000,1000,12,10,0,0,'magimm']], [['Hellhound',120000,1200,12,10,0,0,'blink']], [['Necromancer',200000,1000,12,10,0,0,'disarm']],
   [['Armored Drake',55000,600,12,10,1,0,'untouch kraken eva'],['Fire Imp',15000,800,12,10,1,0,'untouch kraken eva']], [['Wraith Lord',330000,800,0,10,1,1,'kraken']],
   [['Ogre Warlord',240000,700,16,50,0,0,'refr'],['Dire Wolf',120000,1300,16,25,0,0,'refr']], [['Storm Harpy',15000,700,16,10,1,0,'magimm rush']],
@@ -689,7 +700,7 @@ const WAVE_STORY = [
   "A dark rider on a great wyvern sweeps over the walls. A flying boss: it takes a heavy toll in health if it gets through.",
   "A spell-proof cursed knight marches beside a shade that no blade can touch. Each blocks its first three hits.",
   "A swamp troll whose wounds close on their own whenever it goes two seconds without being hit. Keep the pressure on.",
-  "Phantoms and grave wraiths flicker forward in jumps, and no blade or arrow can hurt them.",
+  "Phantoms and grave wraiths flicker forward in jumps. No blade or arrow can hurt a phantom, and no spell can touch a grave wraith.",
   "Blood bats and harpy matrons dodge half of everything you throw at them.",
   "A gargoyle of black glass with a molten heart. It flies, and magic can't touch it.",
   "The minotaur has broken out of its labyrinth. It runs fast and ignores every spell.",
@@ -835,6 +846,28 @@ const SI = { // Warcraft-style stat glyphs (16x16, stroked)
   hp:'M8 14S1.5 10 1.5 5.5A3.2 3.2 0 0 1 8 4a3.2 3.2 0 0 1 6.5 1.5C14.5 10 8 14 8 14z', mr:'M8 1.5l1.5 4 4.5.3-3.5 2.8 1.2 4.4L8 10.5 4.3 13l1.2-4.4L2 5.8l4.5-.3z',
 };
 const tiles = v => String(T(v)); // units (128 per square) shown as squares
+// abilities the Emerald Watch can steal: [group key, other keys that travel with it, name]. Base stats, magic influence, glory and champion bonuses never count.
+const STEAL_G = [['splash',['splashPct'],'Cleave'], ['slow',['slowDur','frosty'],'Slow'], ['slowSplash',[],'Frost'], ['chain',[],'Chain lightning'], ['fork',[],'Forked lightning'],
+  ['poison',['poisonDur'],'Poison'], ['targets',[],'Multishot'], ['pierce',[],'Armor break'], ['crit',['critX'],'Critical strike'], ['stun',['stunDur'],'Stun'],
+  ['auraSpd',['auraR'],'War drums'], ['inspire',[],'Inspire'], ['overlook',[],'Star chart'], ['mkb',[],'True strike'], ['decadent',[],'Plague aura'], ['ice',[],'Ice aura'],
+  ['frost',[],'Freezing splash'], ['antifly',[],'Grounding'], ['chainFrost',[],'Frost ball'], ['recover',[],'Healing'], ['greedy',[],'Treasure'], ['sight',[],'True sight'],
+  ['unveil',[],'Unveiling song'], ['auraDps',['burnR','auraSlow'],'Burning aura'], ['vuln',[],'Expose'], ['gaze',[],'Petrifying gaze'], ['spdAura2',[],'Battle haste'], ['burned',[],'Searing hits']];
+const STEAL_BY = Object.fromEntries(STEAL_G.map(g => [g[0], g]));
+const stealPower = (s, k) => { const v = s[k]; return Array.isArray(v) ? v[0]*1e6 + (v[1] || 0) : typeof v === 'number' ? v : 1; };
+function applySteal(t){ // the Emerald Watch copies 3 different abilities from towers within reach; its picks stay until their source is gone
+  const R = T(t.st.steal), have = new Map();
+  for (const o of towers){
+    if (o === t || tileD(o.x, o.y, t.x, t.y) > R) continue;
+    const b = stats(o.g); // the neighbour's own abilities, never ones it stole or bonuses it receives
+    for (const [k] of STEAL_G) if (b[k] && !t.st[k] && (!have.has(k) || stealPower(b, k) > stealPower(have.get(k), k))) have.set(k, b);
+  }
+  const keep = (t.g.stolen || []).filter(k => have.has(k)), pool = [...have.keys()].filter(k => !keep.includes(k));
+  while (keep.length < 3 && pool.length) keep.push(pool.splice((Math.random()*pool.length)|0, 1)[0]);
+  t.g.stolen = keep;
+  if (!keep.length) return;
+  const st = t.st = Object.assign({}, t.st);
+  for (const k of keep){ const b = have.get(k); st[k] = b[k]; for (const x of STEAL_BY[k][1]) if (b[x] != null) st[x] = b[x]; if (k === 'auraDps'){ st.burnR = b.burnR || b.rng; st.attacks = true; } }
+}
 function statItems(s){ // [glyph, colour, short value, name, explanation]
   const out = [], pct = v => Math.round(v*100) + '%';
   if (s.auraDps) out.push(['burn', '#ff7a3c', `${Math.round(s.auraDps)}/s`, 'Burning aura', `${Math.round(s.auraDps)} magic damage per second to every enemy in range`]);
@@ -843,8 +876,8 @@ function statItems(s){ // [glyph, colour, short value, name, explanation]
   if (s.splash) out.push(['cleave', '#ff8a6a', pct(s.splashPct), 'Cleave', `Also hits enemies near the target for ${pct(s.splashPct)} damage, as pure damage (no armor, resistance or immunity reduces or blocks it)`]);
   if (s.slow) out.push(['slow', '#bfe6ff', `−${Math.round(s.slow*100)}%`, 'Slow', `${slowLevel(s.slow) ? `Slow level ${slowLevel(s.slow)}: h` : 'H'}its slow enemies by ${Math.round(s.slow*100)}% for ${s.slowDur || 2}s (slows from different towers stack, even at the same level)`]);
   if (s.slowSplash) out.push(['slow', '#bfe6ff', `−${Math.round(s.slowSplash*100)}%`, 'Frost', `Slows enemies in the splash by ${Math.round(s.slowSplash*100)}%`]);
-  if (s.chain) out.push(['chain', '#fff36e', pct(s.chain[0]), 'Chain lightning', `${pct(s.chain[0])} chance: ${s.chain[1]} damage jumping across ${s.chain[2]} enemies`]);
-  if (s.fork) out.push(['fork', '#c9a8ff', pct(s.fork[0]), 'Forked lightning', `${pct(s.fork[0])} chance: ${s.fork[1]} damage to ${s.fork[2]} nearby enemies`]);
+  if (s.chain) out.push(['chain', '#fff36e', pct(s.chain[0]), 'Chain lightning', `${pct(s.chain[0])} chance: ${s.chain[1]} damage bouncing from enemy to enemy ${s.chain[2]} times`]);
+  if (s.fork) out.push(['fork', '#c9a8ff', pct(s.fork[0]), 'Forked lightning', `${pct(s.fork[0])} chance: lightning forks from the tower to strike ${s.fork[2]} enemies at once for ${s.fork[1].toLocaleString()} damage each`]);
   if (s.poison) out.push(['poison', '#7be07b', `${Math.round(s.poison)}/s`, 'Poison', `${Math.round(s.poison)} damage per second for ${s.poisonDur || 3}s`]);
   if (s.targets) out.push(['targets', '#ffe0a0', `×${s.targets}`, 'Multishot', `Attacks ${s.targets} enemies at once`]);
   if (s.pierce) out.push(['pierce', '#ff9a8a', `−${s.pierce}`, 'Armor break', `Armor break level ${armorLevel(s.pierce)}: hits reduce enemy armor by ${s.pierce} for 5s (armor loss from different levels stacks; the same level does not)`]);
@@ -863,6 +896,7 @@ function statItems(s){ // [glyph, colour, short value, name, explanation]
   if (s.greedy) out.push(['crit', '#ffd166', '10×', 'Treasure', 'Kills nearby sometimes pay 10× gold']);
   if (s.sight) out.push(['sight', '#ffffff', '✓', 'True sight', 'Reveals invisible enemies in range']);
   if (s.unveil) out.push(['sight', '#9ffff0', '✓', 'Unveiling song', `Enemies within ${tiles(s.unveil)} squares lose their magic and physical immunity`]);
+  if (s.steal) out.push(['aim', '#5fd48a', '3', 'Ability theft', `Steals 3 different abilities from towers within ${tiles(s.steal)} squares (never glory or champion bonuses)${s.stolenNames && s.stolenNames.length ? `. Now using: ${s.stolenNames.join(', ')}` : '. No abilities nearby to steal yet'}`]);
   if (s.ward) out.push(['sight', '#c9b8ff', tiles(s.ward), 'Magic influence', `Towers within ${tiles(s.ward)} squares (and this one) ignore enemy debuffs: disarm and untouchable`]);
   return out;
 }
@@ -898,7 +932,8 @@ function rollQualityExcept(skip){ // roll a rank at current favor, never returni
   return o.findIndex(v => v > 0);
 }
 const rerollStep = () => 5*Math.floor((wave - 1)/10); // +5 gold every 10 waves (waves 11-20 cost 25, 21-30 cost 30, ...)
-const rerollTypeCost = () => REROLL_TYPE_BASE + rerollStep(), rerollGradeCost = () => REROLL_GRADE_BASE + rerollStep();
+const goldTax = () => Math.round(gold*.1); // retype and rerank also cost 10% of your current gold
+const rerollTypeCost = () => REROLL_TYPE_BASE + rerollStep() + goldTax(), rerollGradeCost = () => REROLL_GRADE_BASE + rerollStep() + goldTax();
 const rollQualityCanChange = g => ODDS[luck-1].some((v,i) => v > 0 && i !== g.q);
 function rollQuality(){
   const o = ODDS[luck-1]; let x = Math.random()*100;
@@ -940,7 +975,7 @@ function options(g){
     out.push({label:'Swap', sub:`${SWAP_COST} gold`, disabled: gold < SWAP_COST, run:() => startMove(g)});
   }
   if (g.round && !g.special && (phase === 'place' || phase === 'select'))
-    out.push({label:'Reroll', sub:`${REROLL_COST}g`, disabled: gold < REROLL_COST, run:() => rerollGem(g, 'all')},
+    out.push({label:'Reroll', sub:`all 5 · ${REROLL_COST}g`, disabled: gold < REROLL_COST, run:() => rerollRound(g)},
       {label:'Retype', sub:`${rerollTypeCost()}g`, disabled: gold < rerollTypeCost(), run:() => rerollGem(g, 'type')},
       {label:'Rerank', sub: rollQualityCanChange(g) ? `${rerollGradeCost()}g` : '(needs favor)', stack: !rollQualityCanChange(g), disabled: gold < rerollGradeCost() || !rollQualityCanChange(g), run:() => rerollGem(g, 'grade')});
   return out;
@@ -964,6 +999,7 @@ function gridChanged(){
     if (g && g.kind === 'gem') towers.push({g, x:c+.5, y:r+.5, st:stats(g), cd:0, bonus:0, flash:0});
     if (g && g.special) markBuilt(g.special);
   }
+  for (const t of towers) if (t.st.steal){ applySteal(t); t.st.stolenNames = (t.g.stolen || []).map(k => STEAL_BY[k][2]); }
   for (const t of towers){
     const lv = new Map(); // one boost per haste level; different levels add up
     for (const o of towers) if (o !== t && o.st.auraSpd && tileD(o.x, o.y, t.x, t.y) <= o.st.auraR){ const k = hasteLevel(o.st.auraSpd) || o.st.auraSpd; lv.set(k, Math.max(lv.get(k) || 0, o.st.auraSpd)); }
@@ -1047,9 +1083,9 @@ function removeRock(c,r){
   if (!g || g.kind !== 'rock' || phase === 'wave') return;
   grid[r][c] = null; sel = null; gridChanged(); save();
 }
-function buyLuck(){
-  if (luck >= 8 || gold < LUCK_COST[luck-1]) return;
-  gold -= LUCK_COST[luck-1]; luck++; toast(`Favor ${luck}`); renderUI(); save();
+function gainKills(n){ // kills raise your level; each level improves the rank odds of new towers
+  kills += n; const l = levelFor(kills);
+  if (l > luck){ luck = l; toast(`Favor ${luck}! New towers roll higher ranks`); SFX.upgrade(15, 17, 1); }
 }
 function waveInfo(w){
   const lv = CREEPS[Math.min(CREEPS.length, w) - 1], boss = lv.some(c => c[6]);
@@ -1078,6 +1114,7 @@ function auraRings(st){ // each aura ability's reach (squares from the tower's e
   if (st.ice) add(T2(st.ice[1]), '207,232,255', 'Ice aura');
   if (st.antifly) add(T2(st.antifly[3]), '191,227,255', 'Grounding');
   if (st.ward) add(T2(st.ward), '201,184,255', 'Magic influence');
+  if (st.steal) add(T2(st.steal), '95,212,138', 'Ability theft');
   if (st.greedy) add(T2(st.greedy), '255,209,102', 'Treasure');
   if (st.burnR && st.attacks) add(st.burnR, '255,122,58', 'Fire aura');
   return out;
@@ -1134,7 +1171,7 @@ function damage(e, amt, phys, st, src){
   if (src){ const got = Math.min(amt, Math.max(0, e.hp)); src.dealt += got; src.g.total = (src.g.total || 0) + got; } // this wave, and the whole run
   e.hp -= amt; e.lastHit = simClock;
   if (e.hp <= 0){
-    e.dead = true; kills++; SFX.death(e);
+    e.dead = true; gainKills(e.K.boss ? waveSize : 1); SFX.death(e);
     if (e.walk){ wStat.kills++; wStat.ratio += Math.min(1.5, (simClock - e.born)/e.walk); }
     let bounty = e.gold + (st && st.goldBonus ? st.goldBonus : 0);
     if (towers.some(t => t.st.greedy && edgeD(t.x, t.y, e.x, e.y) <= T(t.st.greedy)) && Math.random() < .05){ bounty *= 10; toast(`Treasure! +${bounty} gold`); }
@@ -1452,8 +1489,15 @@ function hit(e, st, color, src){
   if (st.frost){ for (const o of enemies){ if (!o.dead && Math.hypot(o.x-e.x, o.y-e.y) <= T(st.frost)){ slowPct(o, SLOW_LV[5], 3, src || 'frost', true); o.noRegenT = 3; } } effects.push({x:e.x, y:e.y, r0:.2, r1:T(st.frost), t:0, dur:.35, color:'#cfe8ff'}); }
   if (st.chain && Math.random() < st.chain[0]) chainBolt(e, st.chain[1], st.chain[2], T(st.chain[3]), '#fff36e', st, src);
   if (st.chainFrost && Math.random() < st.chainFrost) zap(e, 0, 10, 4, '#bfe6ff', st, src, true);
-  if (st.fork && Math.random() < st.fork[0]){
-    chainBolt(e, st.fork[1], st.fork[2], T(3000), '#c9a8ff', st, src);
+  if (st.fork && Math.random() < st.fork[0]) forkStrike(e, st.fork[1], st.fork[2], st, src);
+}
+function forkStrike(e, dmg, n, st, src){ // forked lightning: bolts leap from the tower itself and strike the target and its nearest neighbours all at once
+  const ox = src && src.x != null ? src.x : e.x, oy = src && src.y != null ? src.y : e.y, reach = Math.max(st.rng || 0, 4) + 1;
+  const tg = [e, ...enemies.filter(o => o !== e && !o.dead && Math.hypot(o.x - ox, o.y - oy) <= reach).sort((a, b) => Math.hypot(a.x - e.x, a.y - e.y) - Math.hypot(b.x - e.x, b.y - e.y)).slice(0, n - 1)];
+  for (const o of tg){
+    effects.push({line:true, jag:true, x:ox, y:oy, h0:src && src.x != null ? 1.5 : 0, x2:o.x, y2:o.y, t:0, dur:.4, color:'#d8c4ff', seed:Math.random()*99});
+    effects.push({x:o.x, y:o.y, r0:.15, r1:.7, t:0, dur:.3, color:'#c9a8ff'});
+    if (!o.dead) damage(o, dmg, false, st, src);
   }
 }
 function chainBolt(from, dmg, jumps, radius, color, st, src){ // chain lightning as a travelling bolt: it leaps from enemy to enemy like the hex bolt, one hop every 0.75s
@@ -1626,7 +1670,7 @@ function awardAura(){ // the kept tower that dealt the most damage this wave gai
 }
 const displayName = g => g.name ? g.name : gemName(g);
 function adaptWaveSize(){ // decide the next wave's size from how this wave went
-  if (wave < ADAPT_FROM){ recentLeak = 0; sizeNote = ''; return; } // the first ten waves are always the standard size
+  if (wave < ADAPT_FROM){ recentLeak = 0; sizeNote = ''; return; } // the first five waves are always the standard size
   recentLeak = recentLeak*.5 + wStat.leak; // leaks fade over a couple of waves
   const before = waveSize, avg = wStat.kills ? wStat.ratio/wStat.kills : 1, leakedNow = (wStat.leaks || 0) > 0;
   let d = 0, why = '';
@@ -1636,12 +1680,12 @@ function adaptWaveSize(){ // decide the next wave's size from how this wave went
   const ch = waveSize - before;
   sizeNote = ch ? `Next waves: ${waveSize} enemies (${ch > 0 ? '+' : '−'}${Math.abs(ch)}, ${why})` : '';
 }
-const flawlessPct = () => 10 + Math.min(luck, 7) + (luck >= 8 ? 3 : 0); // a flawless wave pays 10% of your gold +1% per favor level (favor 8 adds 3%: 20% in all)
+const flawlessPct = () => 10, FLAWLESS_CAP = 50; // a flawless wave pays 10% of your gold, at most 50
 function endWave(){
   projectiles = []; effects = [];
   for (const pd of pedals) pd.firedAt = null; // the game clock stops between waves, so a trap's ground mark (timed on that clock) would otherwise freeze on screen
   const bonus = 4 + Math.floor(wave/2); gold += bonus;
-  const flawless = !wStat.leaks, fb = flawless ? Math.floor(gold*flawlessPct()/100) : 0; gold += fb; // nobody got through: a share of your gold on top
+  const flawless = !wStat.leaks, fb = flawless ? Math.min(FLAWLESS_CAP, Math.floor(gold*flawlessPct()/100)) : 0; gold += fb; // nobody got through: a share of your gold on top
   const meterSnap = meterRows();
   const champ = awardAura();
   lastMeter = {wave, rows: meterSnap, glory: champ};
@@ -1649,7 +1693,7 @@ function endWave(){
   if (wave >= MAX_WAVE){ wave = MAX_WAVE; endGame(true); return; }
   adaptWaveSize();
   wave++; phase = 'place'; roundGems = []; sel = null;
-  toast(`Wave cleared · +${bonus} gold`); if (fb > 0) setTimeout(() => toast(`Flawless! Nobody got through · +${fb} gold (${flawlessPct()}%)`), 900); renderMeter();
+  toast(`Wave cleared · +${bonus} gold`); if (fb > 0) setTimeout(() => toast(`Flawless! Nobody got through · +${fb} gold`), 900); renderMeter();
   setTimeout(() => { if (phase === 'place') warnSpecialWave(); }, 2200); // after the round's other messages, so it stays on top
   if (sizeNote) setTimeout(() => toast(sizeNote), 1700);
   gridChanged(); save();
@@ -1857,7 +1901,7 @@ function load(d){
       grid[r][c] = g; if (g.round) roundGems.push(g);
     }
   }
-  wave = d.wave; lives = d.hp100 ? d.lives : Math.round(d.lives*100/30); gold = d.gold; luck = d.luck; kills = d.kills || 0; speed = d.speed || 1; elapsed = d.elapsed || 0; waveSize = Math.max(WAVE_MIN, Math.min(WAVE_MAX, d.waveSize || WAVE_COUNT)); recentLeak = d.recentLeak || 0; leakLog = Array.isArray(d.leakLog) ? d.leakLog : []; lostDamage = d.lostDamage || 0; timerOn = d.timerOn != null ? !!d.timerOn : (wave > 1 || d.cells.some(x => x[2] === 1));
+  wave = d.wave; lives = d.hp100 ? d.lives : Math.round(d.lives*100/30); gold = d.gold; kills = d.kills || 0; luck = levelFor(kills); speed = d.speed || 1; elapsed = d.elapsed || 0; waveSize = Math.max(WAVE_MIN, Math.min(WAVE_MAX, d.waveSize || WAVE_COUNT)); recentLeak = d.recentLeak || 0; leakLog = Array.isArray(d.leakLog) ? d.leakLog : []; lostDamage = d.lostDamage || 0; timerOn = d.timerOn != null ? !!d.timerOn : (wave > 1 || d.cells.some(x => x[2] === 1));
   pedals = (d.pedals || []).filter(x => PEDALS[x[2]]).map(([c,r,key,tier]) => ({c, r, key, tier, cd:0}));
   placing = d.placing && PEDALS[d.placing[0]] ? {key:d.placing[0], tier:d.placing[1], spot:null} : null;
   phase = ['place','select','ready'].includes(d.phase) ? d.phase : 'ready';
@@ -2044,6 +2088,19 @@ const syncPathBtn = () => $('#btnPath').setAttribute('aria-pressed', String(show
 syncPathBtn();
 $('#btnPath').addEventListener('click', () => { showPath = !showPath; store.set('gemmaze.path2', showPath ? '1' : '0'); syncPathBtn(); toast(showPath ? 'Enemy path shown' : 'Enemy path hidden'); });
 
+function rerollRound(focus){ // reroll every one of this round's new towers (type and rank), for one price
+  const list = roundGems.filter(o => o.round && !o.special);
+  if (!list.length || gold < REROLL_COST || !(phase === 'place' || phase === 'select')) return;
+  gold -= REROLL_COST;
+  for (const g of list){
+    const was = g.type + g.q; let n = 0;
+    do { g.type = TYPE_KEYS[(Math.random()*TYPE_KEYS.length)|0]; g.q = rollQuality(); } while (g.type + g.q === was && ++n < 100);
+    effects.push({x:g.c+.5, y:g.r+.5, r0:.9, r1:.2, t:0, dur:.35, color:'#ffffff'}, {x:g.c+.5, y:g.r+.5, r0:.2, r1:1.1, t:0, dur:.5, color:gemColor(g)});
+  }
+  if (focus) sel = {c:focus.c, r:focus.r};
+  toast(`Rerolled all ${list.length} new tower${list.length > 1 ? 's' : ''}`);
+  gridChanged(); save();
+}
 function rerollGem(g, mode = 'all'){
   // all: new type and grade; type: new type, same grade; grade: same type, grade rolled again at current luck
   const cost = mode === 'type' ? rerollTypeCost() : mode === 'grade' ? rerollGradeCost() : REROLL_COST;
@@ -2051,7 +2108,7 @@ function rerollGem(g, mode = 'all'){
   gold -= cost;
   // a reroll never gives back the tower you already have
   if (mode === 'grade'){
-    const q = rollQualityExcept(g.q); if (q == null){ gold += cost; toast('Buy more favor to reroll rank'); return; }
+    const q = rollQualityExcept(g.q); if (q == null){ gold += cost; toast('Earn more favor to reroll rank'); return; }
     g.q = q;
   } else if (mode === 'type'){
     const pool = TYPE_KEYS.filter(t => t !== g.type); g.type = pool[(Math.random()*pool.length)|0];
@@ -2200,7 +2257,7 @@ function renderUI(){
   const pt = $('#phaseT'), ph = $('#phaseH');
   if (phase === 'place'){ pt.textContent = `Place towers · ${roundGems.length}/5`; ph.textContent = 'Tap a square or a wall to select it, tap it again to build a tower. Towers block the path, so build a long maze.'; }
   else if (phase === 'select'){ pt.textContent = 'Keep one tower'; ph.textContent = 'Tap one of the five new towers. The other four become walls. A ✦ marks a tower that can upgrade or construct.'; }
-  else if (phase === 'ready'){ pt.textContent = 'Build phase'; ph.textContent = 'Construct or swap towers, buy favor or tear down walls, then start the wave.'; }
+  else if (phase === 'ready'){ pt.textContent = 'Build phase'; ph.textContent = 'Construct or swap towers or tear down walls, then start the wave.'; }
   else if (phase === 'wave'){ pt.textContent = `Wave ${wave} · ${curWave.label}`; ph.textContent = `${enemies.length + queue} enemies left${paused ? ' · paused' : ''}`; }
   else { pt.textContent = 'Game over'; ph.textContent = ''; }
   // context card
@@ -2293,8 +2350,7 @@ function renderUI(){
   $('#oddsK').textContent = `Rank odds at favor ${luck}`;
   $('#oddsBar').innerHTML = o.map((v,i) => v ? `<span style="width:${v}%;background:${QC[i]};color:${i >= 3 ? '#f3e8cc' : '#1d150b'}" title="${QN[i]} ${v}%">${v >= 12 ? QN[i][0] + ' ' + v : ''}</span>` : '').join('');
   // bar
-  const lb = $('#btnLuck');
-  lb.innerHTML = `<span class="fv"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.5 4L12 4.5l4.5 7.5L21 8l-2 10H5z" fill="#e8b84a" stroke="#fff1c4" stroke-width="1.1" stroke-linejoin="round"/><rect x="5" y="18.5" width="14" height="2" rx=".6" fill="#c9952e"/><circle cx="12" cy="13.5" r="1.6" fill="#c0392b"/><circle cx="8" cy="15" r="1" fill="#2f6fc0"/><circle cx="16" cy="15" r="1" fill="#2f6fc0"/></svg><b>${luck}</b></span><small>${luck >= 8 ? 'max' : LUCK_COST[luck-1] + 'g'}</small>`; lb.setAttribute('aria-label', `Favor ${luck}${luck >= 8 ? ', max' : `, upgrade for ${LUCK_COST[luck-1]} gold`}`);
+  renderLvBtn();
   $('#btnSpeed').textContent = `${speed}×`;
   const go = $('#btnGo');
   const goIcon = (svg, label) => { if (go.dataset.ico !== label){ go.innerHTML = svg; go.dataset.ico = label; } go.setAttribute('aria-label', label); go.title = label; go.classList.add('ibtn'); };
@@ -2348,7 +2404,6 @@ $('#rpBody').addEventListener('click', e => {
     return;
   }
   const a = e.target.closest('[data-act="tab"]'); if (a){ setBpTab($('#rpBody'), a.dataset.tab); bpTab = a.dataset.tab; syncTowerShow(); return; }
-  if (e.target.closest('[data-act="luck"]')){ buyLuck(); return; }
   const el = e.target.closest('[data-tiptext]'); if (el){ if (tipEl === el) hideTip(); else showTip(el); }
 });
 $('#enemyCard').addEventListener('click', () => { if (selEnemy) return; });
@@ -2396,7 +2451,6 @@ $('#sheet').addEventListener('click', e => {
   if (a){
     const act = a.dataset.act;
     if (act === 'close') hideSheet();
-    else if (act === 'luck'){ buyLuck(); luckSheet(); }
     else if (act === 'new'){ hideSheet(); camTween = null; newGame(); resetView(); }
     else if (act === 'menu') menuSheet();
     else if (act === 'confirmnew') showSheet(`<h2>Start over?</h2><p>Your current run will be lost.</p><div class="sheetActs"><button class="btn" data-act="${sheetOverBoard ? 'menu' : 'close'}">Cancel</button><button class="btn primary" data-act="new">Start over</button></div>`);
@@ -2413,12 +2467,19 @@ $('#sheet').addEventListener('click', e => {
   }
   if (e.target.id === 'sheet' && !sheetLocked) hideSheet();
 });
+function renderLvBtn(){ // the crown: your level and kills toward the next
+  const lb = $('#btnLuck'); lvShown = kills;
+  const max = luck >= LV_MAX, prv = LV_KILLS[luck-1], nxt = LV_KILLS[luck], f = max ? 1 : Math.max(0, Math.min(1, (kills - prv)/(nxt - prv))), C = 2*Math.PI*9.5;
+  lb.innerHTML = `<svg class="lvring${max ? ' max' : ''}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" class="trk"/><circle cx="12" cy="12" r="9.5" class="fil"${f > 0 ? '' : ' opacity="0"'} stroke-dasharray="${(C*f).toFixed(2)} ${C.toFixed(2)}" transform="rotate(-90 12 12)"/><text x="12" y="12.4" text-anchor="middle" dominant-baseline="middle">${luck}</text></svg>`;
+  const tip = max ? `Favor ${luck} (max) · ${kills} kills` : `Favor ${luck} · ${kills} / ${nxt} kills to favor ${luck+1}`;
+  lb.setAttribute('aria-label', tip); lb.title = tip;
+}
+let lvShown = -1;
 function luckSheet(){
-  const rows = ODDS.map((o,i) => `<tr class="${i === luck-1 ? 'cur' : ''}"><td>Favor ${i+1}${i === luck-1 ? ' · now' : ''}</td>${o.map(v => `<td>${v ? v + '%' : '–'}</td>`).join('')}<td>${i === 0 ? '' : LUCK_COST[i-1] + 'g'}</td></tr>`).join('');
-  const cost = luck < 8 ? LUCK_COST[luck-1] : 0;
-  showSheet(`<h2>Royal favor</h2><p class="muted">More favor makes every new tower more likely to arrive at a higher rank.</p>
-    <div style="overflow-x:auto"><table class="odds"><tr><th></th>${QN.slice(0, 5).map(q => `<th>${q}</th>`).join('')}<th>Cost</th></tr>${rows}</table></div>
-    <div class="sheetActs"><button class="btn" data-act="close">Close</button>${luck < 8 ? `<button class="btn primary" data-act="luck" ${gold < cost ? 'disabled' : ''}>Upgrade to ${luck+1} · ${cost}g</button>` : ''}</div>`);
+  const rows = ODDS.map((o,i) => `<tr class="${i === luck-1 ? 'cur' : ''}"><td>Favor ${i+1}${i === luck-1 ? ' · now' : ''}</td>${o.map(v => `<td>${v ? v + '%' : '–'}</td>`).join('')}<td>${i === 0 ? 'start' : LV_KILLS[i]}</td></tr>`).join('');
+  showSheet(`<h2>Royal favor</h2><p class="muted">Every kill earns royal favor (a boss counts as a whole wave). More favor makes new towers more likely to arrive at a higher rank. Kills so far: ${kills}.</p>
+    <div style="overflow-x:auto"><table class="odds"><tr><th></th>${QN.slice(0, 5).map(q => `<th>${q}</th>`).join('')}<th>Kills</th></tr>${rows}</table></div>
+    <div class="sheetActs"><button class="btn" data-act="close">Close</button></div>`);
 }
 function ownedSet(){
   const s = new Set();
@@ -2539,12 +2600,13 @@ function renderRightPanel(force){
     const top = el.scrollTop; el.innerHTML = leakHTML(); el.scrollTop = force ? 0 : top;
   } else if (rView === 'favor'){
     $('#rpTitle').textContent = 'Royal favor';
-    const top = el.scrollTop, cost = luck < 8 ? LUCK_COST[luck-1] : 0;
-    el.innerHTML = `<p class="muted">More favor makes every new tower more likely to arrive at a higher rank. You are at favor ${luck}.</p>
-      <p class="muted">A <b style="color:var(--gold)">flawless wave</b> (no enemy gets through) pays a bonus of ${flawlessPct()}% of your gold: 10%, +1% per favor level, and favor 8 adds 3% for 20%.</p>
+    const top = el.scrollTop, nxt = LV_KILLS[luck], prv = LV_KILLS[luck-1];
+    el.innerHTML = `<p class="muted">Every kill earns royal favor, and a boss counts as a whole wave (${waveSize} kills). More favor makes new towers more likely to arrive at a higher rank. You are at favor ${luck} with ${kills} kills.</p>
+      ${luck < LV_MAX ? `<div class="lvprog"><div style="width:${Math.min(100, (kills - prv)/(nxt - prv)*100).toFixed(1)}%"></div><span>${kills} / ${nxt} kills to favor ${luck+1}</span></div>` : ''}
+      <p class="muted">A <b style="color:var(--gold)">flawless wave</b> (no enemy gets through) pays a bonus of 10% of your gold, up to 50 gold.</p>
       <div class="fvleg">${QN.slice(0, 5).map((q, i) => `<span><i style="background:${QC[i]}"></i>${q}</span>`).join('')}</div>
-      ${ODDS.map((o, i) => `<div class="fvrow ${i === luck-1 ? 'cur' : ''} ${i < luck ? 'done' : ''}"><span class="fvn">${i < luck ? '✓ ' : ''}Favor ${i+1}</span><div class="fvbar">${o.map((v, j) => v ? `<span style="width:${v}%;background:${QC[j]};color:${j >= 3 ? '#f3e8cc' : '#1d150b'}" data-tiptext="${esc(`${QN[j]} ${v}%`)}">${v >= 15 ? v : ''}</span>` : '').join('')}</div><span class="fvc">${i === 0 ? 'start' : LUCK_COST[i-1] + 'g'}</span></div>`).join('')}
-      ${luck < 8 ? `<button class="btn primary fvbuy" data-act="luck" ${gold < cost ? 'disabled' : ''}>Upgrade to favor ${luck+1} · ${cost} gold</button>` : '<p class="muted" style="text-align:center;margin-top:8px">Favor is at its highest.</p>'}`;
+      ${ODDS.map((o, i) => `<div class="fvrow ${i === luck-1 ? 'cur' : ''} ${i < luck ? 'done' : ''}"><span class="fvn">${i < luck ? '✓ ' : ''}Favor ${i+1}</span><div class="fvbar">${o.map((v, j) => v ? `<span style="width:${v}%;background:${QC[j]};color:${j >= 3 ? '#f3e8cc' : '#1d150b'}" data-tiptext="${esc(`${QN[j]} ${v}%`)}">${v >= 15 ? v : ''}</span>` : '').join('')}</div><span class="fvc">${i === 0 ? 'start' : LV_KILLS[i] + ' kills'}</span></div>`).join('')}
+      ${luck >= LV_MAX ? '<p class="muted" style="text-align:center;margin-top:8px">Favor is at its highest.</p>' : ''}`;
     el.scrollTop = force ? 0 : top;
   }
 }
@@ -2738,11 +2800,11 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.16 · October 28, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.17 · November 4, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
-    <li>The right sets of towers construct advanced towers, and pairs build <b>traps</b> you place on any open square. The <b>blueprint</b> button lists them. Spend gold on <b>favor</b> (the crown) for higher ranks. Walls can be torn down for free between waves.</li>
+    <li>The right sets of towers construct advanced towers, and pairs build <b>traps</b> you place on any open square. The <b>blueprint</b> button lists them. Kills earn royal <b>favor</b> (the ring), and each favor level gives better odds of higher ranks. Walls can be torn down for free between waves.</li>
   </ol><p class="muted">Tap a square to select it, then tap it again or press Build. Tap an enemy to see its stats. Waves have 10 enemies. After wave 10, kill them quickly and later waves grow (up to 15), let them through and they shrink (down to 5). Boss waves stay one boss, but a bigger wave size gives it more health (15 enemies = 50% more). Bosses never get weaker. Pinch to zoom in, drag to look around, and slide two fingers up or down to tilt. Your run saves between waves.</p>
   <p class="muted">Tap the board to start playing.</p>`;
 const DEV_TABS = [['tower', 'Towers'], ['bastion', 'Bastions'], ['waypoint', 'Waypoints'], ['tile', 'Tiles'], ['enemy', 'Enemies']];
@@ -6484,6 +6546,12 @@ function draw(){
     if (f.line){ // drawn on screen between the two points, each at its own ground height
       ctx.setTransform(d,0,0,d,0,0); fxE = null;
       const mx = (f.x + f.x2)/2 + Math.sin(f.t*40)*.15, mz = (f.y + f.y2)/2 + Math.cos(f.t*37)*.15, q = [0,0,0];
+      if (f.jag){ // forked lightning: a crackling bolt from the tower top down to the enemy, flickering every frame
+        const N = 7, h0 = f.h0 || 0, e0 = elevAt(f.x, f.y) + h0, e1 = elevAt(f.x2, f.y2) + .4, fl = Math.floor(f.t*30), pts = [];
+        for (let i = 0; i <= N; i++){ const k = i/N, j = i && i < N ? 1 : 0, rnd = Math.sin((fl + 1)*(i + 3)*12.9898 + f.seed)*43758.5453, w = (rnd - Math.floor(rnd) - .5)*.7*j, rnd2 = Math.sin((fl + 7)*(i + 5)*78.233 + f.seed)*12345.678;
+          proj(f.x + (f.x2 - f.x)*k + w, e0 + (e1 - e0)*k + ((rnd2 - Math.floor(rnd2)) - .5)*.4*j, f.y + (f.y2 - f.y)*k - w, q); pts.push([q[0], q[1]]); }
+        for (const [lw, col, a] of [[.32, f.color, .35], [.14, f.color, 1], [.05, '#ffffff', 1]]){ ctx.globalAlpha = a*(1 - f.t/f.dur); ctx.strokeStyle = col; ctx.lineWidth = Math.max(1, lw*VW.s); ctx.lineJoin = 'round'; ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); }
+        continue; }
       ctx.lineWidth = Math.max(1, .08*VW.s); ctx.beginPath();
       proj(f.x, elevAt(f.x, f.y), f.y, q); ctx.moveTo(q[0], q[1]); proj(mx, elevAt(mx, mz), mz, q); ctx.lineTo(q[0], q[1]); proj(f.x2, elevAt(f.x2, f.y2), f.y2, q); ctx.lineTo(q[0], q[1]); ctx.stroke(); continue; }
     const e = elevAt(f.x, f.y); if (e !== fxE){ groundSpace(e); fxE = e; }
@@ -6601,7 +6669,7 @@ function frame(now){
   if (phase === 'wave' && !paused){
     for (let i=0;i<speed && phase === 'wave';i++) step(dt);
     liveTick += dt;
-    if (liveTick > .15){ liveTick = 0; if (phase === 'wave'){ if (rView === 'leaks') renderRightPanel(false); $('#hLives').textContent = fmtHp(lives); $('#hGold').textContent = gold; $('#phaseH').textContent = `${enemies.length + queue} enemies left`; if (!advice.length) showAdvice(false); refreshEnemyPanel(); renderMeter(); } }
+    if (liveTick > .15){ liveTick = 0; if (phase === 'wave'){ if (rView === 'leaks') renderRightPanel(false); if (lvShown !== kills){ renderLvBtn(); if (rView === 'favor') renderRightPanel(false); } $('#hLives').textContent = fmtHp(lives); $('#hGold').textContent = gold; $('#phaseH').textContent = `${enemies.length + queue} enemies left`; if (!advice.length) showAdvice(false); refreshEnemyPanel(); renderMeter(); } }
   }
   updateHerd(dt); SFX.farmTick(dt);
   if (timerOn && !over && phase === 'wave' && !paused) elapsed += dt*speed; // game time: runs only while a wave is fought, and faster at 2× or 3× speed
@@ -6637,13 +6705,13 @@ function start(data){
 try { window.claude?.hot?.snapshot?.(() => ({state: serialize()})); } catch(e){}
 // test hooks
 window.__gem = {
-  setLives: v => { lives = v; }, get clock(){ return simClock; }, screenOf: (c, r) => { camera(); const o = [0,0,0]; proj(c + .5, tileElev(c, r), r + .5, o); return [o[0], o[1], tileLevel(c, r), !!grid[r][c] || propBlocks(c, r) || isCP(c, r) >= 0]; }, placingNow: () => placing, pickCell, mapInfo: () => ({lv: Array.from({length:ROWS}, (_, r) => Array.from({length:COLS}, (_, c) => tileLevel(c, r))), road: initRoad, cps: CPS, br: CPS.map((_, i) => biomeR(i)), g: grid.map(row => row.map(x => x ? x.kind[0] : 0)), props: [...SHOPS, ...BARRACKS_PROPS, ...GARDENS].map(t => [t.c, t.r]), roots: ROOT_TILES.map(t => [t.c, t.r])}), leakMax, leakDmg, buildPedal, placeTap, combineKept, triggerPedal, endGame, get state(){ return {phase, wave, lives, gold, luck, roundGems:roundGems.length, path:pathCells.length, enemies:enemies.length, kills}; },
+  setLives: v => { lives = v; }, setGold: v => { gold = v; renderUI(); }, get clock(){ return simClock; }, screenOf: (c, r) => { camera(); const o = [0,0,0]; proj(c + .5, tileElev(c, r), r + .5, o); return [o[0], o[1], tileLevel(c, r), !!grid[r][c] || propBlocks(c, r) || isCP(c, r) >= 0]; }, placingNow: () => placing, pickCell, mapInfo: () => ({lv: Array.from({length:ROWS}, (_, r) => Array.from({length:COLS}, (_, c) => tileLevel(c, r))), road: initRoad, cps: CPS, br: CPS.map((_, i) => biomeR(i)), g: grid.map(row => row.map(x => x ? x.kind[0] : 0)), props: [...SHOPS, ...BARRACKS_PROPS, ...GARDENS].map(t => [t.c, t.r]), roots: ROOT_TILES.map(t => [t.c, t.r])}), leakMax, leakDmg, buildPedal, placeTap, combineKept, triggerPedal, endGame, get state(){ return {phase, wave, lives, gold, luck, roundGems:roundGems.length, path:pathCells.length, enemies:enemies.length, kills}; },
   internals: () => ({projectiles, enemies, effects, towers}), sfx: () => SFX.stats, waveSize: () => waveSize,
   gallery(fly){ const names = Object.keys(ENEMY_LOOK), cols = 8, S = 120, cn = document.createElement('canvas'); cn.width = cols*S; cn.height = Math.ceil(names.length/cols)*S;
     const c2 = cn.getContext('2d'); c2.fillStyle = '#3c4b2e'; c2.fillRect(0, 0, cn.width, cn.height); const keep = ctx; ctx = c2;
     try { names.forEach((nm, i) => { const K = CREEPS.flat().find(k => k[0] === nm), e = {K:{label:nm, col:'#888'}, wob:i, fly: !!(K && K[5]) || !!fly}; const x = (i % cols)*S + S/2, y = Math.floor(i/cols)*S + S*.82;
       drawEnemySprite(e, x, y, S*.6, 1); c2.fillStyle = '#fff'; c2.font = '11px sans-serif'; c2.textAlign = 'center'; c2.fillText(nm, x, y + 16); }); } finally { ctx = keep; }
-    return cn.toDataURL(); }, enemyNames: () => CREEPS.flat().map(k => k[0]), enemyFlags: nm => { const k = CREEPS.flat().find(k => k[0] === nm); return [!!k[5], !!k[6]]; }, missileOf, tap, startWave, buyLuck, tryPlace, computePath, options, isCP, pedals: () => pedals, placing: () => placing, confirmPedal, specials: SPECIALS,
+    return cn.toDataURL(); }, enemyNames: () => CREEPS.flat().map(k => k[0]), enemyFlags: nm => { const k = CREEPS.flat().find(k => k[0] === nm); return [!!k[5], !!k[6]]; }, missileOf, tap, startWave, gainKills, tryPlace, computePath, options, isCP, pedals: () => pedals, placing: () => placing, confirmPedal, specials: SPECIALS,
   grid: () => grid, rounds: () => roundGems, kept: () => keptGems(), view, pickEnemy, selEnemy: () => selEnemy, selectEnemy,
   cellToScreen(c, r, y = 0){ camera(); const o = proj(c+.5, y, r+.5, [0,0,0]); return [o[0], o[1]]; },
   startPlacing: k => { placing = {key:k, tier:0, spot:null}; renderUI(); }, refresh: () => gridChanged(), warn: w => warnSpecialWave(w), fitk: (sp, W, H) => portraitFit({kind:'gem', special:sp, type:null, q:null, c:0, r:0, aura:0, round:false}, W, H, true), dbg: () => ({tileLevel, initRoad, isCP, inFarm, COLS, ROWS}), simClockSet: v => { simClock = v; }, towers: () => towers,
