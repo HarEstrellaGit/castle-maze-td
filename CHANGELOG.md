@@ -2,6 +2,20 @@
 
 All notable changes to Castle Maze TD are listed here, newest first.
 
+## 1.18 — November 4, 2026
+
+### Added
+- **Portrait mode.** The game now plays held upright, not just sideways. The "turn your device sideways" screen is gone.
+  - The board sits full width in the middle, the same size as in landscape, with a block of panels above and below it, all kept clear of the notch, Dynamic Island and home bar.
+  - Top block: the next wave's enemy card on the left, with health, gold, wave, the favor odds and the main buttons on the right.
+  - Bottom block: the advice notice and the selected tower's name, with its picture, stats and recipes below. The buttons sit on the right, within thumb reach.
+  - Opening a panel (Blueprints, Book of Records, favor and so on) puts its contents in place of the enemy card and its description in place of the next-wave story.
+  - Text and buttons scale to fit the space above and below the board.
+
+### Changed
+- The app's Home Screen settings now allow both orientations (they were locked to landscape).
+- How to play now says wave sizes start adapting after wave 5, matching 1.17.
+
 ## 1.17 — November 4, 2026
 
 ### Changed

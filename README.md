@@ -4,7 +4,7 @@ A medieval tower defense game where you build the maze. Enemies pour out of a he
 
 **Play it here:** https://harleyestrella.github.io/castle-maze-td/
 
-Works best on an iPhone or iPad held sideways. It also runs in any modern desktop browser.
+Plays on an iPhone or iPad held either way, upright or sideways. It also runs in any modern desktop browser.
 
 ## Install it on your iPhone or iPad
 
@@ -58,7 +58,7 @@ Your run saves automatically between waves.
 ## Updating the game (for the maintainer)
 
 1. Upload the new `index.html` (replacing the old one).
-2. Open `sw.js` and bump the version, for example `castle-maze-v20` → `castle-maze-v21`.
+2. Open `sw.js` and bump the version, for example `castle-maze-v21` → `castle-maze-v22`.
 3. Add the changes to `CHANGELOG.md`.
 
 Installed copies pick up the update the next time they're opened online. If an old version still shows, close the app and open it again.
@@ -69,7 +69,7 @@ Installed copies pick up the update the next time they're opened online. If an o
 |---|---|
 | `index.html` | The whole game |
 | `sw.js` | Saves the game on the device so it plays offline |
-| `manifest.webmanifest` | App name, icon and full-screen settings for the Home Screen |
+| `manifest.webmanifest` | App name, icon, full-screen and orientation settings for the Home Screen |
 | `apple-touch-icon.png`, `icon-192.png`, `icon-512.png` | App icons |
 | `CHANGELOG.md` | What changed in each version |
 

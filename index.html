@@ -114,12 +114,70 @@ body{background:var(--bg);background-image:radial-gradient(120% 80% at 50% 0%, #
 .tc-bp > .rgrp > .tc-k,.tc-bp .tc-k.c{text-align:center}
 .tc-bp .rgrid{justify-content:center}
 #ctx .hint h3{margin-top:4px} #ctx .hint p{text-align:center}
-@media (orientation:portrait){
-  #rotate{display:grid;place-items:center;position:fixed;inset:0;z-index:100;background:#17130e;text-align:center;padding:24px}
-  #rotate div{display:flex;flex-direction:column;gap:8px}
-  #rotate b{font-family:var(--display);font-size:22px;color:var(--gold)}
-  #rotate span{color:var(--muted);font-size:15px}
-  #rotate div::before{content:'⟳';font-size:48px;color:var(--gold)}
+#pside,#pname{display:none}
+@media (orientation:portrait){ /* portrait: a top block and a bottom block of equal height with the board centred between them, all inside the safe area (notch, Dynamic Island, home bar) */
+  #app{--pw:0px;--pt:max(6px,env(safe-area-inset-top,0px));--pb:max(6px,env(safe-area-inset-bottom,0px));
+    --H:calc(100vh - var(--pt) - var(--pb));
+    --B:min(calc(100vw - 12px),calc(var(--H)*.62)); /* the board: full width, the same size it has in landscape (only very squat screens shrink it) */
+    --fit:calc(((var(--H) - 8px - var(--B))/2 - 46px)/20.4); /* the text and button size that lets the panels fit the room above and below the board */
+    --u:clamp(7px,min(var(--fit),1.15vw + .35vh),13px);
+    --side:max(calc(var(--u)*20.4 + 46px),calc((var(--H) - 8px - var(--B))/2));
+    --rH:calc(var(--u)*4.6);--rO:calc(var(--u)*1.9);--rB:calc(var(--u)*4.4);--rA:calc(var(--u)*4);--rX:calc(var(--u)*6 + 16px);
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    --rE:calc(var(--u)*4.4);
+    grid-template-rows:var(--rH) var(--rO) var(--rB) calc(var(--side) - var(--rH) - var(--rO) - var(--rB) - var(--rE) - 16px) var(--rE) minmax(0,1fr) var(--rA) calc(var(--side) - var(--rA) - var(--rX) - 8px) var(--rX);
+    grid-template-areas:"ec hud" "ec odds" "ec bar" "ec st" "eh st" "board board" "adv nm" "ps ctx" "acts ctx"; /* the buttons on the right, within thumb reach */
+    padding:var(--pt) max(6px,env(safe-area-inset-right,0px)) var(--pb) max(6px,env(safe-area-inset-left,0px));gap:4px}
+  @supports (height:100dvh){ #app{--H:calc(100dvh - var(--pt) - var(--pb))} }
+  #left,#right,#right > #rMain{display:contents!important} /* the wave card stays up while a panel is open */
+  #hud{grid-area:hud;min-width:0;min-height:0} #odds{grid-area:odds;align-self:center} #bar{grid-area:bar;min-width:0;min-height:0}
+  #bar .btn{min-height:0;height:100%}
+  #enemyCard{grid-area:ec;min-height:0;overflow:hidden;padding:4px;justify-content:center}
+  #enemyCard{justify-content:flex-start;gap:2px}
+  #enemyCard .avatar.eav{flex:1 1 0;min-height:0;width:auto;height:auto;max-width:100%;aspect-ratio:1/1;align-self:center} /* the portrait grows to fill the card */
+  #waveT,#waveH{flex:0 0 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  #waveT{font-size:calc(var(--u)*1.15)} #waveH{font-size:calc(var(--u)*.95)}
+  #ehud{grid-area:eh;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;min-height:0}
+  #ehud .stat{padding:2px 4px;justify-content:flex-start;min-height:0}
+  #ehud .stat .k{font-size:calc(var(--u)*.68);letter-spacing:.06em;line-height:1.15}
+  #ehud .stat b{font-size:calc(var(--u)*1.3)}
+  #story{grid-area:st;min-height:0}
+  #rPanel{grid-area:1 / 1 / 6 / 2;min-height:0;max-height:none;display:flex;flex-direction:column;padding:4px 8px} #rPanel[hidden]{display:none} /* an opened panel's contents take the enemy card's place */
+  #right:has(#rPanel:not([hidden])) #enemyCard,#right:has(#rPanel:not([hidden])) #ehud{display:none}
+  #rDesc{grid-area:st;min-height:0;display:flex;flex-direction:column;border-radius:6px;padding:4px 8px;overflow:hidden} #rDesc[hidden]{display:none} /* ...and its description takes the next-wave story's place */
+  #right:has(#rDesc:not([hidden])) #story{display:none}
+  #right:has(#rDesc:not([hidden])) #rPanel > .rp-head{display:none} /* the title and back button are already in the left box: the tabs and contents start at the top */
+  #rPanel #rpBody{padding-top:0} #rPanel #rpBody .tabs{margin-top:0;top:0}
+  #rPanel #rpBody > :first-child{margin-top:0} #rPanel #rpBody .fvleg{margin-top:2px}
+  #rDesc .rp-head b{font-family:var(--display);font-size:calc(var(--u)*1.5);color:var(--gold)}
+  #rDesc .rpBack2{min-height:0;height:calc(var(--u)*2.8);width:calc(var(--u)*2.8);padding:0;flex:0 0 auto} #rDesc .rpBack2 svg{width:60%;height:60%}
+  #rDesc .rdBody{flex:1 1 auto;min-height:0;overflow-y:auto;padding-top:4px}
+  #rDesc .rdBody p{margin:2px 0 4px;font-size:calc(var(--u)*1.05);line-height:1.35;color:var(--muted)}
+  #rDesc .rdBody p[data-for]{border-top:1px solid var(--line-hi);padding-top:5px;margin-top:5px} /* a bar between the blueprint rules and the part that follows the tab */
+  #boardWrap{grid-area:board;min-height:0}
+  #advice{grid-area:adv;height:auto;min-height:0}
+  #pname{grid-area:nm;display:flex;min-width:0;min-height:0;border-radius:6px;overflow:hidden} #pname:empty{display:none}
+  #app:has(#pname:empty) #advice{grid-column:1 / 3} /* nothing selected: the notice runs the full width */
+  #pname .tc-nm{flex:1 1 auto;border:0;background:none;justify-content:center;padding:2px 6px}
+  #pname .tc-nm b{font-size:calc(var(--u)*1.3)} #pname .tc-nm .subrow{font-size:calc(var(--u)*.95)}
+  #ctx{grid-area:ctx;min-height:0;overflow:hidden;padding:4px 6px}
+  #ctx .ctx-body{overflow-y:auto;height:100%}
+  #ctx .tcard{height:100%;gap:3px}
+  #ctx .avwrap{flex:1 1 auto;min-height:0;width:auto;max-width:100%;aspect-ratio:1;display:flex}
+  #ctx .avwrap .avatar,#ctx > .ctx-body > .tcard > .avatar{width:auto;height:100%;max-width:100%;min-height:0;flex:1 1 auto}
+  #ctx .tc-nm,#ctx .tc-mt{flex:0 0 auto} #ctx .tc-desc{font-size:calc(var(--u)*1);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  #pside{grid-area:ps;display:flex;flex-direction:column;gap:4px;min-height:0;overflow:hidden;border-radius:6px;padding:4px 6px;box-sizing:border-box}
+  #pside .tc-st{flex:0 0 auto}
+  #pside .sgrid{--cols:4!important;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:calc(var(--u)*3.3);gap:3px}
+  #pside .tc-st{min-height:calc(var(--u)*6.6 + 3px)} /* always room for two rows of four */
+  #pside .si{flex-direction:column;justify-content:center;gap:1px;padding:2px 1px;font-size:calc(var(--u)*.95)}
+  #pside .si svg{width:calc(var(--u)*1.45);height:calc(var(--u)*1.45);flex:0 0 calc(var(--u)*1.45)}
+  #pside .si b{max-width:100%}
+  #pside .tc-bp{flex:1 1 auto;min-height:0;overflow-y:auto;border-top:1px solid var(--line);padding-top:3px}
+  #acts{grid-area:acts;min-height:0;align-self:stretch;overflow:hidden}
+  .iconbtn{flex:0 0 calc(var(--u)*3.4)}
+  #meter{max-width:60%}
+  #tsCan{width:min(22vh,48vw);height:min(22vh,48vw)} #tshow .tsMid{max-height:100%;overflow-y:auto;padding:6px 0}
 }
 .frame{background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,230,180,.06), inset 0 0 0 2px rgba(0,0,0,.25)}
 #hud{grid-area:hud;display:flex;align-items:stretch;gap:4px}
@@ -439,6 +497,8 @@ table.odds tr.cur td{color:var(--gold);font-weight:700}
   <aside id="left">
     <div id="ctx" class="frame"></div>
     <div id="acts" class="frame"></div>
+    <div id="pside" class="frame" aria-label="Tower stats and recipes"></div>
+    <div id="pname" class="frame"></div>
     <div id="advice" class="frame" role="status"><div id="adviceMsg"></div></div>
     <div id="phase" hidden><div id="phaseT"></div><div id="phaseH"></div></div>
   </aside>
@@ -478,6 +538,7 @@ table.odds tr.cur td{color:var(--gold);font-weight:700}
       <div class="rp-head"><b id="rpTitle"></b><button class="btn" id="rpBack" aria-label="Back to the wave" title="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
       <div id="rpBody"></div>
     </section>
+    <section id="rDesc" class="frame" hidden></section>
     <div id="bar">
       <button class="btn ibtn" id="btnRecipes" aria-pressed="false" aria-label="Blueprints" title="Blueprints"><svg class="bico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5h11.5a2.5 2.5 0 0 1 2.5 2.5v12.5H7.5A2.5 2.5 0 0 1 5 16z" fill="#3d6fa8" stroke="#cfe2ff" stroke-width="1.2"/><path d="M5 16a2.5 2.5 0 0 0 2.5 2.5H19V21H7.5A2.5 2.5 0 0 1 5 18.5z" fill="#2a5182" stroke="#cfe2ff" stroke-width="1.2"/><path d="M8 7h8M8 10h8M8 13h8M10 5v10M14 5v10" stroke="#9fc3ef" stroke-width=".7" opacity=".8"/><path d="M9 14l2.5-5.5 2.5 5.5M10 12h3" stroke="#fff" stroke-width="1.1" fill="none"/></svg></button>
       <button class="btn stack ibtn" id="btnLuck" aria-pressed="false" aria-label="Favor" title="Royal favor">1</button>
@@ -1785,7 +1846,7 @@ function championsHTML(){ // the run's champions in a row, each with its portrai
 }
 function leaderboardHTML(){
   const runs = sortRuns(loadRuns());
-  if (!runs.length) return `<p class="muted">The Book of Records is empty. Every run you finish, won or lost, is signed into it: the longest runs first, then the highest damage.</p><p class="muted">Endless mode is coming later.</p>`;
+  if (!runs.length) return `<p class="muted rpd">The Book of Records is empty. Every run you finish, won or lost, is signed into it: the longest runs first, then the highest damage.</p><p class="muted rpd">Endless mode is coming later.</p>`;
   const when = t => { const d = new Date(t); return d.toLocaleDateString(undefined, {month:'short', day:'numeric'}); };
   const mmss = s => `${Math.floor(s/60)}:${String(s % 60).padStart(2, '0')}`;
   return `<div class="lbh"><span>#</span><span>Run</span><span>Damage</span><span>Time</span></div>` + runs.map((r, i) => `<div class="lbr${r.won ? ' won' : ''}"><span>${i + 1}</span><span><b class="lbn">${esc(r.name || '-----')}</b> ${r.won ? `★ Victory · ${r.hp} hp left` : `Fell on wave ${r.wave}`}<em>${when(r.when)} · ${r.kills.toLocaleString()} kills</em></span><span>${fmtBig(r.damage)}</span><span>${mmss(r.time || 0)}</span></div>`).join('') + `<p class="muted" style="margin-top:8px">Endless mode is coming later.</p>`;
@@ -2343,6 +2404,7 @@ function renderUI(){
   }
   html += extra;
   $('#ctx').innerHTML = html;
+  splitPortrait();
   $('#acts').innerHTML = actsHtml;
   renderAdvice(); renderWaveCard(true); renderStory(); renderRightPanel(false);
   // odds
@@ -2425,6 +2487,7 @@ $('#btnLuck').addEventListener('click', () => openRight('favor'));
 $('#btnModes').addEventListener('click', () => openRight('board'));
 $('#btnRecipes').addEventListener('click', () => openRight('bp'));
 $('#rpBack').addEventListener('click', () => openRight(null));
+$('#rDesc').addEventListener('click', e => { if (e.target.closest('.rpBack2')) openRight(null); });
 $('#sLives').addEventListener('click', () => openRight('leaks'));
 let devTaps = [];
 function openDev(){ hideSheet(); if (skinMode !== 'cloud') initSkins(true); rView = 'dev'; renderRightPanel(true); }
@@ -2467,6 +2530,14 @@ $('#sheet').addEventListener('click', e => {
   }
   if (e.target.id === 'sheet' && !sheetLocked) hideSheet();
 });
+const PORTRAIT_MQ = window.matchMedia('(orientation: portrait)');
+function splitPortrait(){ // portrait: the selected tower's stats and recipes move to the panel beside its picture, so the picture can be larger
+  const ps = $('#pside'), pn = $('#pname'); ps.innerHTML = ''; pn.innerHTML = '';
+  if (!PORTRAIT_MQ.matches) return;
+  { const nm = $('#ctx').querySelector('.tc-nm'); if (nm) pn.appendChild(nm); } // the name, rank and count go beside the advanced-tower notice
+  for (const q of ['.tc-st', '.tc-bp']){ const el = $('#ctx').querySelector(q); if (el) ps.appendChild(el); }
+}
+PORTRAIT_MQ.addEventListener && PORTRAIT_MQ.addEventListener('change', () => { bpKey = null; leakKey = ''; renderUI(); if (rView) renderRightPanel(true); });
 function renderLvBtn(){ // the crown: your level and kills toward the next
   const lb = $('#btnLuck'); lvShown = kills;
   const max = luck >= LV_MAX, prv = LV_KILLS[luck-1], nxt = LV_KILLS[luck], f = max ? 1 : Math.max(0, Math.min(1, (kills - prv)/(nxt - prv))), C = 2*Math.PI*9.5;
@@ -2566,18 +2637,31 @@ function recipeHTML(inPanel){
     <div class="bpd">${sp.fourMasters ? 'Any 4 Master towers built in the same round · ' : (sp.secret || sp.ult) ? 'All parts built in the same round · ' : ''}${sp.desc}</div></div>`;
   const all = Object.entries(SPECIALS);
   const traps = Object.entries(PEDALS).map(([key, pd]) => `<div class="bp"><div class="bpn" style="color:${pd.c}">${pd.name}</div><div class="bpr">${ingIcons(pd.ings)}<span class="bpop">=</span>${ico('pd:' + key, pd.name, 'out')}</div><div class="bpd">${pd.desc(0)}</div></div>`).join('');
-  return `${inPanel ? '' : '<h2>Blueprints</h2>'}<p class="muted" style="margin-top:2px">Two identical new towers upgrade one rank (four jump two). Advanced towers use one tower per part, all from this round's new towers or all from towers you kept. Secret, five-rank and trap recipes need every part in the same round.</p>
+  return `${inPanel ? '' : '<h2>Blueprints</h2>'}<p class="muted rpd" style="margin-top:2px">Two identical new towers upgrade one rank (four jump two). Advanced towers use one tower per part, all from this round's new towers or all from towers you kept. Secret, five-rank and trap recipes need every part in the same round.</p>
     <div class="tabs" role="tablist"><button class="tab" role="tab" data-act="tab" data-tab="adv" aria-selected="true">Towers</button><button class="tab" role="tab" data-act="tab" data-tab="trap" aria-selected="false">Traps</button></div>
     <div data-pane="adv">${towersBuiltHTML()}</div>
-    <div data-pane="trap" hidden><p class="muted">Placed on any open square, including the path. Three identical traps combine into a Sparkling trap, and three Sparkling into a Blingbling trap.</p>${traps}</div>`;
+    <div data-pane="trap" hidden><p class="muted rpd" data-for="trap">Placed on any open square, including the path. Three identical traps combine into a Sparkling trap, and three Sparkling into a Blingbling trap.</p>${traps}</div>`;
 }
 function recipeSheet(){ showSheet(recipeHTML() + `<div class="sheetActs"><button class="btn" data-act="close">Close</button></div>`); }
-function setBpTab(root, t){ root.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t)); root.querySelectorAll('[data-pane]').forEach(pn => pn.hidden = pn.dataset.pane !== t); root.scrollTop = 0; }
+function setBpTab(root, t){ document.querySelectorAll('#rDesc [data-for]').forEach(p => p.hidden = p.dataset.for !== t); // portrait: the description box follows the tab
+  root.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t)); root.querySelectorAll('[data-pane]').forEach(pn => pn.hidden = pn.dataset.pane !== t); root.scrollTop = 0; }
 let bpTab = 'adv', bpKey = null;
 let devTab = 'tower';
 let rView = null; // null: the wave (default) · 'bp': blueprints · 'favor': royal favor
 function openRight(v){ rView = rView === v ? null : v; bpKey = null; hideTip(); renderRightPanel(true); syncTowerShow(); }
-function renderRightPanel(force){
+function renderRightPanel(force){ renderRightPanel1(force); splitPanelDesc(); }
+function splitPanelDesc(){ // portrait: a panel's description sits in the left box, its contents on the right
+  const d = $('#rDesc'), body = $('#rpBody'), moved = body.querySelectorAll('.rpd');
+  if (!rView || !PORTRAIT_MQ.matches){ d.hidden = true; d.innerHTML = ''; d.dataset.view = ''; return; }
+  if (d.dataset.view !== rView || moved.length){
+    d.dataset.view = rView;
+    d.innerHTML = `<div class="rp-head"><b>${esc($('#rpTitle').textContent)}</b><button class="btn rpBack2" aria-label="Back to the wave" title="Back">${$('#rpBack').innerHTML}</button></div><div class="rdBody"></div>`;
+    moved.forEach(p => d.querySelector('.rdBody').appendChild(p));
+  }
+  if (rView === 'bp') d.querySelectorAll('[data-for]').forEach(p => p.hidden = p.dataset.for !== bpTab);
+  d.hidden = !d.querySelector('.rpd');
+}
+function renderRightPanel1(force){
   $('#rMain').hidden = !!rView; $('#rPanel').hidden = !rView;
   $('#btnRecipes').setAttribute('aria-pressed', rView === 'bp'); $('#btnModes').setAttribute('aria-pressed', rView === 'board'); $('#sLives').setAttribute('aria-pressed', rView === 'leaks'); $('#btnLuck').setAttribute('aria-pressed', rView === 'favor');
   const el = $('#rpBody');
@@ -2593,7 +2677,7 @@ function renderRightPanel(force){
     if (force) { el.innerHTML = HELP_HTML; el.scrollTop = 0; }
   } else if (rView === 'board'){
     $('#rpTitle').textContent = 'Book of Records';
-    if (force) { el.innerHTML = `<div class="tabs" role="tablist"><button class="tab" role="tab" data-lbtab="runs" aria-selected="${lbTab === 'runs'}"><svg class="tabico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.2C9.6 4.6 6.4 4.2 2.6 4.6v13.6c3.8-.4 7 .1 9.4 1.6 2.4-1.5 5.6-2 9.4-1.6V4.6c-3.8-.4-7 0-9.4 1.6z" fill="#7a2e22" stroke="#f1e2bc" stroke-width=".8" stroke-linejoin="round"/><path d="M12 6.8C9.8 5.4 7 5.1 3.8 5.4v11.9c3.2-.2 6 .2 8.2 1.4 2.2-1.2 5-1.6 8.2-1.4V5.4c-3.2-.3-6 0-8.2 1.4z" fill="#efe2c2"/><path d="M12 6.8v11.9" stroke="#b8a47a" stroke-width=".7"/><path d="M5.4 8.4c1.9-.2 3.6 0 5 .6M5.4 10.6c1.9-.2 3.6 0 5 .6M5.4 12.8c1.9-.2 3.6 0 5 .6M13.6 9c1.4-.6 3.1-.8 5-.6M13.6 11.2c1.4-.6 3.1-.8 5-.6M13.6 13.4c1.4-.6 3.1-.8 5-.6" stroke="#9a8660" stroke-width=".55" fill="none"/></svg>Game runs</button><button class="tab" role="tab" data-lbtab="modes" aria-selected="${lbTab === 'modes'}"><svg class="tabico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21h11v-2.2c0-1-.6-1.6-1.4-2.1 0-3 .6-5.3 1.9-7.4-1.2-3-3.8-5.3-7.4-5.8l-.6 1.9-1.6-1.3-.6 2.3C6 7.5 5 9.3 5 11.2l1.2 1.3 2.3-1.1 1.6.4c-.7 1.6-2 2.8-3.1 4.4z" fill="#c9b48a" stroke="#f1e2bc" stroke-width="1" stroke-linejoin="round"/><circle cx="9.6" cy="8.6" r=".9" fill="#2a1d10"/><rect x="5.5" y="19.8" width="14" height="2.2" rx=".7" fill="#8a7650"/></svg>Game modes</button></div>` + (lbTab === 'modes' ? '<p class="muted" style="margin:10px 0">Game modes will come later.</p>' : leaderboardHTML()); el.scrollTop = 0; }
+    if (force) { el.innerHTML = `<div class="tabs" role="tablist"><button class="tab" role="tab" data-lbtab="runs" aria-selected="${lbTab === 'runs'}"><svg class="tabico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.2C9.6 4.6 6.4 4.2 2.6 4.6v13.6c3.8-.4 7 .1 9.4 1.6 2.4-1.5 5.6-2 9.4-1.6V4.6c-3.8-.4-7 0-9.4 1.6z" fill="#7a2e22" stroke="#f1e2bc" stroke-width=".8" stroke-linejoin="round"/><path d="M12 6.8C9.8 5.4 7 5.1 3.8 5.4v11.9c3.2-.2 6 .2 8.2 1.4 2.2-1.2 5-1.6 8.2-1.4V5.4c-3.2-.3-6 0-8.2 1.4z" fill="#efe2c2"/><path d="M12 6.8v11.9" stroke="#b8a47a" stroke-width=".7"/><path d="M5.4 8.4c1.9-.2 3.6 0 5 .6M5.4 10.6c1.9-.2 3.6 0 5 .6M5.4 12.8c1.9-.2 3.6 0 5 .6M13.6 9c1.4-.6 3.1-.8 5-.6M13.6 11.2c1.4-.6 3.1-.8 5-.6M13.6 13.4c1.4-.6 3.1-.8 5-.6" stroke="#9a8660" stroke-width=".55" fill="none"/></svg>Game runs</button><button class="tab" role="tab" data-lbtab="modes" aria-selected="${lbTab === 'modes'}"><svg class="tabico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21h11v-2.2c0-1-.6-1.6-1.4-2.1 0-3 .6-5.3 1.9-7.4-1.2-3-3.8-5.3-7.4-5.8l-.6 1.9-1.6-1.3-.6 2.3C6 7.5 5 9.3 5 11.2l1.2 1.3 2.3-1.1 1.6.4c-.7 1.6-2 2.8-3.1 4.4z" fill="#c9b48a" stroke="#f1e2bc" stroke-width="1" stroke-linejoin="round"/><circle cx="9.6" cy="8.6" r=".9" fill="#2a1d10"/><rect x="5.5" y="19.8" width="14" height="2.2" rx=".7" fill="#8a7650"/></svg>Game modes</button></div>` + (lbTab === 'modes' ? '<p class="muted rpd" style="margin:10px 0">Game modes will come later.</p>' : (loadRuns().length ? '<p class="muted rpd">Every run you finish, won or lost, is signed in here: the longest runs first, then the highest damage.</p>' : '') + leaderboardHTML()); el.scrollTop = 0; }
   } else if (rView === 'leaks'){
     $('#rpTitle').textContent = 'Breaches';
     const key = leakLog.length + '|' + lives; if (!force && key === leakKey) return; leakKey = key;
@@ -2601,9 +2685,9 @@ function renderRightPanel(force){
   } else if (rView === 'favor'){
     $('#rpTitle').textContent = 'Royal favor';
     const top = el.scrollTop, nxt = LV_KILLS[luck], prv = LV_KILLS[luck-1];
-    el.innerHTML = `<p class="muted">Every kill earns royal favor, and a boss counts as a whole wave (${waveSize} kills). More favor makes new towers more likely to arrive at a higher rank. You are at favor ${luck} with ${kills} kills.</p>
+    el.innerHTML = `<p class="muted rpd">Every kill earns royal favor, and a boss counts as a whole wave (${waveSize} kills). More favor makes new towers more likely to arrive at a higher rank. You are at favor ${luck} with ${kills} kills.</p>
       ${luck < LV_MAX ? `<div class="lvprog"><div style="width:${Math.min(100, (kills - prv)/(nxt - prv)*100).toFixed(1)}%"></div><span>${kills} / ${nxt} kills to favor ${luck+1}</span></div>` : ''}
-      <p class="muted">A <b style="color:var(--gold)">flawless wave</b> (no enemy gets through) pays a bonus of 10% of your gold, up to 50 gold.</p>
+      <p class="muted rpd">A <b style="color:var(--gold)">flawless wave</b> (no enemy gets through) pays a bonus of 10% of your gold, up to 50 gold.</p>
       <div class="fvleg">${QN.slice(0, 5).map((q, i) => `<span><i style="background:${QC[i]}"></i>${q}</span>`).join('')}</div>
       ${ODDS.map((o, i) => `<div class="fvrow ${i === luck-1 ? 'cur' : ''} ${i < luck ? 'done' : ''}"><span class="fvn">${i < luck ? '✓ ' : ''}Favor ${i+1}</span><div class="fvbar">${o.map((v, j) => v ? `<span style="width:${v}%;background:${QC[j]};color:${j >= 3 ? '#f3e8cc' : '#1d150b'}" data-tiptext="${esc(`${QN[j]} ${v}%`)}">${v >= 15 ? v : ''}</span>` : '').join('')}</div><span class="fvc">${i === 0 ? 'start' : LV_KILLS[i] + ' kills'}</span></div>`).join('')}
       ${luck >= LV_MAX ? '<p class="muted" style="text-align:center;margin-top:8px">Favor is at its highest.</p>' : ''}`;
@@ -2639,7 +2723,7 @@ const SHOW_GROUPS = (() => {
 const SHOW_KEYS = SHOW_GROUPS.flatMap(g => g.keys), showGroupOf = k => SHOW_GROUPS.find(g => g.keys.includes(k));
 function towersBuiltHTML(){
   const n = SHOW_KEYS.filter(isBuilt).length;
-  return `<p class="muted" style="margin:6px 0">Tap a tower here, or swipe the one shown on the board, to see its recipe and what it does. Parts you already have are outlined in gold.</p>
+  return `<p class="muted rpd" data-for="adv" style="margin:6px 0">Tap a tower here, or swipe the one shown on the board, to see its recipe and what it does. Parts you already have are outlined in gold.</p>
     <div class="tbgrid">${SHOW_KEYS.map((k, i) => `${SHOW_GROUPS.find(g => g.keys[0] === k) ? `<div class="tbhead">${esc(showGroupOf(k).name)}<i>${esc(showGroupOf(k).sub)}</i></div>` : ''}<button type="button" class="tbcell${isBuilt(k) ? '' : ' locked'}${i === tshowIdx ? ' cur' : ''}" data-tshow="${i}" aria-label="${esc(SPECIALS[k].name)}${isBuilt(k) ? '' : ' (not built yet)'}"><img src="${iconFor('sp:' + k)}" alt=""></button>`).join('')}</div>`;
 }
 function syncTowerShow(rerenderList){
@@ -2800,12 +2884,12 @@ function refreshEnemyPanel(){
   const st = document.getElementById('selStats'), mt = document.getElementById('selMeta');
   if (st && !tipEl) st.innerHTML = enemyStatIcons(selEnemy); if (mt) mt.innerHTML = enemyMeta(selEnemy);
 }
-const HELP_HTML = `<p class="muted gamever">Version 1.17 · November 4, 2026</p><ol class="help">
+const HELP_HTML = `<p class="muted gamever">Version 1.18 · November 4, 2026</p><ol class="help">
     <li>Enemies pour out of the <b>hell portal</b>, march past the <b>church, wishing well, graveyard, elder tree and barracks</b> in that order, then storm the <b>castle</b>. Each one that reaches it costs health equal to half the wave number if unhurt (a boss costs wave × wave/10, so 90 on wave 30), less the more you've wounded it, but never less than 1.</li>
     <li>Every round you build <b>5 towers</b>. Their type and rank are random. Towers block walking enemies, so use them to stretch the maze.</li>
     <li>Keep <b>one</b> tower. The other four become walls that still block. Two identical new towers upgrade it one rank.</li>
     <li>The right sets of towers construct advanced towers, and pairs build <b>traps</b> you place on any open square. The <b>blueprint</b> button lists them. Kills earn royal <b>favor</b> (the ring), and each favor level gives better odds of higher ranks. Walls can be torn down for free between waves.</li>
-  </ol><p class="muted">Tap a square to select it, then tap it again or press Build. Tap an enemy to see its stats. Waves have 10 enemies. After wave 10, kill them quickly and later waves grow (up to 15), let them through and they shrink (down to 5). Boss waves stay one boss, but a bigger wave size gives it more health (15 enemies = 50% more). Bosses never get weaker. Pinch to zoom in, drag to look around, and slide two fingers up or down to tilt. Your run saves between waves.</p>
+  </ol><p class="muted rpd">Tap a square to select it, then tap it again or press Build. Tap an enemy to see its stats. Waves have 10 enemies. After wave 5, kill them quickly and later waves grow (up to 15), let them through and they shrink (down to 5). Boss waves stay one boss, but a bigger wave size gives it more health (15 enemies = 50% more). Bosses never get weaker. Pinch to zoom in, drag to look around, and slide two fingers up or down to tilt. Your run saves between waves.</p>
   <p class="muted">Tap the board to start playing.</p>`;
 const DEV_TABS = [['tower', 'Towers'], ['bastion', 'Bastions'], ['waypoint', 'Waypoints'], ['tile', 'Tiles'], ['enemy', 'Enemies']];
 function devSlots(tab){
